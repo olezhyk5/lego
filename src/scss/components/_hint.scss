@@ -1,0 +1,14 @@
+@use "../abstracts" as *;
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: color(muted);
+}
+
+// Розрахункове значення поряд із полем: «= 560 мм»
+.calc {
+  font-size: 12px;
+  color: color(muted);
+  white-space: nowrap;
+}

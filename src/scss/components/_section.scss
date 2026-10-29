@@ -1,0 +1,38 @@
+@use "../abstracts" as *;
+
+// Картка секції шафи в сайдбарі
+.section {
+  padding: 10px;
+  margin-bottom: 10px;
+  background: color(surface-alt);
+  border: 1px solid color(line);
+  border-radius: $radius-lg;
+
+  &.is-selected {
+    background: color(accent-soft);
+    border-color: color(accent);
+  }
+
+  &__head {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__name {
+    margin-right: auto;
+  }
+
+  &__row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  &__width {
+    width: 80px;
+  }
+}

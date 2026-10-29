@@ -1,0 +1,26 @@
+@use "sass:map";
+@use "variables" as *;
+
+// @include mq-down(md) { ... } → @media (max-width: 900px)
+@mixin mq-down($bp) {
+  @if not map.has-key($breakpoints, $bp) {
+    @error "Невідомий брейкпоінт `#{$bp}`.";
+  }
+
+  @media (max-width: map.get($breakpoints, $bp)) {
+    @content;
+  }
+}
+
+// Пристрої з дотиком (телефони, планшети) — незалежно від ширини екрана
+@mixin touch {
+  @media (pointer: coarse) {
+    @content;
+  }
+}
+
+@mixin focus-ring {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 0;
+  border-color: var(--color-focus-border);
+}

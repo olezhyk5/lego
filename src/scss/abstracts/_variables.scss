@@ -1,0 +1,48 @@
+// Палітра. Кожен ключ стає CSS-змінною --color-<ключ> (див. base/_root.scss).
+// У компонентах колір беремо лише через color(<ключ>).
+$colors: (
+  bg: #f4f2ee,
+  panel: #fff,
+  ink: #1f2328,
+  muted: #6b7280,
+  line: #e3e0da,
+  line-hover: #c9c4bb,
+  surface-hover: #faf9f7,
+  surface-alt: #fcfbf9,
+  accent: #c2410c,
+  on-accent: #fff,
+  accent-hover: #9a3412,
+  accent-soft: #fff1e8,
+  focus-ring: #fdba74,
+  focus-border: #fb923c,
+  warn-bg: #fff7ed,
+  warn: #9a3412,
+  err-bg: #fef2f2,
+  err: #b91c1c,
+  toast-bg: #1f2328,
+  toast-ink: #fff,
+);
+$font-base:
+  system-ui,
+  -apple-system,
+  "Segoe UI",
+  roboto,
+  sans-serif;
+$font-size-base: 14px;
+$line-height-base: 1.45;
+$radius-sm: 7px;
+$radius: 8px;
+$radius-lg: 10px;
+$topbar-height: 52px;
+$sidebar-width: 380px;
+$transition-base: 0.2s;
+$breakpoints: (
+  sm: 600px,
+  md: 900px,
+);
+
+// Мінімальний розмір цілі для дотику (WCAG 2.5.8 / Apple HIG ≈ 44px)
+$touch-target: 40px;
+
+// Менше 16px — iOS Safari зумить сторінку при фокусі на полі
+$font-size-input-touch: 16px;

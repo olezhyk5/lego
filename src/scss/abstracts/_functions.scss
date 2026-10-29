@@ -1,0 +1,11 @@
+@use "sass:map";
+@use "variables" as *;
+
+// color(accent) → var(--color-accent). Невідомий ключ — помилка компіляції.
+@function color($name) {
+  @if not map.has-key($colors, $name) {
+    @error "Невідомий колір `#{$name}`. Додайте його в $colors (abstracts/_variables.scss).";
+  }
+
+  @return var(--color-#{$name});
+}

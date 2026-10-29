@@ -1,0 +1,30 @@
+@use "../abstracts" as *;
+
+.input,
+.select {
+  min-width: 0;
+  padding: 5px 7px;
+  font: inherit;
+  color: color(ink);
+  background: color(panel);
+  border: 1px solid color(line);
+  border-radius: $radius-sm;
+
+  &:focus {
+    @include focus-ring;
+  }
+
+  @include touch {
+    min-height: $touch-target;
+    font-size: $font-size-input-touch;
+  }
+}
+
+// Підпис над полем: <label class="field">Назва <input class="input"></label>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: color(muted);
+}

@@ -1,0 +1,5 @@
+// Точка входу → assets/css/main.css
+// Порядок важливий: base → layout → components.
+@use "base";
+@use "layout";
+@use "components";

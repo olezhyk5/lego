@@ -1,0 +1,57 @@
+{
+  "name": "lego",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Конфігуратор шафи (тема lego)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "gulp",
+    "build": "gulp build --production",
+    "watch": "gulp watch",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:js": "eslint .",
+    "lint:css": "stylelint \"src/scss/**/*.scss\"",
+    "lint:fix": "eslint . --fix && stylelint \"src/scss/**/*.scss\" --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check && npm run build",
+    "prepare": "husky"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "last 2 iOS versions",
+    "last 2 ChromeAndroid versions",
+    "last 2 Samsung versions"
+  ],
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "autoprefixer": "^10.6.2",
+    "browser-sync": "^3.0.4",
+    "browserslist": "^4.29.5",
+    "browserslist-to-esbuild": "^2.1.1",
+    "cssnano": "^7.1.9",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "gulp": "^5.0.1",
+    "gulp-postcss": "^10.0.0",
+    "gulp-sass": "^6.0.1",
+    "husky": "^9.1.7",
+    "postcss": "^8.5.32",
+    "prettier": "^3.9.10",
+    "sass": "^1.107.0",
+    "stylelint": "^17.16.0",
+    "stylelint-config-recess-order": "^7.9.0",
+    "stylelint-config-standard-scss": "^17.0.0"
+  }
+}

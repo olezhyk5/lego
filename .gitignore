@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.log
+# зібрані файли: генеруються з src/ командою `npm run build`
+assets/css/
+assets/js/

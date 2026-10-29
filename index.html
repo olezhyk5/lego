@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title data-i18n="app.title">Конфігуратор шафи</title>
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body>
+    <!-- Тексти в розмітці — лише fallback; актуальні підставляє JS за data-i18n* (src/js/i18n). -->
+    <header class="topbar">
+      <h1 class="topbar__title" data-i18n="app.title">Конфігуратор шафи</h1>
+      <div class="topbar__actions">
+        <label class="topbar__toggle"
+          ><input type="checkbox" id="showDims" checked /> <span data-i18n="toolbar.dims">Розміри</span></label
+        >
+        <button class="btn" id="resetView" data-i18n="toolbar.resetView">Скинути вид</button>
+        <button class="btn" id="png" data-i18n="toolbar.png">PNG</button>
+        <button class="btn" id="copy" data-i18n="toolbar.copy">Копіювати список</button>
+        <button class="btn btn--primary" id="csv" data-i18n="toolbar.csv">CSV для дизайнера</button>
+        <button class="btn" id="saveJson" data-i18n="toolbar.save">Зберегти</button>
+        <button class="btn" id="loadJson" data-i18n="toolbar.open">Відкрити</button>
+      </div>
+      <input type="file" id="fileIn" accept=".json,application/json" hidden />
+    </header>
+
+    <div class="app">
+      <aside class="app__sidebar">
+        <section class="card">
+          <h2 class="card__title" data-i18n="sidebar.presets">Пресети</h2>
+          <div class="presets" id="presets"></div>
+        </section>
+        <section class="card">
+          <h2 class="card__title" data-i18n="sidebar.dimensions">Габарити, мм</h2>
+          <div class="dims">
+            <label class="field"
+              ><span data-i18n="sidebar.width">Ширина</span>
+              <input class="input" id="W" type="number" inputmode="numeric" min="300" max="5000" step="10"
+            /></label>
+            <label class="field"
+              ><span data-i18n="sidebar.height">Висота</span>
+              <input class="input" id="H" type="number" inputmode="numeric" min="300" max="3000" step="10"
+            /></label>
+            <label class="field"
+              ><span data-i18n="sidebar.depth">Глибина</span>
+              <input class="input" id="D" type="number" inputmode="numeric" min="200" max="900" step="10"
+            /></label>
+            <label class="field"
+              ><span data-i18n="sidebar.plinth">Цоколь</span>
+              <input class="input" id="plinth" type="number" inputmode="numeric" min="0" max="200" step="10"
+            /></label>
+          </div>
+        </section>
+        <section class="card">
+          <h2 class="card__title" data-i18n="sidebar.sections">Секції (зліва направо)</h2>
+          <div id="sections"></div>
+          <button class="btn" id="addSec" data-i18n="sidebar.addSection">+ Додати секцію</button>
+          <p class="hint" data-i18n="sidebar.hint"></p>
+        </section>
+      </aside>
+
+      <main class="app__main">
+        <div class="viewer" id="view"><div class="viewer__fallback" id="nogl" data-i18n="viewer.noWebgl"></div></div>
+        <div class="report">
+          <div id="msgs"></div>
+          <div class="report__cols">
+            <div>
+              <h3 class="report__title" data-i18n="report.panels">Плити</h3>
+              <div class="report__scroll"><table class="table" id="tP"></table></div>
+            </div>
+            <div>
+              <h3 class="report__title" data-i18n="report.items">Елементи</h3>
+              <div class="report__scroll"><table class="table" id="tI"></table></div>
+              <h3 class="report__title" data-i18n="report.description">Опис секцій (зверху вниз)</h3>
+              <ul class="report__list" id="desc"></ul>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>

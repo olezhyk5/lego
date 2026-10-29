@@ -1,0 +1,42 @@
+@use "../abstracts" as *;
+
+.btn {
+  padding: 6px 10px;
+  font: inherit;
+  color: color(ink);
+  cursor: pointer;
+  background: color(panel);
+  border: 1px solid color(line);
+  border-radius: $radius;
+
+  &:hover {
+    background: color(surface-hover);
+    border-color: color(line-hover);
+  }
+
+  &--primary {
+    color: color(on-accent);
+    background: color(accent);
+    border-color: color(accent);
+
+    &:hover {
+      background: color(accent-hover);
+      border-color: color(accent-hover);
+    }
+  }
+
+  &--icon {
+    padding: 3px 7px;
+    font-size: 12px;
+    line-height: 1.2;
+
+    @include touch {
+      min-width: 32px;
+      min-height: 32px;
+    }
+  }
+
+  @include touch {
+    min-height: $touch-target;
+  }
+}

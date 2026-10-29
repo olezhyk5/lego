@@ -1,0 +1,48 @@
+@use "../abstracts" as *;
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: $topbar-height;
+  padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+  background: color(panel);
+  border-bottom: 1px solid color(line);
+
+  &__title {
+    margin: 0 auto 0 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+
+    // на вузьких екранах — один рядок з горизонтальним скролом
+    @include mq-down(sm) {
+      flex-wrap: nowrap;
+      width: calc(100% + 32px);
+      padding: 0 16px 2px;
+      margin: 0 -16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      > * {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__toggle {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-right: 4px;
+    font-size: 13px;
+    color: color(muted);
+  }
+}

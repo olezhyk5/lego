@@ -1,0 +1,33 @@
+@use "../abstracts" as *;
+
+// 3D-в'юпорт
+.viewer {
+  position: relative;
+  min-height: 300px;
+  overflow: hidden;
+
+  canvas {
+    display: block;
+  }
+
+  &__fallback {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: color(muted);
+    text-align: center;
+
+    &.is-visible {
+      display: flex;
+    }
+  }
+
+  // OrbitControls забирає жести, тож лишаємо під в'юпортом місце для прокрутки сторінки
+  @include mq-down(md) {
+    height: 60vh;
+    height: 60svh;
+  }
+}

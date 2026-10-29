@@ -1,0 +1,24 @@
+{
+  "extends": ["stylelint-config-standard-scss", "stylelint-config-recess-order"],
+  "rules": {
+    "max-nesting-depth": [3, { "ignoreAtRules": ["include", "media"] }],
+    "selector-max-id": 0,
+    "selector-max-compound-selectors": 3,
+    "selector-class-pattern": [
+      "^(is-[a-z0-9-]+|[a-z][a-z0-9]*(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?)$",
+      { "message": "Клас має бути BEM (block__element--modifier) або станом is-*" }
+    ],
+    "at-rule-disallowed-list": [["import"], { "message": "Використовуйте @use / @forward замість @import" }],
+    "color-no-hex": true,
+    "color-named": "never",
+    "declaration-no-important": true,
+    "scss/at-extend-no-missing-placeholder": true,
+    "scss/no-global-function-names": true
+  },
+  "overrides": [
+    {
+      "files": ["src/scss/abstracts/_variables.scss"],
+      "rules": { "color-no-hex": null }
+    }
+  ]
+}
