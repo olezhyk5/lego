@@ -42,8 +42,10 @@ export function sectionCard(c, i, lc, selected) {
       ${iconBtn('secDel', 'section.delete', '✕')}
     </div>
     <div class="section__row">${t('section.width')} <input class="input section__width" data-field="secWidth" inputmode="numeric" placeholder="${t('common.auto')}" value="${isAuto(c.width) ? '' : c.width}"> <span class="calc" data-calc="s-${i}">${calcMm(lc.w)}</span></div>
-    <div class="zone-head"><span>${t('section.zonesHead')}</span><span>${t('section.count')}</span><span>${t('section.height')}</span><span></span></div>
-    ${c.zones.map((z, j) => zoneRow(z, i, j, lc.zones[j])).join('')}
+    <div class="zones">
+      <div class="zone-head"><span>${t('section.zonesHead')}</span><span>${t('section.count')}</span><span>${t('section.height')}</span></div>
+      ${c.zones.map((z, j) => zoneRow(z, i, j, lc.zones[j])).join('')}
+    </div>
     <button class="btn" data-act="zAdd">${t('section.addZone')}</button>
   </div>`;
 }

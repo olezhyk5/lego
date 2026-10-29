@@ -1,39 +1,47 @@
 @use "../abstracts" as *;
 
-$zone-columns: minmax(0, 1fr) 54px 70px auto;
-
-// вузький екран: тип зони — окремий рядок, під ним кількість / висота / кнопки
-$zone-columns-sm: 64px minmax(0, 1fr) auto;
-
-// Рядок зони всередині секції
-.zone {
+// Список зон секції. Заголовок і рядки зон — subgrid однієї сітки,
+// тому колонки «К-сть» / «Висота» завжди стоять над своїми полями.
+// desktop: тип | к-сть | висота | кнопки
+// sm:      тип | к-сть | висота, кнопки — другим рядком праворуч
+.zones {
   display: grid;
-  grid-template-columns: $zone-columns;
-  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) 54px 70px auto;
+  column-gap: 5px;
+
+  @include mq-down(sm) {
+    grid-template-columns: minmax(0, 1fr) 64px 80px;
+  }
+}
+
+.zone,
+.zone-head {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.zone {
+  row-gap: 5px;
   align-items: center;
   margin-bottom: 6px;
 
-  &__type {
-    @include mq-down(sm) {
-      grid-column: 1 / -1;
-    }
-  }
-
   &__count {
-    width: 54px;
+    width: 100%;
 
     &:disabled {
       visibility: hidden;
-    }
-
-    @include mq-down(sm) {
-      width: 100%;
     }
   }
 
   &__btns {
     display: flex;
     gap: 3px;
+
+    @include mq-down(sm) {
+      grid-column: 2 / -1;
+      justify-self: end;
+    }
   }
 
   &__calc {
@@ -41,32 +49,20 @@ $zone-columns-sm: 64px minmax(0, 1fr) auto;
     margin-top: -3px;
 
     @include mq-down(sm) {
-      grid-column: 1 / -1;
-    }
-  }
-
-  // Заголовки колонок над списком зон; на sm перший заголовок займає весь рядок,
-  // решта стають над кількістю / висотою — так само, як поля в .zone
-  &-head {
-    display: grid;
-    grid-template-columns: $zone-columns;
-    gap: 5px;
-    margin-bottom: 3px;
-    font-size: 11px;
-    color: color(muted);
-
-    @include mq-down(sm) {
-      grid-template-columns: $zone-columns-sm;
-
-      > :first-child {
-        grid-column: 1 / -1;
-      }
+      grid-row: 2;
+      grid-column: 1;
+      margin-top: 0;
     }
   }
 
   @include mq-down(sm) {
-    grid-template-columns: $zone-columns-sm;
     padding-bottom: 6px;
     border-bottom: 1px dashed color(line);
   }
+}
+
+.zone-head {
+  margin-bottom: 3px;
+  font-size: 11px;
+  color: color(muted);
 }
