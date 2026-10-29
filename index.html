@@ -14,6 +14,9 @@
         <label class="topbar__toggle"
           ><input type="checkbox" id="showDims" checked /> <span data-i18n="toolbar.dims">Розміри</span></label
         >
+        <label class="topbar__toggle"
+          ><input type="checkbox" id="transparent" /> <span data-i18n="toolbar.transparent">Прозорий режим</span></label
+        >
         <button class="btn" id="resetView" data-i18n="toolbar.resetView">Скинути вид</button>
         <button class="btn" id="png" data-i18n="toolbar.png">PNG</button>
         <button class="btn" id="copy" data-i18n="toolbar.copy">Копіювати список</button>
@@ -67,6 +70,8 @@
             <div>
               <h3 class="report__title" data-i18n="report.panels">Плити</h3>
               <div class="report__scroll"><table class="table" id="tP"></table></div>
+              <div class="report__scroll"><table class="table" id="tS"></table></div>
+              <p class="hint" data-i18n="report.sheetsHint"></p>
             </div>
             <div>
               <h3 class="report__title" data-i18n="report.items">Елементи</h3>

@@ -20,8 +20,62 @@
     margin-bottom: 8px;
   }
 
-  &__name {
-    margin-right: auto;
+  // Шеврон + назва + підсумок: одна кнопка на весь вільний простір заголовка
+  &__toggle {
+    display: flex;
+    flex: 1;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+    padding: 4px 6px;
+    margin: -4px 0 -4px -6px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: $radius-sm;
+
+    &:focus-visible {
+      outline: 2px solid color(focus-ring);
+    }
+
+    @include touch {
+      min-height: $touch-target;
+    }
+  }
+
+  &__chevron {
+    width: 14px;
+    font-size: 16px;
+    line-height: 1;
+    color: color(muted);
+    text-align: center;
+    transition: transform $transition-base;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  &__summary {
+    display: none;
+    margin-left: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &.is-collapsed &__head {
+    margin-bottom: 0;
+  }
+
+  &.is-collapsed &__chevron {
+    transform: rotate(-90deg);
+  }
+
+  &.is-collapsed &__summary {
+    display: inline;
   }
 
   &__row {

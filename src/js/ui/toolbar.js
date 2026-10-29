@@ -12,6 +12,10 @@ export function initToolbar({ update, fit, viewer }) {
     store.showDims = e.target.checked;
     if (viewer) viewer.setDimsVisible(store.showDims);
   });
+  $('#transparent').addEventListener('change', e => {
+    store.transparent = e.target.checked;
+    if (viewer) viewer.setTransparent(store.transparent);
+  });
   $('#resetView').addEventListener('click', fit);
 
   $('#csv').addEventListener('click', () => {

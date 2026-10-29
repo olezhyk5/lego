@@ -11,13 +11,15 @@
     "dev": "gulp",
     "build": "gulp build --production",
     "watch": "gulp watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
     "lint:css": "stylelint \"src/scss/**/*.scss\"",
     "lint:fix": "eslint . --fix && stylelint \"src/scss/**/*.scss\" --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run lint && npm run format:check && npm run build",
+    "check": "npm run lint && npm run format:check && npm test && npm run build",
     "prepare": "husky"
   },
   "browserslist": [
@@ -52,6 +54,7 @@
     "sass": "^1.107.0",
     "stylelint": "^17.16.0",
     "stylelint-config-recess-order": "^7.9.0",
-    "stylelint-config-standard-scss": "^17.0.0"
+    "stylelint-config-standard-scss": "^17.0.0",
+    "vitest": "^4.1.12"
   }
 }

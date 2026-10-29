@@ -35,6 +35,10 @@ export function t(key, params) {
 // Повідомлення з core/ мають вигляд {key, params}.
 export const tm = msg => t(msg.key, msg.params);
 
+// Число за правилами поточної мови: formatNumber(10.3, 2) → '10,30'
+export const formatNumber = (n, digits = 0) =>
+  new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+
 export const getLocale = () => locale;
 
 export function setLocale(next) {

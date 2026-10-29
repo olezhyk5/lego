@@ -9,9 +9,14 @@
   border: 1px solid color(line);
   border-radius: $radius;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: color(surface-hover);
     border-color: color(line-hover);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
   }
 
   &--primary {
@@ -19,7 +24,7 @@
     background: color(accent);
     border-color: color(accent);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: color(accent-hover);
       border-color: color(accent-hover);
     }

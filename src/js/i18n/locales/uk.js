@@ -5,6 +5,7 @@ export default {
   },
   toolbar: {
     dims: 'Розміри',
+    transparent: 'Прозорий режим',
     resetView: 'Скинути вид',
     png: 'PNG',
     copy: 'Копіювати список',
@@ -40,6 +41,9 @@ export default {
     count: 'К-сть',
     height: 'Висота',
     addZone: '+ Зона',
+    collapse: 'Згорнути секцію',
+    expand: 'Розгорнути секцію',
+    summary: '{w} мм · зон: {n}',
   },
   zone: {
     name: 'Секція {n}, зона {z}',
@@ -78,6 +82,15 @@ export default {
     size: 'Розмір',
     qty: 'К-сть',
     noItems: 'Немає штанг чи ящиків',
+    material: 'Матеріал',
+    area: 'Площа, м²',
+    sheets: 'Листів',
+    sheetsHint: 'Орієнтовно: за сумарною площею, без урахування розкрою та обрізків.',
+  },
+  material: {
+    chipboard: 'ДСП',
+    hardboard: 'ДВП',
+    sheet: '{name}, лист {a} × {b} ({area} м²)',
   },
   part: {
     side: 'Боковина',
@@ -112,8 +125,6 @@ export default {
     copyFailed: 'Не вдалося скопіювати',
     opened: 'Проєкт відкрито',
     badFile: 'Файл не схожий на проєкт шафи',
-    lastSection: 'Має лишитися хоча б одна секція',
-    lastZone: 'У секції має бути хоча б одна зона',
   },
   check: {
     tooSmall: 'Габарити замалі (мінімум 300 × 300 × 200 мм).',

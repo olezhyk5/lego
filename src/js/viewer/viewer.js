@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { createMaterials, SCENE_COLORS } from './materials.js';
+import { createMaterials, setTransparent, SCENE_COLORS } from './materials.js';
 import { buildModel } from './builder.js';
 
 function disposeGroup(g) {
@@ -90,6 +90,11 @@ export function createViewer(container) {
     },
     setDimsVisible(v) {
       if (dims) dims.visible = v;
+      requestRender();
+    },
+    // матеріали спільні для всіх перебудов, тож режим переживає rebuild
+    setTransparent(v) {
+      setTransparent(M, v);
       requestRender();
     },
     toBlob(cb) {

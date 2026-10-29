@@ -3,9 +3,7 @@ import { COUNTABLE_ZONES } from '../config/constants.js';
 import { store, setProject } from '../core/store.js';
 import { clone } from '../utils/helpers.js';
 import { $, $$ } from '../utils/dom.js';
-import { presetButtons, sectionCard, calcMm } from './templates.js';
-import { t } from '../i18n/index.js';
-import { toast } from './toast.js';
+import { presetButtons, sectionCard, calcMm, sectionSummary } from './templates.js';
 
 const DIM_KEYS = ['W', 'H', 'D', 'plinth'];
 const secBox = () => $('#sections');
@@ -15,7 +13,12 @@ export function syncDims() {
 }
 
 export function renderSections(L) {
-  secBox().innerHTML = store.state.sections.map((c, i) => sectionCard(c, i, L.secs[i], i === store.sel)).join('');
+  const total = store.state.sections.length;
+  secBox().innerHTML = store.state.sections
+    .map((c, i) =>
+      sectionCard(c, i, L.secs[i], { selected: i === store.sel, collapsed: store.collapsed.has(c), total }),
+    )
+    .join('');
 }
 
 // Оновлює лише розраховані значення, не чіпаючи поля вводу (щоб не губився фокус).
@@ -24,6 +27,8 @@ export function refreshCalc(L) {
   L.secs.forEach((c, i) => {
     const s = $(`[data-calc="s-${i}"]`, box);
     if (s) s.textContent = calcMm(c.w);
+    const sum = $(`[data-calc="sum-${i}"]`, box);
+    if (sum) sum.textContent = sectionSummary(c);
     c.zones.forEach((z, j) => {
       const e = $(`[data-calc="z-${i}-${j}"]`, box);
       if (e) e.textContent = calcMm(z.h);
@@ -35,11 +40,16 @@ function onSectionAction(act, i, j) {
   const S = store.state.sections;
   const Z = S[i].zones;
   switch (act) {
+    case 'secToggle':
+      if (store.collapsed.has(S[i])) store.collapsed.delete(S[i]);
+      else store.collapsed.add(S[i]);
+      break;
     case 'secDel':
+      // остання секція/зона не видаляється: кнопка вимкнена в шаблоні, тут — лише захист
       if (S.length > 1) {
         S.splice(i, 1);
         store.sel = Math.max(0, Math.min(store.sel, S.length - 1));
-      } else toast(t('toast.lastSection'));
+      }
       break;
     case 'secLeft':
       if (i > 0) {
@@ -58,7 +68,6 @@ function onSectionAction(act, i, j) {
       break;
     case 'zDel':
       if (Z.length > 1) Z.splice(j, 1);
-      else toast(t('toast.lastZone'));
       break;
     case 'zUp':
       if (j > 0) [Z[j - 1], Z[j]] = [Z[j], Z[j - 1]];
@@ -108,8 +117,11 @@ export function initSidebar({ update, fit }) {
       if (!b) update(false);
     }
     if (!b) return;
-    onSectionAction(b.dataset.act, i, j);
+    const act = b.dataset.act;
+    onSectionAction(act, i, j);
     update(true);
+    // сайдбар перемальовано — повертаємо фокус на перемикач, щоб не губився з клавіатури
+    if (act === 'secToggle') $(`[data-section="${i}"] [data-act="secToggle"]`, box).focus();
   });
 
   box.addEventListener('input', e => {

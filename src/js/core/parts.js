@@ -1,19 +1,20 @@
 import { T, GAP } from '../config/constants.js';
+import { MATERIALS, DEFAULT_MATERIAL } from '../config/materials.js';
 import { round } from '../utils/helpers.js';
 import { drawerFront } from './layout.js';
 
 // Специфікація без тексту (перекладає ui/ або core/export.js):
-//   panels — плити {key, a, b, q}, розміри в мм;
+//   panels — плити {key, mat, a, b, q}, розміри в мм, mat — ключ з MATERIALS;
 //   items  — фурнітура/блоки {key, size: {key, params}, q}.
 export function partsList(s, L) {
   const panels = [],
     items = [];
-  const addP = (key, a, b, q) => {
+  const addP = (key, a, b, q, mat = DEFAULT_MATERIAL) => {
     if (q <= 0) return;
     a = round(a);
     b = round(b);
-    const f = panels.find(p => p.key === key && p.a === a && p.b === b);
-    f ? (f.q += q) : panels.push({ key, a, b, q });
+    const f = panels.find(p => p.key === key && p.mat === mat && p.a === a && p.b === b);
+    f ? (f.q += q) : panels.push({ key, mat, a, b, q });
   };
   const addI = (key, size, q) => {
     if (q <= 0) return;
@@ -42,8 +43,25 @@ export function partsList(s, L) {
         );
     }),
   );
-  addP('part.back', s.H - 4, s.W - 4, 1);
+  addP('part.back', s.H - 4, s.W - 4, 1, 'hardboard');
   return { panels, items };
+}
+
+// Підсумок по матеріалах: [{mat, area, sheet: {a, b}, sheets}].
+// area — сумарна площа деталей, м² (до сотих); sheets — скільки листів покриває цю площу.
+// Це нижня межа: розкрій (обрізки, напрям різу, деталі, що не влазять у лист) не враховано.
+export function sheetTotals(panels) {
+  return Object.entries(MATERIALS)
+    .map(([mat, { sheet }]) => {
+      const mm2 = panels.filter(p => p.mat === mat).reduce((sum, p) => sum + p.a * p.b * p.q, 0);
+      return {
+        mat,
+        area: Math.round(mm2 / 1e4) / 100,
+        sheet: { ...sheet },
+        sheets: Math.ceil(mm2 / (sheet.a * sheet.b)),
+      };
+    })
+    .filter(r => r.sheets > 0);
 }
 
 function zoneMsg(z) {
