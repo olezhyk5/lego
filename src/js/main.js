@@ -2,9 +2,11 @@
 import { store, save } from './core/store.js';
 import { computeLayout } from './core/layout.js';
 import { createViewer } from './viewer/viewer.js';
-import { initSidebar, renderSections, refreshCalc, syncDims } from './ui/sidebar.js';
+import { initSidebar, renderSections, refreshCalc, syncDims, markPreset } from './ui/sidebar.js';
 import { initToolbar } from './ui/toolbar.js';
-import { renderReport } from './ui/report.js';
+import { renderReport, initReport } from './ui/report.js';
+import { initModal } from './ui/modal.js';
+import { initTopSettings } from './ui/top-settings.js';
 import { $ } from './utils/dom.js';
 import { translateDom } from './i18n/index.js';
 
@@ -32,6 +34,7 @@ function update(full) {
   else refreshCalc(L);
   scheduleRebuild();
   renderReport(store.state, L);
+  markPreset();
   save();
 }
 
@@ -42,6 +45,9 @@ function fit() {
 const app = { update, fit, viewer };
 initSidebar(app);
 initToolbar(app);
+initModal();
+initReport();
+initTopSettings(app);
 
 syncDims();
 update(true);

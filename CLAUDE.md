@@ -139,6 +139,8 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
 ```js
 {
   W, H, D, plinth,                  // мм
+  top?: { mount: 'between'|'over', double: boolean,     // кришка; немає поля → between, одинарна
+          overhang?: { back, front, left, right } },      // виступи, мм; лише для over, немає → 0
   sections: [{
     width: number | 'auto',
     zones: [{ type: 'empty'|'shelves'|'rod'|'drawers', height: number | 'auto', count? }]

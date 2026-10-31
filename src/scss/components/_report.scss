@@ -12,6 +12,61 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
+
+    // display: grid перебиває атрибут hidden
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  // Шеврон + підпис: згортає/розгортає плити й елементи разом
+  &__toggle {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 4px 6px;
+    margin: 0 0 6px -6px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: $radius-sm;
+
+    &:hover {
+      background: color(surface-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid color(focus-ring);
+    }
+
+    @include touch {
+      min-height: $touch-target;
+    }
+  }
+
+  &__chevron {
+    width: 14px;
+    font-size: 16px;
+    line-height: 1;
+    color: color(muted);
+    text-align: center;
+    transition: transform $transition-base;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  &__toggle[aria-expanded="false"] &__chevron {
+    transform: rotate(-90deg);
+  }
+
+  &__toggle[aria-expanded="false"] {
+    margin-bottom: 0;
   }
 
   &__title {

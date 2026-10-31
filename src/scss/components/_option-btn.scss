@@ -1,0 +1,16 @@
+@use "../abstracts" as *;
+
+// Кнопка на всю ширину, що відкриває попап з опціями (іконка + підпис)
+.option-btn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+
+  &__icon {
+    flex: none;
+    color: color(muted);
+  }
+}

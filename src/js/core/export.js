@@ -10,6 +10,12 @@ export const sheetLabel = r =>
     area: formatNumber((r.sheet.a * r.sheet.b) / 1e6, 2),
   });
 export const areaText = r => formatNumber(r.area, 2);
+// Кришка одним рядком: «Над боковинами» або «Над боковинами, потовщена (2 плити)» (+ виступи, якщо є)
+export const topText = c => {
+  const mount = t(`topMount.${c.mount}`);
+  const top = c.double ? t('export.topDouble', { mount }) : mount;
+  return Object.values(c.overhang).some(v => v > 0) ? t('export.topOverhang', { top, ...c.overhang }) : top;
+};
 export const describeText = d => t(d.key, { ...d.params, zones: d.zones.map(tm).join(' → ') });
 
 // Рядки таблиці для CSV / буфера обміну (поточною мовою).
@@ -19,6 +25,7 @@ export function exportRows(s) {
   return [
     [t('export.overall'), `${s.W} × ${s.H} × ${s.D}`, ''],
     [t('export.plinth'), s.plinth, ''],
+    [t('export.top'), topText(L.carcass), ''],
     [],
     [t('report.part'), t('report.sizeMm'), t('report.qty')],
     ...P.panels.map(p => [t(p.key), panelSize(p), p.q]),

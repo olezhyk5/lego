@@ -1,0 +1,23 @@
+@use "../abstracts" as *;
+
+// Чекбокс з підписом: <label class="check"><input class="check__input" type="checkbox"> Текст</label>
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+
+  &__input {
+    margin: 0;
+    accent-color: color(accent);
+
+    @include touch {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  @include touch {
+    min-height: $touch-target;
+  }
+}

@@ -44,6 +44,11 @@ function onSectionAction(act, i, j) {
       if (store.collapsed.has(S[i])) store.collapsed.delete(S[i]);
       else store.collapsed.add(S[i]);
       break;
+    case 'secDup':
+      // копія стає одразу праворуч від оригіналу й вибирається
+      S.splice(i + 1, 0, clone(S[i]));
+      store.sel = i + 1;
+      break;
     case 'secDel':
       // остання секція/зона не видаляється: кнопка вимкнена в шаблоні, тут — лише захист
       if (S.length > 1) {
@@ -85,6 +90,16 @@ function position(el) {
   return { secEl, i: secEl ? +secEl.dataset.section : -1, j: zEl ? +zEl.dataset.zone : -1 };
 }
 
+// Підсвічує останній вибраний пресет
+export function markPreset() {
+  const active = store.preset;
+  $$('[data-preset]').forEach(b => {
+    const on = b.dataset.preset === active;
+    b.classList.toggle('is-active', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+}
+
 export function initSidebar({ update, fit }) {
   const box = secBox();
   $('#presets').innerHTML = presetButtons();
@@ -92,7 +107,7 @@ export function initSidebar({ update, fit }) {
   $('#presets').addEventListener('click', e => {
     const b = e.target.closest('[data-preset]');
     if (!b) return;
-    setProject(clone(PRESETS[b.dataset.preset].data));
+    setProject(clone(PRESETS[b.dataset.preset].data), b.dataset.preset);
     syncDims();
     update(true);
     fit();

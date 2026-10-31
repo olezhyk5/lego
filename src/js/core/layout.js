@@ -1,8 +1,45 @@
-import { T, GAP } from '../config/constants.js';
+import { T, GAP, TOP_MOUNTS, DEFAULT_TOP_MOUNT, TOP_OVERHANG_SIDES } from '../config/constants.js';
 import { isAuto, round } from '../utils/helpers.js';
 
 export function drawerFront(h, cnt) {
   return (h - (cnt + 1) * GAP) / cnt;
+}
+
+// Виступи кришки: невідомі / від'ємні / нечислові значення → 0
+function overhangOf(top, mount) {
+  const src = mount === 'over' && top.overhang && typeof top.overhang === 'object' ? top.overhang : {};
+  return Object.fromEntries(
+    TOP_OVERHANG_SIDES.map(k => {
+      const v = Number(src[k]);
+      return [k, Number.isFinite(v) && v > 0 ? v : 0];
+    }),
+  );
+}
+
+// Корпус: кришка та її стик з боковинами.
+// mount: between — боковини на всю висоту, кришка між ними; over — кришка на всю ширину, боковини під нею.
+// double — кришка з двох плит: товщина topT = 2 × T, у специфікації topQ = 2.
+// overhang (лише over) — виступи кришки за корпус: кришка (topW × topD) зсувається на topX / topZ
+// (z = 0 — задня площина корпусу). Виступ ззаду → задня стінка закінчується під кришкою (backH).
+export function carcass(s) {
+  const top = s.top && typeof s.top === 'object' ? s.top : {};
+  const mount = TOP_MOUNTS.includes(top.mount) ? top.mount : DEFAULT_TOP_MOUNT;
+  const double = top.double === true;
+  const topT = double ? 2 * T : T;
+  const overhang = overhangOf(top, mount);
+  const base = { mount, double, overhang, topT, topQ: double ? 2 : 1 };
+  if (mount !== 'over') return { ...base, sideH: s.H, topW: s.W - 2 * T, topX: T, topD: s.D, topZ: 0, backH: s.H - 4 };
+  const sideH = s.H - topT;
+  return {
+    ...base,
+    sideH,
+    topW: s.W + overhang.left + overhang.right,
+    topX: 0 - overhang.left,
+    topD: s.D + overhang.back + overhang.front,
+    topZ: 0 - overhang.back,
+    // задня стінка з відступом 2 мм від країв; при виступі ззаду — по висоті боковин
+    backH: (overhang.back > 0 ? sideH : s.H) - 4,
+  };
 }
 
 // Повідомлення — {key, params} без тексту: перекладає ui/ через tm().
@@ -24,8 +61,9 @@ export function computeLayout(s) {
   if (!aW && Math.abs(fW - innerW) > 1)
     errs.push(msg('check.widthsMismatch', { sum: round(fW), avail: round(innerW) }));
 
+  const C = carcass(s);
   const y0 = s.plinth + T,
-    yTop = s.H - T,
+    yTop = s.H - C.topT,
     Hin = yTop - y0;
   let x = T;
   const secs = s.sections.map((c, i) => {
@@ -68,5 +106,5 @@ export function computeLayout(s) {
     x += w + T;
     return out;
   });
-  return { secs, innerW, Hin, y0, yTop, errs, warns };
+  return { secs, innerW, Hin, y0, yTop, carcass: C, errs, warns };
 }

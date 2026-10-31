@@ -1,0 +1,56 @@
+@use "../abstracts" as *;
+
+// Вибір одного варіанта з кількох (радіокнопки-«плитки»)
+.choice {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+
+  &__legend {
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: color(muted);
+  }
+
+  &__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__option {
+    display: flex;
+    flex: 1 1 160px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+    border: 1px solid color(line);
+    border-radius: $radius;
+
+    &:hover {
+      background: color(surface-hover);
+      border-color: color(line-hover);
+    }
+
+    &:has(:checked) {
+      background: color(accent-soft);
+      border-color: color(accent);
+    }
+
+    &:has(:focus-visible) {
+      @include focus-ring;
+    }
+
+    @include touch {
+      min-height: $touch-target;
+    }
+  }
+
+  &__input {
+    margin: 0;
+    accent-color: color(accent);
+  }
+}

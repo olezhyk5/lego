@@ -1,5 +1,6 @@
 import { partsList, sheetTotals, describe } from '../core/parts.js';
 import { panelSize, sheetLabel, areaText, describeText } from '../core/export.js';
+import { store } from '../core/store.js';
 import { t, tm } from '../i18n/index.js';
 import { $ } from '../utils/dom.js';
 
@@ -26,4 +27,20 @@ export function renderReport(s, L) {
   $('#desc').innerHTML = describe(L)
     .map(d => `<li>${describeText(d)}</li>`)
     .join('');
+}
+
+// Згортання списків плит і елементів однією кнопкою; стан лише на час сесії.
+export function initReport() {
+  const btn = $('#reportToggle');
+  const sync = () => {
+    const collapsed = store.reportCollapsed;
+    $('#reportCols').hidden = collapsed;
+    btn.setAttribute('aria-expanded', String(!collapsed));
+    btn.title = t(collapsed ? 'report.expand' : 'report.collapse');
+  };
+  btn.addEventListener('click', () => {
+    store.reportCollapsed = !store.reportCollapsed;
+    sync();
+  });
+  sync();
 }

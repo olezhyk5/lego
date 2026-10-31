@@ -1,4 +1,4 @@
-import { ZONE_TYPES, COUNTABLE_ZONES } from '../config/constants.js';
+import { ZONE_TYPES, COUNTABLE_ZONES, TOP_MOUNTS, TOP_OVERHANG_SIDES } from '../config/constants.js';
 import { PRESETS } from '../config/presets.js';
 import { t } from '../i18n/index.js';
 import { isAuto, round } from '../utils/helpers.js';
@@ -9,6 +9,11 @@ export const presetButtons = () =>
   Object.keys(PRESETS)
     .map(k => `<button class="btn" data-preset="${k}">${t('preset.' + k)}</button>`)
     .join('');
+
+// Іконка «копіювати»: символ ⧉ у системних шрифтах помітно дрібніший за стрілки, тож SVG під розмір тексту
+const COPY_ICON = `<svg class="btn__svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+  <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/>
+</svg>`;
 
 // disabled — дія зараз неможлива (напр. зсунути крайню секцію)
 const iconBtn = (act, titleKey, icon, disabled = false) =>
@@ -48,6 +53,7 @@ export function sectionCard(c, i, lc, { selected, collapsed, total }) {
       </button>
       ${iconBtn('secLeft', 'section.left', '←', i === 0)}
       ${iconBtn('secRight', 'section.right', '→', i === total - 1)}
+      ${iconBtn('secDup', 'section.duplicate', COPY_ICON)}
       ${iconBtn('secDel', 'section.delete', '✕', total === 1)}
     </div>
     <div class="section__body" id="section-body-${i}"${collapsed ? ' hidden' : ''}>
@@ -59,6 +65,38 @@ export function sectionCard(c, i, lc, { selected, collapsed, total }) {
     <button class="btn" data-act="zAdd">${t('section.addZone')}</button>
     </div>
   </div>`;
+}
+
+// Вміст попапу «Налаштування кришки». c — поточний корпус: carcass(s)
+export function topSettingsForm(c) {
+  const opts = TOP_MOUNTS.map(
+    k => `<label class="choice__option">
+      <input class="choice__input" type="radio" name="topMount" data-field="topMount" value="${k}"${k === c.mount ? ' checked' : ''}>
+      <span>${t('topMount.' + k)}</span>
+    </label>`,
+  ).join('');
+  return `<label class="check">
+    <input class="check__input" type="checkbox" data-field="topDouble"${c.double ? ' checked' : ''}>
+    <span>${t('topSettings.double')}</span>
+  </label>
+  <fieldset class="choice">
+    <legend class="choice__legend">${t('topSettings.mount')}</legend>
+    <div class="choice__options">${opts}</div>
+  </fieldset>
+  ${overhangFields(c)}`;
+}
+
+// Виступи кришки — лише для «Над боковинами»: блок ховається, поки обрано інше кріплення
+function overhangFields(c) {
+  const fields = TOP_OVERHANG_SIDES.map(
+    k => `<label class="field">${t('topOverhang.' + k)}
+      <input class="input" type="number" min="0" step="1" inputmode="numeric" data-field="topOverhang" data-side="${k}" value="${round(c.overhang[k])}">
+    </label>`,
+  ).join('');
+  return `<fieldset class="choice" data-overhang${c.mount === 'over' ? '' : ' hidden'}>
+    <legend class="choice__legend">${t('topSettings.overhang')}</legend>
+    <div class="field-grid">${fields}</div>
+  </fieldset>`;
 }
 
 export { calcMm, sectionSummary };

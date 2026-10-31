@@ -25,6 +25,17 @@ describe('partsList — пресет «Шафа 3 секції»', () => {
     expect(panel(P, 'part.shelf', 600, 580).q).toBe(3);
   });
 
+  it('фасади ящиків — окремі плити ДСП', () => {
+    // секція 2: 600 мм, зона ящиків 600 мм ×3; ширина 600 - 2*3 = 594, висота (600 - 4*3) / 3 = 196
+    expect(panel(P, 'part.drawerFront', 594, 196)).toEqual({
+      key: 'part.drawerFront',
+      mat: 'chipboard',
+      a: 594,
+      b: 196,
+      q: 3,
+    });
+  });
+
   it('фурнітура та блоки', () => {
     expect(P.items).toEqual([
       { key: 'part.rod', size: { key: 'itemSize.rod', params: { w: 568 } }, q: 3 },
@@ -41,6 +52,55 @@ describe('partsList — пресет «Шафа 3 секції»', () => {
   });
 });
 
+describe('partsList — кришка над боковинами', () => {
+  const P = specOf({ ...preset('wardrobe'), top: { mount: 'over' } });
+
+  it('боковини коротші на товщину кришки, кришка на всю ширину', () => {
+    expect(panel(P, 'part.side', 2384, 600).q).toBe(2); // 2400 - 16
+    expect(panel(P, 'part.top', 1800, 600).q).toBe(1); // W
+    expect(P.panels.some(p => p.key === 'part.side' && p.a === 2400)).toBe(false);
+  });
+
+  it('решта корпусу не змінюється', () => {
+    expect(panel(P, 'part.bottom', 1768, 600).q).toBe(1);
+    expect(panel(P, 'part.divider', 2288, 600).q).toBe(2);
+    expect(panel(P, 'part.back', 2396, 1796).q).toBe(1);
+  });
+});
+
+describe('partsList — виступи кришки', () => {
+  it('кришка більша на виступи, задня стінка закінчується під кришкою', () => {
+    const P = specOf({
+      ...preset('wardrobe'),
+      top: { mount: 'over', overhang: { back: 10, front: 20, left: 30, right: 40 } },
+    });
+    expect(panel(P, 'part.top', 1870, 630).q).toBe(1); // 1800 + 30 + 40; 600 + 10 + 20
+    expect(panel(P, 'part.back', 2380, 1796).q).toBe(1); // 2400 - 16 - 4
+    expect(panel(P, 'part.side', 2384, 600).q).toBe(2);
+  });
+
+  it('без виступу ззаду задня стінка як без виступів', () => {
+    const P = specOf({ ...preset('wardrobe'), top: { mount: 'over', overhang: { front: 20 } } });
+    expect(panel(P, 'part.top', 1800, 620).q).toBe(1); // 600 + 20
+    expect(panel(P, 'part.back', 2396, 1796).q).toBe(1);
+  });
+});
+
+describe('partsList — потовщена кришка', () => {
+  it('між боковинами: дві плити кришки, перегородки коротші на 16', () => {
+    const P = specOf({ ...preset('wardrobe'), top: { mount: 'between', double: true } });
+    expect(panel(P, 'part.top', 1768, 600).q).toBe(2);
+    expect(panel(P, 'part.side', 2400, 600).q).toBe(2);
+    expect(panel(P, 'part.divider', 2272, 600).q).toBe(2); // 2400 - 80 - 16 - 2*16
+  });
+
+  it('над боковинами: дві плити на всю ширину, боковини 2400 - 2*16', () => {
+    const P = specOf({ ...preset('wardrobe'), top: { mount: 'over', double: true } });
+    expect(panel(P, 'part.top', 1800, 600).q).toBe(2);
+    expect(panel(P, 'part.side', 2368, 600).q).toBe(2);
+  });
+});
+
 describe('partsList — умовні деталі', () => {
   it('без цоколя немає деталі «Цоколь»', () => {
     expect(specOf(preset('tumba')).panels.some(p => p.key === 'part.plinth')).toBe(false);
@@ -48,6 +108,11 @@ describe('partsList — умовні деталі', () => {
 
   it('одна секція — без перегородок', () => {
     expect(specOf(preset('komod')).panels.some(p => p.key === 'part.divider')).toBe(false);
+  });
+
+  it('без ящиків немає фасадів ящиків', () => {
+    const s = project([{ width: 'auto', zones: [{ type: 'shelves', count: 2, height: 'auto' }] }]);
+    expect(specOf(s).panels.some(p => p.key === 'part.drawerFront')).toBe(false);
   });
 
   it('без штанг і ящиків список фурнітури порожній', () => {
@@ -61,11 +126,12 @@ describe('sheetTotals', () => {
     const P = specOf(preset('wardrobe'));
     // ДСП, мм²: боковини 2400*600*2 = 2 880 000; кришка + дно 1768*600*2 = 2 121 600;
     // цоколь 1768*80 = 141 440; перегородки 2288*600*2 = 2 745 600;
-    // полиці між зонами 568*600*3 + 600*600 = 1 382 400; полиці 600*580*3 = 1 044 000
-    // разом 10 315 040 мм² ≈ 10.32 м²; лист 2800*2070 = 5 796 000 → 1.78 → 2 листи
+    // полиці між зонами 568*600*3 + 600*600 = 1 382 400; полиці 600*580*3 = 1 044 000;
+    // фасади ящиків 594*196*3 = 349 272
+    // разом 10 664 312 мм² ≈ 10.66 м²; лист 2800*2070 = 5 796 000 → 1.84 → 2 листи
     // ДВП: задня стінка 2396*1796 = 4 303 216 мм² ≈ 4.30 м² → 1 лист
     expect(sheetTotals(P.panels)).toEqual([
-      { mat: 'chipboard', area: 10.32, sheet: { a: 2800, b: 2070 }, sheets: 2 },
+      { mat: 'chipboard', area: 10.66, sheet: { a: 2800, b: 2070 }, sheets: 2 },
       { mat: 'hardboard', area: 4.3, sheet: { a: 2800, b: 2070 }, sheets: 1 },
     ]);
   });

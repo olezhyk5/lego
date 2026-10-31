@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { PRESETS } from '../config/presets.js';
-import { ZONE_TYPES } from '../config/constants.js';
+import { ZONE_TYPES, TOP_MOUNTS, TOP_OVERHANG_SIDES } from '../config/constants.js';
 import { MATERIALS } from '../config/materials.js';
 import uk from './locales/uk.js';
 
@@ -65,5 +65,13 @@ describe('ключі, що використовуються', () => {
 
   it('є назва для кожного типу зони', () => {
     ZONE_TYPES.forEach(k => expect(UK_KEYS.has(`zoneType.${k}`), k).toBe(true));
+  });
+
+  it('є назва для кожного кріплення кришки', () => {
+    TOP_MOUNTS.forEach(k => expect(UK_KEYS.has(`topMount.${k}`), k).toBe(true));
+  });
+
+  it('є назва для кожного боку виступу кришки', () => {
+    TOP_OVERHANG_SIDES.forEach(k => expect(UK_KEYS.has(`topOverhang.${k}`), k).toBe(true));
   });
 });

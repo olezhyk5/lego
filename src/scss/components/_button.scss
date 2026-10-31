@@ -14,6 +14,18 @@
     border-color: color(line-hover);
   }
 
+  // вибраний варіант у групі (пресети)
+  &.is-active {
+    color: color(accent-hover);
+    background: color(accent-soft);
+    border-color: color(accent);
+
+    &:hover:not(:disabled) {
+      background: color(accent-soft);
+      border-color: color(accent-hover);
+    }
+  }
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.4;
@@ -28,6 +40,14 @@
       background: color(accent-hover);
       border-color: color(accent-hover);
     }
+  }
+
+  // SVG-іконка всередині кнопки — під розмір тексту
+  &__svg {
+    display: block;
+    width: 1.2em;
+    height: 1.2em;
+    margin: auto;
   }
 
   &--icon {

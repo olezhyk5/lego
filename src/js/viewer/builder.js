@@ -32,12 +32,13 @@ export function buildModel(s, L, { sel, showDims, M }) {
   }
 
   // корпус
-  box(T, s.H, s.D, 0, 0, 0, M.wood);
-  box(T, s.H, s.D, s.W - T, 0, 0, M.wood);
-  box(s.W - 2 * T, T, s.D, T, s.H - T, 0, M.wood);
+  const { sideH, topW, topX, topT, topD, topZ, backH } = L.carcass;
+  box(T, sideH, s.D, 0, 0, 0, M.wood);
+  box(T, sideH, s.D, s.W - T, 0, 0, M.wood);
+  box(topW, topT, topD, topX, s.H - topT, topZ, M.wood);
   box(s.W - 2 * T, T, s.D, T, s.plinth, 0, M.wood);
   if (s.plinth > 0) box(s.W - 2 * T, s.plinth, T, T, 0, s.D - T - 30, M.wood);
-  box(s.W, s.H, 3, 0, 0, -3, M.back);
+  box(s.W, backH + 4, 3, 0, 0, -3, M.back);
 
   L.secs.forEach((c, idx) => {
     if (idx < L.secs.length - 1) box(T, L.Hin, s.D, c.x + c.w, L.y0, 0, M.wood);

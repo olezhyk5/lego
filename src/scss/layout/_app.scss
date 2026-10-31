@@ -1,5 +1,8 @@
 @use "../abstracts" as *;
 
+// Десктоп: сайдбар (налаштування + секції) зліва, макет і звіт справа.
+// Мобільний: обгортки сайдбару й main «розчиняються» (display: contents), і блоки стають
+// в один стовпчик у порядку: налаштування → макет → секції → звіт.
 .app {
   display: grid;
   grid-template-columns: $sidebar-width 1fr;
@@ -10,6 +13,10 @@
     overflow: auto;
     background: color(panel);
     border-right: 1px solid color(line);
+
+    @include mq-down(md) {
+      display: contents;
+    }
   }
 
   &__main {
@@ -17,20 +24,49 @@
     grid-template-rows: minmax(300px, 1fr) auto;
     min-width: 0;
     min-height: 0;
+
+    @include mq-down(md) {
+      display: contents;
+    }
+  }
+
+  &__setup,
+  &__sections {
+    @include mq-down(md) {
+      padding: 14px 14px 0;
+      background: color(panel);
+    }
+  }
+
+  &__setup {
+    @include mq-down(md) {
+      order: 1;
+      border-bottom: 1px solid color(line);
+    }
+  }
+
+  &__viewer {
+    @include mq-down(md) {
+      order: 2;
+    }
+  }
+
+  &__sections {
+    @include mq-down(md) {
+      order: 3;
+      border-top: 1px solid color(line);
+    }
+  }
+
+  &__report {
+    @include mq-down(md) {
+      order: 4;
+    }
   }
 
   @include mq-down(md) {
-    grid-template-columns: 1fr;
+    // minmax(0, …): широкі таблиці не розтягують стовпчик (скролляться в .report__scroll)
+    grid-template-columns: minmax(0, 1fr);
     height: auto;
-
-    &__sidebar {
-      order: 2;
-      border-right: 0;
-      border-bottom: 1px solid color(line);
-    }
-
-    &__main {
-      order: 1;
-    }
   }
 }

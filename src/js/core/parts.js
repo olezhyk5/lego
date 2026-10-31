@@ -22,8 +22,8 @@ export function partsList(s, L) {
     const f = items.find(p => p.key === key && JSON.stringify(p.size) === id);
     f ? (f.q += q) : items.push({ key, size, q });
   };
-  addP('part.side', s.H, s.D, 2);
-  addP('part.top', s.W - 2 * T, s.D, 1);
+  addP('part.side', L.carcass.sideH, s.D, 2);
+  addP('part.top', L.carcass.topW, L.carcass.topD, L.carcass.topQ);
   addP('part.bottom', s.W - 2 * T, s.D, 1);
   if (s.plinth > 0) addP('part.plinth', s.W - 2 * T, s.plinth, 1);
   addP('part.divider', L.Hin, s.D, L.secs.length - 1);
@@ -32,18 +32,19 @@ export function partsList(s, L) {
       if (j < c.zones.length - 1) addP('part.zoneShelf', c.w, s.D, 1);
       if (z.type === 'shelves') addP('part.shelf', c.w, s.D - 20, z.cnt);
       if (z.type === 'rod') addI('part.rod', { key: 'itemSize.rod', params: { w: round(c.w) } }, 1);
-      if (z.type === 'drawers')
+      if (z.type === 'drawers') {
+        const fw = c.w - 2 * GAP,
+          fh = drawerFront(z.h, z.cnt);
+        addP('part.drawerFront', fw, fh, z.cnt);
         addI(
           'part.drawer',
-          {
-            key: 'itemSize.drawer',
-            params: { w: round(c.w - 2 * GAP), h: round(drawerFront(z.h, z.cnt)), d: round(s.D - 50) },
-          },
+          { key: 'itemSize.drawer', params: { w: round(fw), h: round(fh), d: round(s.D - 50) } },
           z.cnt,
         );
+      }
     }),
   );
-  addP('part.back', s.H - 4, s.W - 4, 1, 'hardboard');
+  addP('part.back', L.carcass.backH, s.W - 4, 1, 'hardboard');
   return { panels, items };
 }
 
