@@ -315,6 +315,7 @@ export default {
     shelfSag: '{name}: a {w} mm shelf will sag (16 mm chipboard — up to ~800 mm).',
     worktopJoin: 'The worktop is {len} mm, longer than standard ({max} mm) — there will be a joint.',
     worktopDeep: 'Worktop depth {d} mm — more than the standard {max} mm.',
+    legsLow: 'Legs {h} mm — lower than the minimum {min} mm: the plinth clips won’t fit.',
     counterHeight: 'Counter height {h} mm — comfortable from {min} to {max} mm.',
   },
 };

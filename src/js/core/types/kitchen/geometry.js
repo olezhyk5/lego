@@ -1,13 +1,11 @@
 import { T } from '../../../config/constants.js';
 import { geometryBuilder, thickness } from '../../common/geometry-builder.js';
-import { RAIL_W } from './constants.js';
+import { RAIL_W, LEG, LEG_INSET } from './constants.js';
 
 // Розміри, потрібні лише для моделі (у специфікації їх немає), мм
 const SHELF_SETBACK = 20;
 const BACK_INSET = 2;
 const PLINTH_SETBACK = 50; // цокольна планка відступає від фасадів
-const LEG = 40; // ніжка в плані 40 × 40
-const LEG_INSET = 40; // від країв модуля
 const HANDLE = { w: 128, h: 12, d: 18, fromTop: 60 };
 const SINK_MARGIN = { side: 100, back: 60, front: 90 }; // контур мийки на стільниці від країв модуля
 
@@ -38,12 +36,12 @@ export function modelGeometry(s, L) {
       G.hardware('part.handle', 'handle', f.x + f.w / 2 - hw / 2, hy, s.D + T, hw, HANDLE.h, HANDLE.d);
     });
 
-    if (s.legs > 0)
-      [x + LEG_INSET, x + m.w - LEG_INSET - LEG].forEach(lx =>
-        [LEG_INSET, s.D - PLINTH_SETBACK - T - LEG - 10].forEach(lz =>
-          G.hardware('part.leg', 'handle', lx, 0, lz, LEG, s.legs, LEG),
-        ),
-      );
+    // ряди ніжок — з layout; у ряду задня й передня (за цокольною планкою)
+    m.legs.forEach(lx =>
+      [LEG_INSET, s.D - PLINTH_SETBACK - T - LEG - 10].forEach(lz =>
+        G.hardware('part.leg', 'handle', lx, 0, lz, LEG, s.legs, LEG),
+      ),
+    );
 
     if (m.type === 'sink') {
       const sw = Math.max(m.w - 2 * SINK_MARGIN.side, 1);

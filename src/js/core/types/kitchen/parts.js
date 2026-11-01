@@ -6,7 +6,6 @@ import { drawerDepth } from '../../common/drawers.js';
 import { RAIL_W } from './constants.js';
 
 const SHELF_SETBACK = 20; // полиці коротші за глибину модуля
-const LEGS_PER_MODULE = 4;
 
 // Специфікація кухні (формат — PartsList у core/types.js).
 // Кожна плита має рівно один бокс у geometry.js (перевіряє core/registry.test.js).
@@ -34,7 +33,9 @@ export function partsList(s, L) {
     P.item('part.hinge', msg('itemSize.hinge'), 2 * m.fronts.filter(f => f.key === 'part.door').length);
     if (m.type === 'sink') P.item('part.sink', msg('itemSize.sink', { w: round(m.w) }), 1);
   });
-  if (s.legs > 0) P.item('part.leg', msg('itemSize.leg', { h: round(s.legs) }), LEGS_PER_MODULE * L.modules.length);
+  // у кожному ряду дві ніжки: спереду й ззаду (layout.js, legColumns)
+  const legs = L.modules.reduce((n, m) => n + 2 * m.legs.length, 0);
+  if (legs) P.item('part.leg', msg('itemSize.leg', { h: round(s.legs) }), legs);
   return P.result();
 }
 

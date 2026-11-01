@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeLayout, moduleCount, worktopOf, drawerFront } from './layout.js';
+import { computeLayout, moduleCount, worktopOf, drawerFront, legColumns } from './layout.js';
 import { kitchenPreset, kitchen, keys } from '../../test-fixtures.js';
 
 // Пресет «Кухня 2,4 м»: H 720, D 560, ніжки 100, стільниця 38 з виступом 30 спереду.
@@ -123,6 +123,47 @@ describe('computeLayout — повідомлення', () => {
       key: 'check.counterHeight',
       params: { h: 958, min: 850, max: 950 },
     });
+  });
+});
+
+describe('ніжки', () => {
+  const one = (m, fields) => computeLayout(kitchen([m], fields));
+  // Ніжка 40, відступ 40 від боків: крайні ряди на x + 40 і x + w - 80, відстань між ними w - 120.
+  // Крок між рядами не більше 700 → третій ряд з'являється, коли w - 120 > 700, тобто з w > 820.
+  it.each([
+    [600, [40, 520]], // 600 - 80
+    [820, [40, 740]], // 820 - 120 = 700 — ще два ряди
+    [900, [40, 430, 820]], // 780 / 2 = 390
+    [1600, [40, 533.33, 1026.67, 1520]], // 1480 > 2*700 → 3 проміжки по 493,33
+  ])('модуль %i → ряди %j', (w, xs) => {
+    legColumns(0, w).forEach((x, k) => expect(x).toBeCloseTo(xs[k], 2));
+    expect(legColumns(0, w)).toHaveLength(xs.length);
+  });
+
+  it('ряди зсунуті на x модуля', () => {
+    expect(legColumns(600, 600)).toEqual([640, 1120]); // 600 + 40, 600 + 600 - 80
+  });
+
+  it('у модулях — ряди за шириною; без ніжок — порожньо', () => {
+    const s = kitchen([
+      { width: 600, type: 'doors', count: 1 },
+      { width: 900, type: 'doors', count: 2 },
+    ]);
+    expect(computeLayout(s).modules.map(m => m.legs)).toEqual([
+      [40, 520],
+      [640, 1030, 1420], // 600 + 40; 600 + 900 - 80; посередині
+    ]);
+    expect(computeLayout({ ...s, legs: 0 }).modules.map(m => m.legs)).toEqual([[], []]);
+  });
+
+  it('нижче за 80 мм — попередження; 80 і 0 (без ніжок) — ні', () => {
+    const doors = { width: 600, type: 'doors', count: 1 };
+    expect(one(doors, { legs: 60, H: 760 }).warns).toContainEqual({
+      key: 'check.legsLow',
+      params: { h: 60, min: 80 },
+    });
+    expect(keys(one(doors, { legs: 80 }).warns)).not.toContain('check.legsLow');
+    expect(keys(one(doors, { legs: 0, H: 820 }).warns)).not.toContain('check.legsLow');
   });
 });
 

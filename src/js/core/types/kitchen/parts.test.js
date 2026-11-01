@@ -31,7 +31,7 @@ describe('partsList — пресет «Кухня 1,8 м»', () => {
       { key: 'part.handle', size: { key: 'itemSize.handle' }, q: 8 }, // 4 ящики + 4 двері
       { key: 'part.hinge', size: { key: 'itemSize.hinge' }, q: 8 }, // по 2 на двері
       { key: 'part.sink', size: { key: 'itemSize.sink', params: { w: 600 } }, q: 1 },
-      { key: 'part.leg', size: { key: 'itemSize.leg', params: { h: 100 } }, q: 12 }, // по 4 на модуль
+      { key: 'part.leg', size: { key: 'itemSize.leg', params: { h: 100 } }, q: 12 }, // модулі по 600: 2 ряди × 2 ніжки × 3 модулі
     ]);
   });
 
@@ -63,5 +63,14 @@ describe('partsList — умовні деталі', () => {
     const P = partsList(s, computeLayout(s));
     expect(P.panels.some(p => p.key === 'part.plinth')).toBe(false);
     expect(P.items).toEqual([]); // відкритий модуль без полиць: ні ручок, ні петель
+  });
+
+  it('широкий модуль — додатковий ряд ніжок', () => {
+    const s = kitchen([
+      { width: 600, type: 'open', count: 0 },
+      { width: 900, type: 'open', count: 0 },
+    ]);
+    const leg = partsList(s, computeLayout(s)).items.find(i => i.key === 'part.leg');
+    expect(leg.q).toBe(10); // 600: 2 ряди, 900: 3 ряди (900 - 120 > 700); по 2 ніжки в ряду
   });
 });
