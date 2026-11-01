@@ -6,6 +6,7 @@ export const PRESETS = {
       H: 2400,
       D: 600,
       plinth: 80,
+      base: 'legs',
       sections: [
         {
           width: 'auto',
@@ -38,6 +39,7 @@ export const PRESETS = {
       H: 2200,
       D: 600,
       plinth: 80,
+      base: 'legs',
       sections: [
         {
           width: 'auto',
@@ -81,6 +83,7 @@ export const PRESETS = {
       H: 2100,
       D: 400,
       plinth: 80,
+      base: 'legs',
       sections: [
         {
           width: 'auto',

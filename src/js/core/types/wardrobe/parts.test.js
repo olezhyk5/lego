@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { computeLayout } from './layout.js';
-import { partsList, describe as describeSections } from './parts.js';
+import { partsList, summary, describe as describeSections } from './parts.js';
 import { sheetTotals } from '../../common/sheets.js';
 import { MATERIALS } from '../../../config/materials.js';
-import { preset, project } from '../../test-fixtures.js';
+import { preset, PLINTH, project } from '../../test-fixtures.js';
 
 const specOf = s => partsList(s, computeLayout(s));
 const panel = (P, key, a, b) => P.panels.find(p => p.key === key && p.a === a && p.b === b);
 
-describe('partsList — пресет «Шафа 3 секції»', () => {
-  const P = specOf(preset('wardrobe'));
+describe('partsList — пресет «Шафа 3 секції» на цоколі', () => {
+  const P = specOf(preset('wardrobe', PLINTH));
 
   it('корпус', () => {
     expect(panel(P, 'part.side', 2400, 600).q).toBe(2);
@@ -55,7 +55,7 @@ describe('partsList — пресет «Шафа 3 секції»', () => {
 });
 
 describe('partsList — кришка над боковинами', () => {
-  const P = specOf({ ...preset('wardrobe'), top: { mount: 'over' } });
+  const P = specOf({ ...preset('wardrobe', PLINTH), top: { mount: 'over' } });
 
   it('боковини коротші на товщину кришки, кришка на всю ширину', () => {
     expect(panel(P, 'part.side', 2384, 600).q).toBe(2); // 2400 - 16
@@ -73,7 +73,7 @@ describe('partsList — кришка над боковинами', () => {
 describe('partsList — виступи кришки', () => {
   it('кришка більша на виступи, задня стінка закінчується під кришкою', () => {
     const P = specOf({
-      ...preset('wardrobe'),
+      ...preset('wardrobe', PLINTH),
       top: { mount: 'over', overhang: { back: 10, front: 20, left: 30, right: 40 } },
     });
     expect(panel(P, 'part.top', 1870, 630).q).toBe(1); // 1800 + 30 + 40; 600 + 10 + 20
@@ -82,7 +82,7 @@ describe('partsList — виступи кришки', () => {
   });
 
   it('без виступу ззаду задня стінка як без виступів', () => {
-    const P = specOf({ ...preset('wardrobe'), top: { mount: 'over', overhang: { front: 20 } } });
+    const P = specOf({ ...preset('wardrobe', PLINTH), top: { mount: 'over', overhang: { front: 20 } } });
     expect(panel(P, 'part.top', 1800, 620).q).toBe(1); // 600 + 20
     expect(panel(P, 'part.back', 2396, 1796).q).toBe(1);
   });
@@ -90,14 +90,14 @@ describe('partsList — виступи кришки', () => {
 
 describe('partsList — потовщена кришка', () => {
   it('між боковинами: дві плити кришки, перегородки коротші на 16', () => {
-    const P = specOf({ ...preset('wardrobe'), top: { mount: 'between', double: true } });
+    const P = specOf({ ...preset('wardrobe', PLINTH), top: { mount: 'between', double: true } });
     expect(panel(P, 'part.top', 1768, 600).q).toBe(2);
     expect(panel(P, 'part.side', 2400, 600).q).toBe(2);
     expect(panel(P, 'part.divider', 2272, 600).q).toBe(2); // 2400 - 80 - 16 - 2*16
   });
 
   it('над боковинами: дві плити на всю ширину, боковини 2400 - 2*16', () => {
-    const P = specOf({ ...preset('wardrobe'), top: { mount: 'over', double: true } });
+    const P = specOf({ ...preset('wardrobe', PLINTH), top: { mount: 'over', double: true } });
     expect(panel(P, 'part.top', 1800, 600).q).toBe(2);
     expect(panel(P, 'part.side', 2368, 600).q).toBe(2);
   });
@@ -125,7 +125,7 @@ describe('partsList — умовні деталі', () => {
 
 describe('sheetTotals', () => {
   it('пресет «Шафа 3 секції»: площа й листи по матеріалах', () => {
-    const P = specOf(preset('wardrobe'));
+    const P = specOf(preset('wardrobe', PLINTH));
     // ДСП, мм²: боковини 2400*600*2 = 2 880 000; кришка + дно 1768*600*2 = 2 121 600;
     // цоколь 1768*80 = 141 440; перегородки 2288*600*2 = 2 745 600;
     // полиці між зонами 568*600*3 + 600*600 = 1 382 400; полиці 600*580*3 = 1 044 000;
@@ -158,7 +158,7 @@ describe('sheetTotals', () => {
 
 describe('describe', () => {
   it('описує секції та зони ключами', () => {
-    const s = preset('wardrobe');
+    const s = preset('wardrobe', PLINTH);
     const L = computeLayout(s);
     expect(describeSections(s, L)[1]).toEqual({
       key: 'describe.section',
@@ -168,5 +168,63 @@ describe('describe', () => {
         { key: 'describe.drawers', params: { cnt: 3, front: 196, h: 600 } },
       ],
     });
+  });
+});
+
+// Пресет «Шафа 3 секції» на регульованих опорах 80 мм: корпус від 80 мм, боковини 2400 - 80 = 2320.
+// Ряди ніжок: під боковинами x = 0 і 1800 - 40 = 1760; по осях перегородок 584 + 8 - 20 = 572, 1200 + 8 - 20 = 1188.
+// Кроки 572, 616, 572 ≤ 700 — проміжних немає: 4 ряди × 2 = 8 ніжок.
+describe('partsList — пресет «Шафа 3 секції» на опорах', () => {
+  const s = preset('wardrobe');
+  const L = computeLayout(s);
+  const P = partsList(s, L);
+
+  it('корпус піднятий на висоту ніжок', () => {
+    expect(s.base).toBe('legs');
+    expect(panel(P, 'part.side', 2320, 600).q).toBe(2);
+    expect(panel(P, 'part.top', 1768, 600).q).toBe(1);
+    expect(panel(P, 'part.bottom', 1768, 600).q).toBe(1);
+    expect(panel(P, 'part.plinth', 1800, 80).q).toBe(1); // на всю ширину перед ніжками
+    expect(panel(P, 'part.divider', 2288, 600).q).toBe(2); // внутрішня висота та сама: 2384 - 96
+    expect(panel(P, 'part.back', 2316, 1796).q).toBe(1); // 2320 - 4
+  });
+
+  it('ніжки — останні у фурнітурі', () => {
+    expect(L.legs).toEqual([0, 572, 1188, 1760]);
+    expect(P.items.at(-1)).toEqual({ key: 'part.leg', size: { key: 'itemSize.leg', params: { h: 80 } }, q: 8 });
+  });
+
+  it('у шапці — цоколь на опорах', () => {
+    expect(summary(s, L)[1]).toEqual({
+      label: { key: 'export.plinth' },
+      value: { key: 'export.plinthOnLegs', params: { h: 80 } },
+    });
+  });
+
+  it('кришка над боковинами: боковини 2320 - 16', () => {
+    expect(panel(specOf({ ...s, top: { mount: 'over' } }), 'part.side', 2304, 600).q).toBe(2);
+  });
+});
+
+describe('partsList — ніжки за шириною', () => {
+  it('одна секція 2000: між боковинами 1960 > 2*700 → 3 проміжки, 4 ряди', () => {
+    const s = project([{ width: 'auto', zones: [{ type: 'empty', height: 'auto' }] }], { W: 2000, base: 'legs' });
+    const L = computeLayout(s);
+    L.legs.forEach((x, k) => expect(x).toBeCloseTo([0, 653.33, 1306.67, 1960][k], 2)); // 1960 / 3
+    expect(partsList(s, L).items).toEqual([
+      { key: 'part.leg', size: { key: 'itemSize.leg', params: { h: 80 } }, q: 8 },
+    ]);
+  });
+
+  it('висота 0 — ні ніжок, ні цоколя', () => {
+    const s = project([{ width: 'auto', zones: [{ type: 'empty', height: 'auto' }] }], { plinth: 0, base: 'legs' });
+    const P = specOf(s);
+    expect(P.items).toEqual([]);
+    expect(P.panels.some(p => p.key === 'part.plinth')).toBe(false);
+    expect(panel(P, 'part.side', 2000, 600).q).toBe(2);
+  });
+
+  it('на цоколі ніжок немає', () => {
+    expect(specOf(preset('wardrobe', PLINTH)).items.some(i => i.key === 'part.leg')).toBe(false);
   });
 });

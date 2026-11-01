@@ -6,11 +6,14 @@ import { PRESETS as KITCHEN_PRESETS } from './types/kitchen/presets.js';
 import { clone } from '../utils/helpers.js';
 import { createProject } from './project-format.js';
 
-// Дані пресета шафи (поля без version/type)
-export const preset = name => clone(PRESETS[name].data);
+// Дані пресета шафи (поля без version/type); over — перевизначені поля
+export const preset = (name, over = {}) => ({ ...clone(PRESETS[name].data), ...over });
 
 // Пресет шафи як проєкт поточної версії формату (version + type)
-export const presetProject = name => createProject('wardrobe', preset(name));
+export const presetProject = (name, over = {}) => createProject('wardrobe', preset(name, over));
+
+// Основа «цоколь» (боковини до підлоги) — для тестів кришки й корпусу на пресетах, де за замовчуванням ніжки
+export const PLINTH = { base: 'plinth' };
 
 // Проєкт шафи поточної версії з довільними секціями
 export const project = (sections, dims = {}) =>

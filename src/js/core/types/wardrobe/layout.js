@@ -3,6 +3,7 @@ import { isAuto, round } from '../../../utils/helpers.js';
 import { carcass } from '../../common/carcass.js';
 import { msg } from '../../common/msg.js';
 import { drawerWarnings, drawerDepth } from '../../common/drawers.js';
+import { LEG, legRows, legsLowWarning } from '../../common/legs.js';
 
 export function drawerFront(h, cnt) {
   return (h - (cnt + 1) * GAP) / cnt;
@@ -69,5 +70,17 @@ export function computeLayout(s) {
     x += w + T;
     return out;
   });
-  return { secs, innerW, Hin, y0, yTop, carcass: C, bounds: { W: s.W, H: s.H, D: s.D }, errs, warns };
+  const legs = C.base === 'legs' && s.plinth > 0 ? legRowsOf(s, secs) : [];
+  if (C.base === 'legs') {
+    const low = legsLowWarning(s.plinth);
+    if (low) warns.push(low);
+  }
+  return { secs, innerW, Hin, y0, yTop, carcass: C, legs, bounds: { W: s.W, H: s.H, D: s.D }, errs, warns };
+}
+
+// Ряди ніжок (ліві краї): обов'язкові — під боковинами (врівень із зовнішніми краями) і по осях перегородок,
+// між ними — проміжні (legRows)
+function legRowsOf(s, secs) {
+  const dividers = secs.slice(0, -1).map(c => c.x + c.w + T / 2 - LEG / 2);
+  return legRows([0, ...dividers, s.W - LEG]);
 }

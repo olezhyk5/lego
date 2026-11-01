@@ -25,6 +25,7 @@ export default {
     height: 'Height',
     depth: 'Depth',
     plinth: 'Plinth',
+    baseLegs: 'Adjustable legs',
     sections: 'Sections (left to right)',
     addSection: '+ Add section',
     topSettings: 'Top panel settings',
@@ -219,6 +220,7 @@ export default {
   export: {
     overall: 'Overall size (W × H × D), mm',
     plinth: 'Plinth, mm',
+    plinthOnLegs: '{h}, on adjustable legs',
     top: 'Top panel',
     topDouble: '{mount}, thick (2 panels)',
     topOverhang: '{top}; overhang: back {back}, front {front}, left {left}, right {right} mm',
@@ -266,6 +268,7 @@ export default {
       H: 'Height',
       D: 'Depth',
       plinth: 'Plinth',
+      base: 'Carcass base',
       top: 'Top panel',
       topMount: 'Top panel mounting',
       topDouble: 'Thick top',

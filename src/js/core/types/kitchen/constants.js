@@ -12,10 +12,3 @@ export const DEFAULT_WORKTOP = { front: 30, left: 0, right: 0 };
 
 export const RAIL_W = 100; // ширина царги (планки замість кришки під стільницею), мм
 export const SINK_TWO_DOORS_FROM = 600; // модуль під мийку від цієї ширини — з двома дверима, мм
-
-// Регульовані ніжки, мм. У плані ніжка LEG × LEG, відступ LEG_INSET від боків і задньої стінки.
-// Ряди ніжок по ширині модуля — рівномірно, з кроком (між осями) не більше LEG_MAX_SPAN; у кожному ряду дві: спереду й ззаду.
-export const LEG = 40;
-export const LEG_INSET = 40;
-export const LEG_MAX_SPAN = 700;
-export const LEGS_MIN_H = 80; // нижче — не вміщується кріплення цоколя й незручно прибирати під модулем

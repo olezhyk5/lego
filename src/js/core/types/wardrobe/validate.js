@@ -1,4 +1,4 @@
-import { TOP_MOUNTS, TOP_OVERHANG_SIDES } from '../../../config/constants.js';
+import { TOP_MOUNTS, TOP_OVERHANG_SIDES, CARCASS_BASES } from '../../../config/constants.js';
 import { ZONE_TYPES, COUNTABLE_ZONES } from './constants.js';
 import { runValidation, isPlainObject } from '../../validate.js';
 
@@ -67,6 +67,7 @@ export function normalizeWardrobe(s, check) {
   const out = {};
   for (const k of ['W', 'H', 'D']) if (check.number(s[k], [k], field(k), 1, MAX_MM)) out[k] = s[k];
   if (check.number(s.plinth, ['plinth'], field('plinth'), 0, MAX_SMALL_MM)) out.plinth = s.plinth;
+  if (s.base !== undefined && check.oneOf(s.base, CARCASS_BASES, ['base'], field('base'))) out.base = s.base;
   if (s.top !== undefined && isPlainObject(s.top)) out.top = normalizeTop(s.top, check);
   else if (s.top !== undefined) check.object(s.top, ['top'], field('top'));
   if (check.array(s.sections, ['sections'], field('sections'), 1, MAX_ITEMS))

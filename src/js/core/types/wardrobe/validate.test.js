@@ -16,6 +16,11 @@ describe('validateWardrobe', () => {
     expect(validateWardrobe(presetProject(key))).toEqual({ ok: true, project: presetProject(key) });
   });
 
+  it('основа зберігається', () => {
+    const res = validateWardrobe({ ...base(), base: 'legs' });
+    expect(res.ok && res.project.base).toBe('legs');
+  });
+
   it('кришка з виступами зберігається', () => {
     const top = { mount: 'over', double: true, overhang: { back: 0, front: 20, left: 10, right: 10 } };
     const res = validateWardrobe({ ...base(), top });
@@ -27,6 +32,7 @@ describe('validateWardrobe', () => {
     ['H = 0', p => (p.H = 0), ['validate.range', ['H']]],
     ['D > 10000', p => (p.D = 10001), ['validate.range', ['D']]],
     ['plinth від’ємний', p => (p.plinth = -1), ['validate.range', ['plinth']]],
+    ['base невідома', p => (p.base = 'wheels'), ['validate.enum', ['base']]],
     ['top не об’єкт', p => (p.top = 'over'), ['validate.object', ['top']]],
     ['top.mount невідомий', p => (p.top = { mount: 'under' }), ['validate.enum', ['top', 'mount']]],
     ['top.double не boolean', p => (p.top = { double: 1 }), ['validate.boolean', ['top', 'double']]],

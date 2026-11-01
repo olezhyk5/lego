@@ -4,17 +4,17 @@ import { MATERIALS } from '../../../config/materials.js';
 import { computeLayout } from './layout.js';
 import { modelGeometry } from './geometry.js';
 import { partsList } from './parts.js';
-import { preset, project, expectGeometryMatchesParts } from '../../test-fixtures.js';
+import { preset, PLINTH, project, expectGeometryMatchesParts } from '../../test-fixtures.js';
 
 const geomOf = s => modelGeometry(s, computeLayout(s));
 const byKey = (G, key) => G.boxes.filter(b => b.key === key);
 const at = ({ x, y, z, w, h, d }) => ({ x, y, z, w, h, d });
 
-// Пресет «Шафа 3 секції»: W 1800, H 2400, D 600, цоколь 80, T 16.
+// Пресет «Шафа 3 секції» (основа — цоколь): W 1800, H 2400, D 600, цоколь 80, T 16.
 // Внутрішня висота: y0 = 80 + 16 = 96, верх 2400 - 16 = 2384, Hin = 2288.
 // Ширини: (1800 - 2*16 - 2*16 - 600) / 2 = 568 → секції x = 16, 600, 1216.
-describe('modelGeometry — пресет «Шафа 3 секції»', () => {
-  const G = geomOf(preset('wardrobe'));
+describe('modelGeometry — пресет «Шафа 3 секції» на цоколі', () => {
+  const G = geomOf(preset('wardrobe', PLINTH));
 
   it('корпус', () => {
     expect(byKey(G, 'part.side').map(at)).toEqual([
@@ -84,10 +84,15 @@ describe('modelGeometry — відповідність специфікації'
   // пресети перевіряє core/registry.test.js; тут — крайові випадки
   const OVERHANG = { back: 10, front: 20, left: 30, right: 40 };
   it.each([
-    ['кришка над боковинами з виступами', { ...preset('wardrobe'), top: { mount: 'over', overhang: OVERHANG } }],
-    ['потовщена кришка між боковинами', { ...preset('wardrobe'), top: { mount: 'between', double: true } }],
+    [
+      'кришка над боковинами з виступами',
+      { ...preset('wardrobe', PLINTH), top: { mount: 'over', overhang: OVERHANG } },
+    ],
+    ['потовщена кришка між боковинами', { ...preset('wardrobe', PLINTH), top: { mount: 'between', double: true } }],
     ['потовщена кришка над боковинами', { ...preset('komod'), top: { mount: 'over', double: true } }],
-    ['без цоколя', { ...preset('penal'), plinth: 0 }],
+    ['без цоколя', { ...preset('penal', PLINTH), plinth: 0 }],
+    ['опори, кришка над боковинами з виступами', { ...preset('wardrobe'), top: { mount: 'over', overhang: OVERHANG } }],
+    ['опори висотою 0', { ...preset('penal'), plinth: 0 }],
     [
       'одна секція, зони без «авто»',
       project([{ width: 'auto', zones: [{ type: 'drawers', count: 4, height: 1904 }] }]),
@@ -102,7 +107,7 @@ describe('modelGeometry — відповідність специфікації'
   });
 
   it('штанги — по одній на зону зі штангою', () => {
-    const s = preset('wardrobe');
+    const s = preset('wardrobe', PLINTH);
     const L = computeLayout(s);
     const rods = partsList(s, L)
       .items.filter(p => p.key === 'part.rod')
@@ -111,7 +116,7 @@ describe('modelGeometry — відповідність специфікації'
   });
 
   it('потовщена кришка — дві плити по 16 мм одна на одній', () => {
-    const G = geomOf({ ...preset('wardrobe'), top: { mount: 'between', double: true } });
+    const G = geomOf({ ...preset('wardrobe', PLINTH), top: { mount: 'between', double: true } });
     // нижня 2400 - 2*16 = 2368, верхня 2400 - 16 = 2384
     expect(byKey(G, 'part.top').map(at)).toEqual([
       { x: 16, y: 2368, z: 0, w: 1768, h: 16, d: 600 },
@@ -123,7 +128,7 @@ describe('modelGeometry — відповідність специфікації'
 describe('modelGeometry — кришка над боковинами з виступами', () => {
   it('кришка зсунута на виступи зліва й ззаду, боковини під нею', () => {
     const G = geomOf({
-      ...preset('wardrobe'),
+      ...preset('wardrobe', PLINTH),
       top: { mount: 'over', overhang: { back: 10, front: 20, left: 30, right: 40 } },
     });
     // 1800 + 30 + 40 = 1870; 600 + 10 + 20 = 630; y = 2400 - 16
@@ -143,5 +148,31 @@ describe('modelGeometry — умовні деталі', () => {
 describe('товщини', () => {
   it('T у розрахунку збігається з товщиною ДСП (товщина плит у 3D — з матеріалу)', () => {
     expect(T).toBe(MATERIALS.chipboard.t);
+  });
+});
+
+// Пресет «Шафа 3 секції» на опорах 80: ряди ніжок 0, 572, 1188, 1760 (див. parts.test.js)
+describe('modelGeometry — опори', () => {
+  const G = geomOf(preset('wardrobe'));
+
+  it('боковини й задня стінка від висоти ніжок, цоколь на всю ширину', () => {
+    expect(byKey(G, 'part.side').map(at)).toEqual([
+      { x: 0, y: 80, z: 0, w: 16, h: 2320, d: 600 },
+      { x: 1784, y: 80, z: 0, w: 16, h: 2320, d: 600 },
+    ]);
+    expect(byKey(G, 'part.bottom').map(at)).toEqual([{ x: 16, y: 80, z: 0, w: 1768, h: 16, d: 600 }]);
+    expect(byKey(G, 'part.plinth').map(at)).toEqual([{ x: 0, y: 0, z: 554, w: 1800, h: 80, d: 16 }]);
+    expect(byKey(G, 'part.back').map(at)).toEqual([{ x: 2, y: 82, z: -3, w: 1796, h: 2316, d: 3 }]); // 80 + 2
+  });
+
+  it('ніжки: у кожному ряду задня (z 40) і передня (554 - 40 - 10 = 504)', () => {
+    const legs = byKey(G, 'part.leg');
+    expect(legs.every(b => b.kind === 'hardware' && b.y === 0 && b.h === 80)).toBe(true);
+    expect(legs.map(b => [b.x, b.z])).toEqual(
+      [0, 572, 1188, 1760].flatMap(x => [
+        [x, 40],
+        [x, 504],
+      ]),
+    );
   });
 });

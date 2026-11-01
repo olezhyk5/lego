@@ -26,6 +26,7 @@ export default {
     height: 'Висота',
     depth: 'Глибина',
     plinth: 'Цоколь',
+    baseLegs: 'Регульовані опори',
     sections: 'Секції (зліва направо)',
     addSection: '+ Додати секцію',
     topSettings: 'Налаштування кришки',
@@ -219,6 +220,7 @@ export default {
   export: {
     overall: 'Габарит (Ш × В × Г), мм',
     plinth: 'Цоколь, мм',
+    plinthOnLegs: '{h}, на регульованих опорах',
     top: 'Кришка',
     topDouble: '{mount}, потовщена (2 плити)',
     topOverhang: '{top}; виступи: ззаду {back}, спереду {front}, зліва {left}, справа {right} мм',
@@ -266,6 +268,7 @@ export default {
       H: 'Висота',
       D: 'Глибина',
       plinth: 'Цоколь',
+      base: 'Основа корпусу',
       top: 'Кришка',
       topMount: 'Кріплення кришки',
       topDouble: 'Потовщена кришка',

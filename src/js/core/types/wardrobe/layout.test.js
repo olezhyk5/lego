@@ -146,6 +146,8 @@ describe('carcass — кришка', () => {
     // боковини на всю висоту 2400; кришка 1800 - 2*16 = 1768, починається після лівої боковини
     // задня стінка 2400 - 4 (по 2 мм від країв); глибина кришки = D
     expect(carcass({ ...s, D: 600 })).toEqual({
+      base: 'plinth', // поля немає → цоколь, боковини від підлоги
+      bodyY: 0,
       mount: 'between',
       double: false,
       overhang: { back: 0, front: 0, left: 0, right: 0 },
@@ -249,4 +251,24 @@ describe('computeLayout — ящики на напрямних', () => {
       expect.objectContaining({ key: 'check.drawerWide', params: expect.objectContaining({ w: 1162 }) }),
     );
   });
+});
+
+describe('computeLayout — опори', () => {
+  const one = fields => computeLayout(project([{ width: 'auto', zones: [{ type: 'empty', height: 'auto' }] }], fields));
+
+  it('ніжки нижче 80 — попередження; на цоколі тієї ж висоти — ні', () => {
+    expect(one({ base: 'legs', plinth: 60 }).warns).toContainEqual({
+      key: 'check.legsLow',
+      params: { h: 60, min: 80 },
+    });
+    expect(keys(one({ base: 'legs', plinth: 80 }).warns)).not.toContain('check.legsLow');
+    expect(keys(one({ plinth: 60 }).warns)).not.toContain('check.legsLow');
+  });
+
+  it('внутрішня висота не залежить від основи: 2000 - 16 - (80 + 16)', () => {
+    expect(one({ base: 'legs' }).Hin).toBe(1888);
+    expect(one({}).Hin).toBe(1888);
+  });
+
+  it('на цоколі рядів ніжок немає', () => expect(one({}).legs).toEqual([]));
 });

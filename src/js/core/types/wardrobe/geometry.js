@@ -1,6 +1,7 @@
 import { T, GAP } from '../../../config/constants.js';
 import { geometryBuilder, thickness } from '../../common/geometry-builder.js';
-import { addCarcassGeometry } from '../../common/carcass.js';
+import { addCarcassGeometry, plinthZ } from '../../common/carcass.js';
+import { addLegGeometry } from '../../common/legs.js';
 import { drawerFront } from './layout.js';
 
 // Розміри, потрібні лише для моделі (у специфікації їх немає), мм
@@ -17,6 +18,7 @@ const HANDLE_W_RATIO = 0.35; // ширина ручки від ширини се
 export function modelGeometry(s, L) {
   const G = geometryBuilder();
   addCarcassGeometry(G, s, L.carcass);
+  if (L.legs.length) addLegGeometry(G, L.legs, s.plinth, plinthZ(s));
 
   L.secs.forEach((c, idx) => {
     if (idx < L.secs.length - 1) G.panel('part.divider', 'wood', c.x + c.w, L.y0, 0, T, L.Hin, s.D);

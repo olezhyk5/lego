@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { exportRows, toCsv, toTsv, fileBase, panelSize, projectReport } from './export.js';
-import { presetProject } from './test-fixtures.js';
+import { presetProject, PLINTH } from './test-fixtures.js';
 
 describe('exportRows', () => {
-  const rows = exportRows(presetProject('wardrobe'));
+  const rows = exportRows(presetProject('wardrobe', PLINTH));
 
   it('починається з габаритів', () => {
     expect(rows[0]).toEqual(['Габарит (Ш × В × Г), мм', '1800 × 2400 × 600', '']);
@@ -15,7 +15,7 @@ describe('exportRows', () => {
   });
 
   it('кришка: над боковинами, потовщена', () => {
-    const r = exportRows({ ...presetProject('wardrobe'), top: { mount: 'over', double: true } });
+    const r = exportRows({ ...presetProject('wardrobe', PLINTH), top: { mount: 'over', double: true } });
     expect(r[2]).toEqual(['Кришка', 'Над боковинами, потовщена (2 плити)', '']);
     // деталі відповідають налаштуванню (розрахунок — див. parts.test.js)
     expect(r).toContainEqual(['Кришка', '1800 × 600', 2]);
@@ -24,7 +24,7 @@ describe('exportRows', () => {
 
   it('кришка: виступи у рядку кришки', () => {
     const r = exportRows({
-      ...presetProject('wardrobe'),
+      ...presetProject('wardrobe', PLINTH),
       top: { mount: 'over', overhang: { back: 0, front: 20, left: 0, right: 0 } },
     });
     expect(r[2]).toEqual(['Кришка', 'Над боковинами; виступи: ззаду 0, спереду 20, зліва 0, справа 0 мм', '']);
@@ -58,21 +58,21 @@ describe('toTsv', () => {
 });
 
 describe('імена та розміри', () => {
-  it('fileBase', () => expect(fileBase(presetProject('wardrobe'))).toBe('shafa-1800x2400x600'));
+  it('fileBase', () => expect(fileBase(presetProject('wardrobe', PLINTH))).toBe('shafa-1800x2400x600'));
   it('panelSize', () => expect(panelSize({ a: 2400, b: 600 })).toBe('2400 × 600'));
 });
 
 describe('projectReport — виробничі попередження', () => {
   it('задня стінка ширша за лист ДВП: W 2500, H 2400', () => {
     // задня стінка (2400 - 4) × (2500 - 4) = 2396 × 2496; лист 2800 × 2070: 2496 > 2070 і 2396 > 2070
-    const R = projectReport({ ...presetProject('wardrobe'), W: 2500 });
+    const R = projectReport({ ...presetProject('wardrobe', PLINTH), W: 2500 });
     expect(R.warns).toContainEqual(
       expect.objectContaining({ key: 'check.panelTooBig', params: expect.objectContaining({ a: 2396, b: 2496 }) }),
     );
   });
 
   it('боковина вища за робочу площу ДСП: H 2800 > 2780', () => {
-    const R = projectReport({ ...presetProject('penal'), H: 2800 });
+    const R = projectReport({ ...presetProject('penal', PLINTH), H: 2800 });
     expect(R.warns).toContainEqual(
       expect.objectContaining({
         key: 'check.panelTooBig',
@@ -82,7 +82,7 @@ describe('projectReport — виробничі попередження', () => 
   });
 
   it('errs і warns типу теж у звіті', () => {
-    const R = projectReport({ ...presetProject('wardrobe'), W: 200 });
+    const R = projectReport({ ...presetProject('wardrobe', PLINTH), W: 200 });
     expect(R.errs.map(e => e.key)).toContain('check.tooSmall');
   });
 });

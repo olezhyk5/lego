@@ -13,10 +13,14 @@ export const DIMS = [
   { id: 'plinth', labelKey: 'sidebar.plinth', min: 0, max: 200 },
 ];
 
-// Над 3D на мобільному: габарити й кнопка налаштувань кришки
+// Над 3D на мобільному: габарити, основа (цоколь / регульовані опори) й кнопка налаштувань кришки
 export const setupMarkup = () => `<section class="card">
     <h2 class="card__title">${t('sidebar.dimensions')}</h2>
     <div class="dims">${DIMS.map(dimField).join('')}</div>
+    <label class="check">
+      <input class="check__input" type="checkbox" id="baseLegs">
+      <span>${t('sidebar.baseLegs')}</span>
+    </label>
   </section>
   <section class="card">
     <button type="button" class="btn option-btn" id="topSettings">

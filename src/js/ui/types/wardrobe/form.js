@@ -1,5 +1,6 @@
 import { COUNTABLE_ZONES } from '../../../core/types/wardrobe/constants.js';
 import { store } from '../../../core/store.js';
+import { LEGS_MIN_H, LEGS_DEFAULT_H } from '../../../core/common/legs.js';
 import { clone } from '../../../utils/helpers.js';
 import { $, $$ } from '../../../utils/dom.js';
 import { calcMm } from '../../templates.js';
@@ -77,6 +78,17 @@ function bind({ update, fit }) {
   );
   ['W', 'H', 'D'].forEach(k => $('#' + k).addEventListener('change', fit));
 
+  // Основа: без галочки поля base немає (= цоколь), щоб проєкт збігався з пресетами без нього.
+  // Ніжки нижчі за мінімум не вмикаємо: піднімаємо основу до типової висоти.
+  $('#baseLegs').addEventListener('change', e => {
+    const s = store.state;
+    if (e.target.checked) {
+      s.base = 'legs';
+      if (s.plinth < LEGS_MIN_H) $('#plinth').value = s.plinth = LEGS_DEFAULT_H;
+    } else delete s.base;
+    update(false);
+  });
+
   box.addEventListener('click', e => {
     const { secEl, i, j } = position(e.target);
     if (!secEl) return;
@@ -133,6 +145,7 @@ export const wardrobeForm = {
 
   sync() {
     DIMS.forEach(({ id }) => ($('#' + id).value = store.state[id]));
+    $('#baseLegs').checked = store.state.base === 'legs';
   },
 
   render(L) {

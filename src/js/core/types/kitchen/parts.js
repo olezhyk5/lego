@@ -3,6 +3,7 @@ import { round } from '../../../utils/helpers.js';
 import { partsBuilder } from '../../common/parts-builder.js';
 import { msg } from '../../common/msg.js';
 import { drawerDepth } from '../../common/drawers.js';
+import { legCount } from '../../common/legs.js';
 import { RAIL_W } from './constants.js';
 
 const SHELF_SETBACK = 20; // полиці коротші за глибину модуля
@@ -33,8 +34,7 @@ export function partsList(s, L) {
     P.item('part.hinge', msg('itemSize.hinge'), 2 * m.fronts.filter(f => f.key === 'part.door').length);
     if (m.type === 'sink') P.item('part.sink', msg('itemSize.sink', { w: round(m.w) }), 1);
   });
-  // у кожному ряду дві ніжки: спереду й ззаду (layout.js, legColumns)
-  const legs = L.modules.reduce((n, m) => n + 2 * m.legs.length, 0);
+  const legs = L.modules.reduce((n, m) => n + legCount(m.legs), 0);
   if (legs) P.item('part.leg', msg('itemSize.leg', { h: round(s.legs) }), legs);
   return P.result();
 }

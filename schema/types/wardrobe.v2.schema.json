@@ -12,7 +12,11 @@
     "W": { "$ref": "#/$defs/mm" },
     "H": { "$ref": "#/$defs/mm" },
     "D": { "$ref": "#/$defs/mm" },
-    "plinth": { "$ref": "#/$defs/smallMm" },
+    "plinth": { "$ref": "#/$defs/smallMm", "description": "Висота основи: цоколя або ніжок; 0 — без основи." },
+    "base": {
+      "description": "Основа корпусу. plinth — боковини до підлоги, цокольна планка між ними; legs — корпус на регульованих ніжках, цокольна планка на всю ширину. Немає поля → plinth.",
+      "enum": ["plinth", "legs"]
+    },
     "top": {
       "description": "Кришка. Немає поля → між боковинами, одинарна.",
       "type": "object",

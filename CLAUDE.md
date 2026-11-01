@@ -186,7 +186,9 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
 {
   version: 2,                       // версія формату (FORMAT_VERSION у core/project-format.js)
   type: 'wardrobe',
-  W, H, D, plinth,                  // мм
+  W, H, D, plinth,                  // мм; plinth — висота основи (цоколя або ніжок), 0 — без основи
+  base?: 'plinth' | 'legs',         // основа; немає поля → plinth (боковини до підлоги, цокольна планка між ними).
+                                    // legs — корпус на регульованих ніжках, планка на всю ширину; у UI — чекбокс
   top?: { mount: 'between'|'over', double: boolean,     // кришка; немає поля → between, одинарна
           overhang?: { back, front, left, right } },      // виступи, мм; лише для over, немає → 0
   sections: [{

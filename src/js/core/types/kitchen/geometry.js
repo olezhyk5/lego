@@ -1,6 +1,7 @@
 import { T } from '../../../config/constants.js';
 import { geometryBuilder, thickness } from '../../common/geometry-builder.js';
-import { RAIL_W, LEG, LEG_INSET } from './constants.js';
+import { addLegGeometry } from '../../common/legs.js';
+import { RAIL_W } from './constants.js';
 
 // Розміри, потрібні лише для моделі (у специфікації їх немає), мм
 const SHELF_SETBACK = 20;
@@ -36,12 +37,7 @@ export function modelGeometry(s, L) {
       G.hardware('part.handle', 'handle', f.x + f.w / 2 - hw / 2, hy, s.D + T, hw, HANDLE.h, HANDLE.d);
     });
 
-    // ряди ніжок — з layout; у ряду задня й передня (за цокольною планкою)
-    m.legs.forEach(lx =>
-      [LEG_INSET, s.D - PLINTH_SETBACK - T - LEG - 10].forEach(lz =>
-        G.hardware('part.leg', 'handle', lx, 0, lz, LEG, s.legs, LEG),
-      ),
-    );
+    if (m.legs.length) addLegGeometry(G, m.legs, s.legs, s.D - PLINTH_SETBACK - T);
 
     if (m.type === 'sink') {
       const sw = Math.max(m.w - 2 * SINK_MARGIN.side, 1);

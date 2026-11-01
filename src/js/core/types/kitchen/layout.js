@@ -3,17 +3,8 @@ import { MATERIALS } from '../../../config/materials.js';
 import { round } from '../../../utils/helpers.js';
 import { msg } from '../../common/msg.js';
 import { drawerWarnings, drawerDepth } from '../../common/drawers.js';
-import {
-  MODULE_COUNT,
-  DEFAULT_COUNT,
-  WORKTOP_SIDES,
-  DEFAULT_WORKTOP,
-  SINK_TWO_DOORS_FROM,
-  LEG,
-  LEG_INSET,
-  LEG_MAX_SPAN,
-  LEGS_MIN_H,
-} from './constants.js';
+import { LEG, legRows, legsLowWarning } from '../../common/legs.js';
+import { MODULE_COUNT, DEFAULT_COUNT, WORKTOP_SIDES, DEFAULT_WORKTOP, SINK_TWO_DOORS_FROM } from './constants.js';
 
 const SHELF_MAX_SPAN = 800; // проліт полиці з ДСП 16 без прогину, мм
 const DOOR_MAX_W = 600;
@@ -41,14 +32,10 @@ export function moduleCount(m, w) {
   return Math.max(min, Math.min(max, n));
 }
 
-// Ряди ніжок модуля шириною w від x: ліві краї ніжок; крайні — на LEG_INSET від боків,
-// між ними — рівномірно, щоб крок між осями не перевищував LEG_MAX_SPAN
-export function legColumns(x, w) {
-  const first = x + LEG_INSET,
-    span = w - 2 * LEG_INSET - LEG;
-  const n = Math.max(1, Math.ceil(span / LEG_MAX_SPAN));
-  return Array.from({ length: n + 1 }, (_, k) => first + (span * k) / n);
-}
+const LEG_SIDE_INSET = 40; // крайні ряди ніжок — від боків модуля, мм
+
+// Ряди ніжок модуля шириною w від x (ліві краї ніжок): крайні — на LEG_SIDE_INSET від боків, проміжні — legRows
+export const legColumns = (x, w) => legRows([x + LEG_SIDE_INSET, x + w - LEG_SIDE_INSET - LEG]);
 
 // Модулі, фасади, полиці, стільниця + помилки/попередження.
 // Координати: x — від лівого краю першого модуля, y — від підлоги, z — від задньої площини модулів.
@@ -56,7 +43,8 @@ export function computeLayout(s) {
   const errs = [],
     warns = [];
   if (s.H < 300 || s.D < 200) errs.push(msg('check.kitchenTooSmall'));
-  if (s.legs > 0 && s.legs < LEGS_MIN_H) warns.push(msg('check.legsLow', { h: round(s.legs), min: LEGS_MIN_H }));
+  const legsLow = legsLowWarning(s.legs);
+  if (legsLow) warns.push(legsLow);
   const y0 = s.legs; // низ модулів
   const Hin = s.H - 2 * T; // між дном і царгами
   let x = 0;

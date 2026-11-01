@@ -4,6 +4,7 @@ import { partsBuilder } from '../../common/parts-builder.js';
 import { addCarcassPanels, addBackPanel } from '../../common/carcass.js';
 import { msg } from '../../common/msg.js';
 import { drawerDepth } from '../../common/drawers.js';
+import { legCount } from '../../common/legs.js';
 import { drawerFront } from './layout.js';
 
 // Специфікація без тексту (перекладає ui/ або core/export.js):
@@ -32,6 +33,7 @@ export function partsList(s, L) {
       }
     }),
   );
+  if (L.legs.length) P.item('part.leg', msg('itemSize.leg', { h: round(s.plinth) }), legCount(L.legs));
   addBackPanel(P, s, L.carcass);
   return P.result();
 }
@@ -71,7 +73,10 @@ function topMsg(c) {
 export function summary(s, L) {
   return [
     { label: msg('export.overall'), value: `${s.W} × ${s.H} × ${s.D}` },
-    { label: msg('export.plinth'), value: s.plinth },
+    {
+      label: msg('export.plinth'),
+      value: L.carcass.base === 'legs' ? msg('export.plinthOnLegs', { h: s.plinth }) : s.plinth,
+    },
     { label: msg('export.top'), value: topMsg(L.carcass) },
   ];
 }

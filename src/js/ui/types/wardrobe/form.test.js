@@ -34,6 +34,36 @@ describe('форма шафи', () => {
     expect(app.update).toHaveBeenLastCalledWith(false);
   });
 
+  it('опори: галочка з пресета; на тумбі (цоколь 0) вмикання піднімає основу до 100', () => {
+    const toggle = on => {
+      $('#baseLegs').checked = on;
+      $('#baseLegs').dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    expect($('#baseLegs').checked).toBe(true); // wardrobe2 — на опорах
+
+    setProject(presetProject('wardrobe.tumba'), 'wardrobe.tumba');
+    wardrobeForm.sync();
+    expect($('#baseLegs').checked).toBe(false);
+    toggle(true);
+    expect(store.state).toMatchObject({ base: 'legs', plinth: 100 });
+    expect($('#plinth').value).toBe('100');
+    expect(app.update).toHaveBeenLastCalledWith(false);
+
+    // вимкнули — поля немає (= цоколь), висота лишається
+    toggle(false);
+    expect('base' in store.state).toBe(false);
+    expect(store.state.plinth).toBe(100);
+  });
+
+  it('опори при достатній висоті: висота не змінюється', () => {
+    typeInto($('#plinth'), '90');
+    $('#baseLegs').checked = false;
+    $('#baseLegs').dispatchEvent(new Event('change'));
+    $('#baseLegs').checked = true;
+    $('#baseLegs').dispatchEvent(new Event('change'));
+    expect(store.state.plinth).toBe(90);
+  });
+
   it('ширина секції: число або порожньо = auto', () => {
     typeInto(sec(1, '[data-field="secWidth"]'), '500');
     expect(store.state.sections[1].width).toBe(500);
