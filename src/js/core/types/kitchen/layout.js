@@ -2,6 +2,7 @@ import { T, GAP } from '../../../config/constants.js';
 import { MATERIALS } from '../../../config/materials.js';
 import { round } from '../../../utils/helpers.js';
 import { msg } from '../../common/msg.js';
+import { drawerWarnings, drawerDepth } from '../../common/drawers.js';
 import { MODULE_COUNT, DEFAULT_COUNT, WORKTOP_SIDES, DEFAULT_WORKTOP, SINK_TWO_DOORS_FROM } from './constants.js';
 
 const SHELF_MAX_SPAN = 800; // проліт полиці з ДСП 16 без прогину, мм
@@ -56,6 +57,7 @@ export function computeLayout(s) {
       for (let k = 0; k < cnt; k++)
         fronts.push({ key: 'part.drawerFront', x: x + GAP, y: y0 + GAP + k * (fh + GAP), w: w - 2 * GAP, h: fh });
       if (fh < 100) warns.push(msg('check.drawerSmall', { name, h: round(fh) }));
+      warns.push(...drawerWarnings({ name, frontW: w - 2 * GAP, depth: drawerDepth(s.D) }));
     }
     if (m.type === 'sink' && w < 450) warns.push(msg('check.sinkNarrow', { name, w: round(w) }));
     // полиці рівномірно між дном і царгами: у модулі з дверима — одна, у відкритому — cnt

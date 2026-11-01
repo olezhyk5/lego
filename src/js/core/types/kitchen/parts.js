@@ -2,6 +2,7 @@ import { T } from '../../../config/constants.js';
 import { round } from '../../../utils/helpers.js';
 import { partsBuilder } from '../../common/parts-builder.js';
 import { msg } from '../../common/msg.js';
+import { drawerDepth } from '../../common/drawers.js';
 import { RAIL_W } from './constants.js';
 
 const SHELF_SETBACK = 20; // полиці коротші за глибину модуля
@@ -27,7 +28,7 @@ export function partsList(s, L) {
     m.fronts
       .filter(f => f.key === 'part.drawerFront')
       .forEach(f =>
-        P.item('part.drawer', msg('itemSize.drawer', { w: round(f.w), h: round(f.h), d: round(s.D - 50) }), 1),
+        P.item('part.drawer', msg('itemSize.drawer', { w: round(f.w), h: round(f.h), d: round(drawerDepth(s.D)) }), 1),
       );
     P.item('part.handle', msg('itemSize.handle'), m.fronts.length);
     P.item('part.hinge', msg('itemSize.hinge'), 2 * m.fronts.filter(f => f.key === 'part.door').length);

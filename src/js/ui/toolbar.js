@@ -3,10 +3,19 @@ import { exportRows, toCsv, toTsv, fileBase } from '../core/export.js';
 import { download, readText, copyText } from '../utils/file.js';
 import { $ } from '../utils/dom.js';
 import { toast } from './toast.js';
-import { t } from '../i18n/index.js';
+import { t, LOCALES, getLocale, setLocale } from '../i18n/index.js';
 
 // Кнопки верхньої панелі: вид, експорт, збереження/відкриття проєкту.
-export function initToolbar({ loadProject, fit, viewer }) {
+export function initToolbar({ loadProject, fit, viewer, relocalize }) {
+  // Мова: назва кожної мови — її ж мовою (locale.<код>), тож список не перекладається
+  const loc = $('#locale');
+  loc.innerHTML = LOCALES.map(code => `<option value="${code}">${t('locale.' + code)}</option>`).join('');
+  loc.value = getLocale();
+  loc.addEventListener('change', () => {
+    setLocale(loc.value);
+    relocalize();
+  });
+
   $('#showDims').addEventListener('change', e => {
     store.showDims = e.target.checked;
     if (viewer) viewer.setDimsVisible(store.showDims);

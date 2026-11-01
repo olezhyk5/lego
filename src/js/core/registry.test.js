@@ -5,6 +5,7 @@ import { MATERIALS } from '../config/materials.js';
 import { LOOKS } from '../config/constants.js';
 import uk from '../i18n/locales/uk.js';
 import { expectGeometryMatchesParts } from './test-fixtures.js';
+import { projectReport } from './export.js';
 
 // Контракт типу меблів (FurnitureType у types.js). Проходить по всіх типах реєстру,
 // тож новий тип перевіряється без окремого коду.
@@ -40,6 +41,8 @@ describe.each(typeIds())('тип %s', id => {
 
     it('розрахунок без помилок, габарити додатні', () => {
       expect(L.errs).toEqual([]);
+      // загальні виробничі попередження в пресетах неприпустимі
+      expect(projectReport(s).warns.filter(w => w.key === 'check.panelTooBig')).toEqual([]);
       expect(Object.values(L.bounds).every(isFinitePos)).toBe(true);
     });
 

@@ -2,6 +2,7 @@ import { T, GAP } from '../../../config/constants.js';
 import { isAuto, round } from '../../../utils/helpers.js';
 import { carcass } from '../../common/carcass.js';
 import { msg } from '../../common/msg.js';
+import { drawerWarnings, drawerDepth } from '../../common/drawers.js';
 
 export function drawerFront(h, cnt) {
   return (h - (cnt + 1) * GAP) / cnt;
@@ -56,6 +57,7 @@ export function computeLayout(s) {
         if (fh < 100) warns.push(msg('check.drawerSmall', { name: zn, h: round(fh) }));
         if (fh > 350) warns.push(msg('check.drawerLarge', { name: zn, h: round(fh) }));
         if (top > 1300) warns.push(msg('check.drawersHigh', { name: zn, top: round(top) }));
+        warns.push(...drawerWarnings({ name: zn, frontW: w - 2 * GAP, depth: drawerDepth(s.D) }));
       }
       if (z.type === 'shelves') {
         const gap = (h - cnt * T) / (cnt + 1);

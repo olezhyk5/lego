@@ -3,10 +3,10 @@ import { store, save, setProject } from './core/store.js';
 import { projectReport } from './core/export.js';
 import { getType } from './core/registry.js';
 import { createViewer } from './viewer/viewer.js';
-import { initSidebar, markPreset } from './ui/sidebar.js';
+import { initSidebar, markPreset, renderPresets } from './ui/sidebar.js';
 import { getForm } from './ui/forms.js';
 import { initToolbar } from './ui/toolbar.js';
-import { renderReport, initReport } from './ui/report.js';
+import { renderReport, initReport, syncReportToggle } from './ui/report.js';
 import { initModal } from './ui/modal.js';
 import { $ } from './utils/dom.js';
 import { translateDom } from './i18n/index.js';
@@ -68,7 +68,17 @@ function loadProject(project, preset) {
   fit();
 }
 
-const app = { update, fit, loadProject, viewer };
+// Після зміни мови: статична розмітка, пресети, форма (перемонтовується з тим самим проєктом і store.ui),
+// звіт і 3D-підписи — без перезавантаження сторінки
+function relocalize() {
+  translateDom();
+  renderPresets();
+  syncReportToggle();
+  formType = null;
+  update(true);
+}
+
+const app = { update, fit, loadProject, relocalize, viewer };
 initSidebar(app);
 initToolbar(app);
 initModal();

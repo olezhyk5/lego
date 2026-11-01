@@ -17,8 +17,14 @@ export function markPreset() {
   });
 }
 
-export function initSidebar({ loadProject }) {
+// Кнопки пресетів (і після зміни мови)
+export function renderPresets() {
   $('#presets').innerHTML = presetButtons();
+  markPreset();
+}
+
+export function initSidebar({ loadProject }) {
+  renderPresets();
   $('#presets').addEventListener('click', e => {
     const b = e.target.closest('[data-preset]');
     if (!b) return;

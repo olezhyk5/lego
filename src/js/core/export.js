@@ -1,6 +1,7 @@
 import { t, tm, formatNumber } from '../i18n/index.js';
 import { getType } from './registry.js';
 import { sheetTotals } from './common/sheets.js';
+import { sheetFitWarnings } from './common/production.js';
 
 export const panelSize = p => `${p.a} × ${p.b}`;
 export const sheetLabel = r =>
@@ -27,6 +28,9 @@ export function projectReport(s) {
     type,
     L,
     P,
+    errs: L.errs,
+    // попередження типу + загальні виробничі (деталь більша за лист)
+    warns: [...L.warns, ...sheetFitWarnings(P.panels)],
     sheets: sheetTotals(P.panels),
     summary: type.summary(s, L),
     describe: type.describe(s, L),

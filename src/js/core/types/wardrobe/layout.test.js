@@ -232,3 +232,21 @@ describe('carcass — кришка', () => {
     expect(L.secs[0].zones[0].top).toBe(2368);
   });
 });
+
+describe('computeLayout — ящики на напрямних', () => {
+  it('мілкий корпус: ящик 280 - 50 = 230 < 250', () => {
+    const L = computeLayout(
+      project([{ width: 'auto', zones: [{ type: 'drawers', count: 3, height: 'auto' }] }], { D: 280 }),
+    );
+    expect(keys(L.warns)).toContain('check.drawerShallow');
+  });
+
+  it('широка секція: фасад 1200 - 2*16 - 2*3 = 1162 > 1000', () => {
+    const L = computeLayout(
+      project([{ width: 'auto', zones: [{ type: 'drawers', count: 3, height: 'auto' }] }], { W: 1200 }),
+    );
+    expect(L.warns).toContainEqual(
+      expect.objectContaining({ key: 'check.drawerWide', params: expect.objectContaining({ w: 1162 }) }),
+    );
+  });
+});

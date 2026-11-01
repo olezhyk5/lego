@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { exportRows, toCsv, toTsv, fileBase, panelSize } from './export.js';
+import { exportRows, toCsv, toTsv, fileBase, panelSize, projectReport } from './export.js';
 import { presetProject } from './test-fixtures.js';
 
 describe('exportRows', () => {
@@ -60,4 +60,29 @@ describe('toTsv', () => {
 describe('імена та розміри', () => {
   it('fileBase', () => expect(fileBase(presetProject('wardrobe'))).toBe('shafa-1800x2400x600'));
   it('panelSize', () => expect(panelSize({ a: 2400, b: 600 })).toBe('2400 × 600'));
+});
+
+describe('projectReport — виробничі попередження', () => {
+  it('задня стінка ширша за лист ДВП: W 2500, H 2400', () => {
+    // задня стінка (2400 - 4) × (2500 - 4) = 2396 × 2496; лист 2800 × 2070: 2496 > 2070 і 2396 > 2070
+    const R = projectReport({ ...presetProject('wardrobe'), W: 2500 });
+    expect(R.warns).toContainEqual(
+      expect.objectContaining({ key: 'check.panelTooBig', params: expect.objectContaining({ a: 2396, b: 2496 }) }),
+    );
+  });
+
+  it('боковина вища за робочу площу ДСП: H 2800 > 2780', () => {
+    const R = projectReport({ ...presetProject('penal'), H: 2800 });
+    expect(R.warns).toContainEqual(
+      expect.objectContaining({
+        key: 'check.panelTooBig',
+        params: expect.objectContaining({ part: { key: 'part.side' } }),
+      }),
+    );
+  });
+
+  it('errs і warns типу теж у звіті', () => {
+    const R = projectReport({ ...presetProject('wardrobe'), W: 200 });
+    expect(R.errs.map(e => e.key)).toContain('check.tooSmall');
+  });
 });

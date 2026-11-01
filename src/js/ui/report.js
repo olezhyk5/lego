@@ -10,10 +10,10 @@ const dataRow = (name, size, q) => row(`<td>${name}</td><td>${size}</td><td clas
 
 // R — projectReport(s) з core/export.js
 export function renderReport(R) {
-  const { L, P } = R;
+  const { P } = R;
   $('#msgs').innerHTML =
-    L.errs.map(e => `<div class="message message--error" data-msg="error">⛔ ${tm(e)}</div>`).join('') +
-    L.warns.map(w => `<div class="message message--warn" data-msg="warn">⚠ ${tm(w)}</div>`).join('');
+    R.errs.map(e => `<div class="message message--error" data-msg="error">⛔ ${tm(e)}</div>`).join('') +
+    R.warns.map(w => `<div class="message message--warn" data-msg="warn">⚠ ${tm(w)}</div>`).join('');
   $('#tP').innerHTML =
     head('report.part', 'report.sizeMm') + P.panels.map(p => dataRow(t(p.key), panelSize(p), p.q)).join('');
   $('#tS').innerHTML =
@@ -26,18 +26,19 @@ export function renderReport(R) {
   $('#desc').innerHTML = R.describe.map(d => `<li>${describeText(d)}</li>`).join('');
 }
 
+// Стан кнопки згортання (і після зміни мови — підказка перекладається)
+export function syncReportToggle() {
+  const collapsed = store.reportCollapsed;
+  $('#reportCols').hidden = collapsed;
+  $('#reportToggle').setAttribute('aria-expanded', String(!collapsed));
+  $('#reportToggle').title = t(collapsed ? 'report.expand' : 'report.collapse');
+}
+
 // Згортання списків плит і елементів однією кнопкою; стан лише на час сесії.
 export function initReport() {
-  const btn = $('#reportToggle');
-  const sync = () => {
-    const collapsed = store.reportCollapsed;
-    $('#reportCols').hidden = collapsed;
-    btn.setAttribute('aria-expanded', String(!collapsed));
-    btn.title = t(collapsed ? 'report.expand' : 'report.collapse');
-  };
-  btn.addEventListener('click', () => {
+  $('#reportToggle').addEventListener('click', () => {
     store.reportCollapsed = !store.reportCollapsed;
-    sync();
+    syncReportToggle();
   });
-  sync();
+  syncReportToggle();
 }

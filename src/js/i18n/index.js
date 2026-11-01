@@ -1,7 +1,8 @@
 import uk from './locales/uk.js';
+import en from './locales/en.js';
 
 // Нова мова = файл у locales/ + рядок тут. uk — еталон і fallback.
-const DICTIONARIES = { uk };
+const DICTIONARIES = { uk, en };
 export const DEFAULT_LOCALE = 'uk';
 export const LOCALES = Object.keys(DICTIONARIES);
 const STORAGE_KEY = 'lego-locale';

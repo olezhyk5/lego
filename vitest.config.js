@@ -5,5 +5,6 @@ export default defineConfig({
     // тести лежать поряд з кодом: src/js/**/<module>.test.js
     include: ['src/js/**/*.test.js'],
     environment: 'node',
+    setupFiles: ['src/js/i18n/test-setup.js'],
   },
 });

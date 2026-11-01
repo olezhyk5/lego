@@ -125,3 +125,18 @@ describe('computeLayout — повідомлення', () => {
     });
   });
 });
+
+describe('computeLayout — ящики на напрямних', () => {
+  it('мілкий корпус: ящик 280 - 50 = 230 < 250; вузький модуль: фасад 200 - 2*3 = 194 < 200', () => {
+    const L = computeLayout(
+      kitchen(
+        [
+          { width: 600, type: 'drawers', count: 3 },
+          { width: 200, type: 'drawers', count: 3 },
+        ],
+        { D: 280 },
+      ),
+    );
+    expect(keys(L.warns)).toEqual(expect.arrayContaining(['check.drawerShallow', 'check.drawerNarrow']));
+  });
+});
