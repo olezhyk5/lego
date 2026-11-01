@@ -124,6 +124,7 @@ export default {
     back: 'Задня стінка (ДВП)',
     rod: 'Штанга',
     drawer: 'Ящик (блок)',
+    handle: 'Ручка',
   },
   itemSize: {
     rod: '{w} мм',

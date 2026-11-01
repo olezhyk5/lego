@@ -1,9 +1,23 @@
 import * as THREE from 'three';
-import { T, GAP } from '../config/constants.js';
 import { round } from '../utils/helpers.js';
 import { drawerFront } from '../core/layout.js';
+import { modelGeometry } from '../core/geometry.js';
 import { addLabel, addDim } from './annotations.js';
 import { t } from '../i18n/index.js';
+
+// Матеріал 3D за ключем деталі
+const LOOK = {
+  'part.side': 'wood',
+  'part.top': 'wood',
+  'part.bottom': 'wood',
+  'part.plinth': 'wood',
+  'part.divider': 'wood',
+  'part.back': 'back',
+  'part.zoneShelf': 'shelf',
+  'part.shelf': 'shelf',
+  'part.drawerFront': 'front',
+  'part.handle': 'handle',
+};
 
 const ZONE_LABEL_STYLE = { bg: 'rgba(255,247,237,.95)', border: 'rgba(194,65,12,.35)', color: '#7c2d12' };
 
@@ -31,42 +45,18 @@ export function buildModel(s, L, { sel, showDims, M }) {
     return m;
   }
 
-  // корпус
-  const { sideH, topW, topX, topT, topD, topZ, backH } = L.carcass;
-  box(T, sideH, s.D, 0, 0, 0, M.wood);
-  box(T, sideH, s.D, s.W - T, 0, 0, M.wood);
-  box(topW, topT, topD, topX, s.H - topT, topZ, M.wood);
-  box(s.W - 2 * T, T, s.D, T, s.plinth, 0, M.wood);
-  if (s.plinth > 0) box(s.W - 2 * T, s.plinth, T, T, 0, s.D - T - 30, M.wood);
-  box(s.W, backH + 4, 3, 0, 0, -3, M.back);
-
-  L.secs.forEach((c, idx) => {
-    if (idx < L.secs.length - 1) box(T, L.Hin, s.D, c.x + c.w, L.y0, 0, M.wood);
-    if (idx === sel && L.secs.length > 1) box(c.w, L.Hin, s.D + 2, c.x, L.y0, 0, M.hl, false);
-    c.zones.forEach((z, j) => {
-      if (j < c.zones.length - 1) box(c.w, T, s.D, c.x, z.bottom - T, 0, M.shelf);
-      if (z.type === 'shelves') {
-        const gap = (z.h - z.cnt * T) / (z.cnt + 1);
-        for (let k = 0; k < z.cnt; k++) box(c.w, T, s.D - 20, c.x, z.bottom + gap * (k + 1) + T * k, 0, M.shelf);
-      }
-      if (z.type === 'rod' && c.w > 0) {
-        const g = new THREE.CylinderGeometry(12, 12, Math.max(c.w, 1), 20);
-        const m = new THREE.Mesh(g, M.rod);
-        m.rotation.z = Math.PI / 2;
-        m.position.set(c.x + c.w / 2, z.top - 60, s.D / 2);
-        model.add(m);
-      }
-      if (z.type === 'drawers') {
-        const fh = drawerFront(z.h, z.cnt);
-        for (let k = 0; k < z.cnt; k++) {
-          const y = z.bottom + GAP + (fh + GAP) * k;
-          box(c.w - 2 * GAP, fh, 18, c.x + GAP, y, s.D - 18, M.front);
-          const hw = Math.min(c.w * 0.35, 180);
-          box(hw, 12, 18, c.x + c.w / 2 - hw / 2, y + fh * 0.62, s.D, M.handle, false);
-        }
-      }
-    });
+  const { boxes, rods } = modelGeometry(s, L);
+  boxes.forEach(b => box(b.w, b.h, b.d, b.x, b.y, b.z, M[LOOK[b.key]], b.key !== 'part.handle'));
+  rods.forEach(r => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r.r, r.r, Math.max(r.len, 1), 20), M.rod);
+    m.rotation.z = Math.PI / 2;
+    m.position.set(r.x + r.len / 2, r.y, r.z);
+    model.add(m);
   });
+
+  // підсвітка вибраної секції
+  const selSec = L.secs[sel];
+  if (selSec && L.secs.length > 1) box(selSec.w, L.Hin, s.D + 2, selSec.x, L.y0, 0, M.hl, false);
 
   // розміри
   const lh = Math.max(s.W, s.H, s.D) / 42;
