@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "type": "wardrobe",
+  "W": 1000,
+  "H": 2000,
+  "D": 600,
+  "plinth": 80,
+  "sections": [
+    {
+      "width": "auto",
+      "zones": [
+        {
+          "type": "shelves",
+          "count": 3,
+          "height": "auto"
+        },
+        {
+          "type": "drawers",
+          "count": 2,
+          "height": 400
+        }
+      ]
+    }
+  ],
+  "top": {
+    "mount": "over",
+    "double": true,
+    "overhang": {
+      "back": 0,
+      "front": 20,
+      "left": 10,
+      "right": 10
+    }
+  }
+}

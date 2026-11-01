@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { T } from '../config/constants.js';
-import { carcass, computeLayout, drawerFront } from './layout.js';
-import { preset, project, keys } from './test-fixtures.js';
+import { T } from '../../../config/constants.js';
+import { carcass } from '../../common/carcass.js';
+import { computeLayout, drawerFront } from './layout.js';
+import { preset, project, keys } from '../../test-fixtures.js';
 
 describe('drawerFront', () => {
   it('віднімає зазори між фасадами', () => {

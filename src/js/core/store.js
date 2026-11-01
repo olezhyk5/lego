@@ -1,47 +1,72 @@
-import { STORAGE_KEY, PRESET_STORAGE_KEY } from '../config/constants.js';
-import { PRESETS, DEFAULT_PRESET } from '../config/presets.js';
-import { clone, deepEqual } from '../utils/helpers.js';
+import { STORAGE_KEY, LEGACY_STORAGE_KEYS, PRESET_STORAGE_KEY } from '../config/constants.js';
+import { upgradeProject } from './project-format.js';
+import { validateProject } from './registry.js';
+import { DEFAULT_PRESET, presetProject, matchPreset, isPresetId, upgradePresetId } from './presets.js';
 
-export const isValidProject = d => !!d && Array.isArray(d.sections) && d.sections.length > 0;
+/** @typedef {import('./types.js').Project} Project */
 
-// Ключ пресета, з яким проєкт збігається повністю, або null, якщо проєкт змінено
-export const matchPreset = s => Object.keys(PRESETS).find(k => deepEqual(PRESETS[k].data, s)) ?? null;
+/**
+ * Сирий JSON (файл, localStorage) → перевірений проєкт поточної версії або помилки.
+ * @param {unknown} raw
+ * @returns {{ ok: true, project: Project } | { ok: false, errors: import('./types.js').Msg[] }}
+ */
+export function parseProject(raw) {
+  const up = upgradeProject(raw);
+  if (!up.ok) return { ok: false, errors: [up.error] };
+  return validateProject(up.project);
+}
+
+// Проєкт з localStorage або null (зіпсовані дані — у консоль)
+function readProject(key) {
+  const res = parseProject(JSON.parse(localStorage.getItem(key) ?? 'null'));
+  if (res.ok) return res.project;
+  console.warn(`localStorage['${key}']: проєкт не пройшов перевірку`, res.errors);
+  return null;
+}
 
 function load() {
   try {
-    const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (isValidProject(d)) return d;
+    if (localStorage.getItem(STORAGE_KEY) != null) return readProject(STORAGE_KEY) ?? presetProject(DEFAULT_PRESET);
+    // старий ключ не видаляємо: відкат на попередню збірку не втратить дані
+    for (const key of LEGACY_STORAGE_KEYS) {
+      const d = readProject(key);
+      if (d) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+        return d;
+      }
+    }
   } catch {
-    // localStorage недоступний (приватний режим тощо) — працюємо без нього
+    // localStorage недоступний (приватний режим тощо) або дані зіпсовані — працюємо без них
   }
-  return clone(PRESETS[DEFAULT_PRESET].data);
+  return presetProject(DEFAULT_PRESET);
 }
 
-// Збережений ключ пресета; якщо його немає — пресет, з яким збігається проєкт
+// Збережений ідентифікатор пресета; якщо його немає — пресет, з яким збігається проєкт
 function loadPreset(state) {
   try {
-    const k = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY));
-    if (Object.hasOwn(PRESETS, k)) return k;
+    const id = upgradePresetId(JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) ?? 'null'));
+    if (isPresetId(id)) return id;
   } catch {
     // localStorage недоступний або значення зіпсоване
   }
   return matchPreset(state);
 }
 
+// Стан форми поточного типу: sel — індекс вибраної групи (секції тощо),
+// collapsed — згорнуті в сайдбарі об'єкти (переживають переміщення, з новим проєктом скидаються)
+const freshUi = () => ({ sel: 0, collapsed: new WeakSet() });
+
 const initial = load();
 
 // Єдине джерело стану застосунку. Модулі читають/змінюють store напряму,
 // після змін викликають update() з main.js.
 export const store = {
-  state: initial, // проєкт: габарити + секції (зберігається)
+  state: initial, // проєкт поточної версії формату (зберігається)
   preset: loadPreset(initial), // останній вибраний пресет (лишається активним і після змін) або null
-  sel: 0, // індекс вибраної секції
+  ui: freshUi(), // у JSON проєкту не потрапляє
   showDims: true, // показувати розміри в 3D
   transparent: false, // напівпрозорі плити в 3D, щоб бачити наповнення
   reportCollapsed: true, // згорнуті списки плит і елементів під 3D
-  // згорнуті в сайдбарі секції — самі об'єкти секцій, тож стан переживає переміщення,
-  // а з новим проєктом скидається; у JSON проєкту не потрапляє
-  collapsed: new WeakSet(),
 };
 
 export function save() {
@@ -53,9 +78,12 @@ export function save() {
   }
 }
 
-// preset — ключ вибраного пресета; для проєкту з файлу визначається за збігом
+/**
+ * @param {Project} data проєкт поточної версії (presetProject або parseProject)
+ * @param {string | null} preset ідентифікатор вибраного пресета; для проєкту з файлу — за збігом
+ */
 export function setProject(data, preset = matchPreset(data)) {
   store.state = data;
   store.preset = preset;
-  store.sel = 0;
+  store.ui = freshUi();
 }

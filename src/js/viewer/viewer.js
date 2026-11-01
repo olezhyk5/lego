@@ -74,17 +74,19 @@ export function createViewer(container) {
   resize();
 
   return {
-    rebuild(s, L, { sel, showDims }) {
+    // data — {geometry, annotations, bounds} з модуля типу (див. main.js)
+    rebuild(data, { showDims }) {
       disposeGroup(model);
       scene.remove(model);
-      ({ model, dims } = buildModel(s, L, { sel, showDims, M }));
+      ({ model, dims } = buildModel(data, { showDims, M }));
       scene.add(model);
       requestRender();
     },
-    fit(s) {
-      const size = Math.max(s.W, s.H, s.D);
-      controls.target.set(0, s.H / 2, 0);
-      camera.position.set(s.W * 0.45 + size * 0.25, s.H * 0.7, size * 1.85 + s.D);
+    // b — габарити моделі {W, H, D}
+    fit(b) {
+      const size = Math.max(b.W, b.H, b.D);
+      controls.target.set(0, b.H / 2, 0);
+      camera.position.set(b.W * 0.45 + size * 0.25, b.H * 0.7, size * 1.85 + b.D);
       controls.update();
       requestRender();
     },

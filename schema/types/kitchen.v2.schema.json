@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/olezhyk5/lego/schema/types/kitchen.v2.schema.json",
+  "title": "Кухня (type: kitchen), формат v2",
+  "description": "Ряд нижніх модулів зліва направо на ніжках, зі спільною стільницею (товщина — з матеріалу) і цокольною планкою. Розміри в мм; ширини модулів фіксовані.",
+  "type": "object",
+  "required": ["version", "type", "H", "D", "legs", "modules"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 2 },
+    "type": { "const": "kitchen" },
+    "H": { "$ref": "#/$defs/mm", "description": "Висота корпусу модулів (без ніжок і стільниці)." },
+    "D": { "$ref": "#/$defs/mm", "description": "Глибина корпусу модулів." },
+    "legs": { "$ref": "#/$defs/smallMm", "description": "Висота ніжок; 0 — без ніжок і цокольної планки." },
+    "worktop": {
+      "description": "Виступи стільниці за модулі. Немає поля → спереду 30, з боків 0.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "front": { "$ref": "#/$defs/smallMm" },
+        "left": { "$ref": "#/$defs/smallMm" },
+        "right": { "$ref": "#/$defs/smallMm" }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/module" }
+    }
+  },
+  "$defs": {
+    "mm": { "type": "number", "minimum": 1, "maximum": 10000 },
+    "smallMm": { "type": "number", "minimum": 0, "maximum": 1000 },
+    "module": {
+      "type": "object",
+      "required": ["width", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "width": { "$ref": "#/$defs/mm" },
+        "type": { "enum": ["doors", "drawers", "sink", "open"] },
+        "count": {
+          "type": "integer",
+          "description": "Двері (1–2), ящики (1–6) або полиці відкритого модуля (0–6). Для sink поля немає."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "doors" } } },
+          "then": { "required": ["count"], "properties": { "count": { "minimum": 1, "maximum": 2 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "drawers" } } },
+          "then": { "required": ["count"], "properties": { "count": { "minimum": 1, "maximum": 6 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "open" } } },
+          "then": { "required": ["count"], "properties": { "count": { "minimum": 0, "maximum": 6 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "sink" } } },
+          "then": { "not": { "required": ["count"] } }
+        }
+      ]
+    }
+  }
+}

@@ -8,10 +8,11 @@ const STORAGE_KEY = 'lego-locale';
 
 let locale = detectLocale();
 
+/** @returns {string} */
 function detectLocale() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (DICTIONARIES[saved]) return saved;
+    if (saved && DICTIONARIES[saved]) return saved;
   } catch {
     // localStorage недоступний (приватний режим тощо) — працюємо без нього
   }
@@ -58,7 +59,7 @@ const ATTRS = ['title', 'placeholder', 'aria-label'];
 export function translateDom(root = document) {
   document.documentElement.lang = locale;
   root.querySelectorAll('[data-i18n]').forEach(el => {
-    el.textContent = t(el.dataset.i18n);
+    el.textContent = t(el.getAttribute('data-i18n'));
   });
   ATTRS.forEach(attr => {
     root

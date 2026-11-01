@@ -1,8 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { PRESETS } from '../config/presets.js';
-import { ZONE_TYPES, TOP_MOUNTS, TOP_OVERHANG_SIDES } from '../config/constants.js';
+import { TOP_MOUNTS, TOP_OVERHANG_SIDES } from '../config/constants.js';
+import { ZONE_TYPES } from '../core/types/wardrobe/constants.js';
+import { presetIds } from '../core/presets.js';
+import { typeIds, getType } from '../core/registry.js';
 import { MATERIALS } from '../config/materials.js';
 import uk from './locales/uk.js';
 
@@ -56,7 +58,14 @@ describe('ключі, що використовуються', () => {
   });
 
   it('є назва для кожного пресета', () => {
-    Object.keys(PRESETS).forEach(k => expect(UK_KEYS.has(`preset.${k}`), k).toBe(true));
+    presetIds().forEach(id => expect(UK_KEYS.has(`preset.${id}`), id).toBe(true));
+  });
+
+  it('є назва й заголовки опису для кожного типу меблів', () => {
+    typeIds().forEach(id => {
+      expect(UK_KEYS.has(`type.${id}`), id).toBe(true);
+      Object.values(getType(id).describeTitle).forEach(key => expect(UK_KEYS.has(key), key).toBe(true));
+    });
   });
 
   it('є назва для кожного матеріалу', () => {

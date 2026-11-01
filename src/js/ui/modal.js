@@ -1,19 +1,22 @@
 import { $ } from '../utils/dom.js';
+import { t } from '../i18n/index.js';
 
 // Попап з опціями. Один екземпляр (#modal в index.html), вміст підставляє той, хто відкриває.
 // Зміни застосовує лише onSave: «Скасувати», хрестик, оверлей і Esc закривають без змін.
 
 let current = null;
 
-// openModal({ title, body, onOpen, onSave })
+// openModal({ title, body, onOpen, onSave, saveLabel })
 //   title  — уже перекладений заголовок (t(...))
 //   body   — HTML-рядок з ui/templates.js
+//   saveLabel — ключ підпису кнопки підтвердження (за замовчуванням modal.save)
 //   onOpen(bodyEl) — заповнити поля / повісити обробники
 //   onSave(bodyEl) — застосувати зміни; поверне false → попап лишається відкритим (напр. помилка вводу)
-export function openModal({ title, body, onOpen, onSave }) {
+export function openModal({ title, body, onOpen, onSave, saveLabel = 'modal.save' }) {
   const dialog = $('#modal');
   const bodyEl = $('#modalBody');
   $('#modalTitle').textContent = title;
+  $('#modalSubmit').textContent = t(saveLabel);
   bodyEl.innerHTML = body;
   current = { onSave };
   if (onOpen) onOpen(bodyEl);

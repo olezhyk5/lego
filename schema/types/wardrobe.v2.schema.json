@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/olezhyk5/lego/schema/types/wardrobe.v2.schema.json",
+  "title": "Шафа (type: wardrobe), формат v2",
+  "description": "Корпус з секціями зліва направо; у секції зони зверху вниз. Розміри в мм; 'auto' ділить залишок порівну.",
+  "type": "object",
+  "required": ["version", "type", "W", "H", "D", "plinth", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 2 },
+    "type": { "const": "wardrobe" },
+    "W": { "$ref": "#/$defs/mm" },
+    "H": { "$ref": "#/$defs/mm" },
+    "D": { "$ref": "#/$defs/mm" },
+    "plinth": { "$ref": "#/$defs/smallMm" },
+    "top": {
+      "description": "Кришка. Немає поля → між боковинами, одинарна.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mount": { "enum": ["between", "over"] },
+        "double": { "type": "boolean" },
+        "overhang": {
+          "description": "Виступи за корпус, мм; враховуються лише для mount = over.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "back": { "$ref": "#/$defs/smallMm" },
+            "front": { "$ref": "#/$defs/smallMm" },
+            "left": { "$ref": "#/$defs/smallMm" },
+            "right": { "$ref": "#/$defs/smallMm" }
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "required": ["width", "zones"],
+        "additionalProperties": false,
+        "properties": {
+          "width": { "$ref": "#/$defs/autoOrMm" },
+          "zones": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 30,
+            "items": { "$ref": "#/$defs/zone" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "mm": { "type": "number", "minimum": 1, "maximum": 10000 },
+    "smallMm": { "type": "number", "minimum": 0, "maximum": 1000 },
+    "autoOrMm": { "oneOf": [{ "const": "auto" }, { "$ref": "#/$defs/mm" }] },
+    "count": { "type": "integer", "minimum": 1, "maximum": 20 },
+    "zone": {
+      "type": "object",
+      "required": ["type", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["empty", "shelves", "rod", "drawers"] },
+        "height": { "$ref": "#/$defs/autoOrMm" },
+        "count": { "$ref": "#/$defs/count", "description": "Обов'язкове для shelves і drawers." }
+      },
+      "if": { "properties": { "type": { "enum": ["shelves", "drawers"] } } },
+      "then": { "required": ["count"] }
+    }
+  }
+}

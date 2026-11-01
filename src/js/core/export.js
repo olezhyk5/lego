@@ -1,6 +1,6 @@
 import { t, tm, formatNumber } from '../i18n/index.js';
-import { computeLayout } from './layout.js';
-import { partsList, sheetTotals, describe } from './parts.js';
+import { getType } from './registry.js';
+import { sheetTotals } from './common/sheets.js';
 
 export const panelSize = p => `${p.a} × ${p.b}`;
 export const sheetLabel = r =>
@@ -10,34 +10,46 @@ export const sheetLabel = r =>
     area: formatNumber((r.sheet.a * r.sheet.b) / 1e6, 2),
   });
 export const areaText = r => formatNumber(r.area, 2);
-// Кришка одним рядком: «Над боковинами» або «Над боковинами, потовщена (2 плити)» (+ виступи, якщо є)
-export const topText = c => {
-  const mount = t(`topMount.${c.mount}`);
-  const top = c.double ? t('export.topDouble', { mount }) : mount;
-  return Object.values(c.overhang).some(v => v > 0) ? t('export.topOverhang', { top, ...c.overhang }) : top;
-};
-export const describeText = d => t(d.key, { ...d.params, zones: d.zones.map(tm).join(' → ') });
+// Значення з summary(): повідомлення {key, params}, число або готовий рядок без тексту
+export const valueText = v => (v && typeof v === 'object' ? tm(v) : v);
+// Рядок опису: дочірні повідомлення (зони тощо) — через «→»
+export const describeText = d => t(d.key, { ...d.params, children: (d.children || []).map(tm).join(' → ') });
+
+/**
+ * Усе, що показують звіт і експорт, для проєкту будь-якого типу (без тексту).
+ * @param {import('./types.js').Project} s
+ */
+export function projectReport(s) {
+  const type = getType(s.type);
+  const L = type.layout(s);
+  const P = type.parts(s, L);
+  return {
+    type,
+    L,
+    P,
+    sheets: sheetTotals(P.panels),
+    summary: type.summary(s, L),
+    describe: type.describe(s, L),
+  };
+}
 
 // Рядки таблиці для CSV / буфера обміну (поточною мовою).
 export function exportRows(s) {
-  const L = computeLayout(s),
-    P = partsList(s, L);
+  const R = projectReport(s);
   return [
-    [t('export.overall'), `${s.W} × ${s.H} × ${s.D}`, ''],
-    [t('export.plinth'), s.plinth, ''],
-    [t('export.top'), topText(L.carcass), ''],
+    ...R.summary.map(r => [tm(r.label), valueText(r.value), '']),
     [],
     [t('report.part'), t('report.sizeMm'), t('report.qty')],
-    ...P.panels.map(p => [t(p.key), panelSize(p), p.q]),
+    ...R.P.panels.map(p => [t(p.key), panelSize(p), p.q]),
     [],
     [t('report.material'), t('report.area'), t('report.sheets')],
-    ...sheetTotals(P.panels).map(r => [sheetLabel(r), areaText(r), r.sheets]),
+    ...R.sheets.map(r => [sheetLabel(r), areaText(r), r.sheets]),
     [],
     [t('report.item'), t('report.size'), t('report.qty')],
-    ...P.items.map(p => [t(p.key), tm(p.size), p.q]),
+    ...R.P.items.map(p => [t(p.key), tm(p.size), p.q]),
     [],
-    [t('export.description')],
-    ...describe(L).map(d => [describeText(d)]),
+    [t(R.type.describeTitle.export)],
+    ...R.describe.map(d => [describeText(d)]),
   ];
 }
 
@@ -45,4 +57,4 @@ export const toCsv = rows =>
   '﻿' + rows.map(row => row.map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
 export const toTsv = rows => rows.map(row => row.join('\t')).join('\n');
 
-export const fileBase = s => `shafa-${s.W}x${s.H}x${s.D}`;
+export const fileBase = s => getType(s.type).fileBase(s);

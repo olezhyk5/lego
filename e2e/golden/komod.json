@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "type": "wardrobe",
+  "W": 1000,
+  "H": 900,
+  "D": 450,
+  "plinth": 60,
+  "sections": [
+    {
+      "width": "auto",
+      "zones": [
+        {
+          "type": "drawers",
+          "count": 4,
+          "height": "auto"
+        }
+      ]
+    }
+  ]
+}

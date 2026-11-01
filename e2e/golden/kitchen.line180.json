@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "worktop": {
+    "front": 30,
+    "left": 0,
+    "right": 0
+  },
+  "modules": [
+    {
+      "width": 600,
+      "type": "drawers",
+      "count": 4
+    },
+    {
+      "width": 600,
+      "type": "sink"
+    },
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 2
+    }
+  ]
+}

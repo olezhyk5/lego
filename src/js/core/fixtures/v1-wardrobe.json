@@ -1,0 +1,27 @@
+{
+  "W": 1600,
+  "H": 2300,
+  "D": 580,
+  "plinth": 70,
+  "sections": [
+    {
+      "width": "auto",
+      "zones": [
+        { "type": "empty", "height": 380 },
+        { "type": "rod", "height": "auto" }
+      ]
+    },
+    {
+      "width": 550,
+      "zones": [
+        { "type": "shelves", "count": 4, "height": "auto" },
+        { "type": "drawers", "count": 3, "height": 620 }
+      ]
+    }
+  ],
+  "top": {
+    "mount": "over",
+    "double": true,
+    "overhang": { "back": 0, "front": 20, "left": 10, "right": 10 }
+  }
+}

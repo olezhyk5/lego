@@ -4,3 +4,7 @@ node_modules/
 # зібрані файли: генеруються з src/ командою `npm run build`
 assets/css/
 assets/js/
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

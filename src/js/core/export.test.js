@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { exportRows, toCsv, toTsv, fileBase, panelSize } from './export.js';
-import { preset } from './test-fixtures.js';
+import { presetProject } from './test-fixtures.js';
 
 describe('exportRows', () => {
-  const rows = exportRows(preset('wardrobe'));
+  const rows = exportRows(presetProject('wardrobe'));
 
   it('починається з габаритів', () => {
     expect(rows[0]).toEqual(['Габарит (Ш × В × Г), мм', '1800 × 2400 × 600', '']);
@@ -15,7 +15,7 @@ describe('exportRows', () => {
   });
 
   it('кришка: над боковинами, потовщена', () => {
-    const r = exportRows({ ...preset('wardrobe'), top: { mount: 'over', double: true } });
+    const r = exportRows({ ...presetProject('wardrobe'), top: { mount: 'over', double: true } });
     expect(r[2]).toEqual(['Кришка', 'Над боковинами, потовщена (2 плити)', '']);
     // деталі відповідають налаштуванню (розрахунок — див. parts.test.js)
     expect(r).toContainEqual(['Кришка', '1800 × 600', 2]);
@@ -24,7 +24,7 @@ describe('exportRows', () => {
 
   it('кришка: виступи у рядку кришки', () => {
     const r = exportRows({
-      ...preset('wardrobe'),
+      ...presetProject('wardrobe'),
       top: { mount: 'over', overhang: { back: 0, front: 20, left: 0, right: 0 } },
     });
     expect(r[2]).toEqual(['Кришка', 'Над боковинами; виступи: ззаду 0, спереду 20, зліва 0, справа 0 мм', '']);
@@ -58,6 +58,6 @@ describe('toTsv', () => {
 });
 
 describe('імена та розміри', () => {
-  it('fileBase', () => expect(fileBase({ W: 1800, H: 2400, D: 600 })).toBe('shafa-1800x2400x600'));
+  it('fileBase', () => expect(fileBase(presetProject('wardrobe'))).toBe('shafa-1800x2400x600'));
   it('panelSize', () => expect(panelSize({ a: 2400, b: 600 })).toBe('2400 × 600'));
 });

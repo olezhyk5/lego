@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { computeLayout } from './layout.js';
-import { partsList, sheetTotals, describe as describeSections } from './parts.js';
-import { MATERIALS } from '../config/materials.js';
-import { preset, project } from './test-fixtures.js';
+import { partsList, describe as describeSections } from './parts.js';
+import { sheetTotals } from '../../common/sheets.js';
+import { MATERIALS } from '../../../config/materials.js';
+import { preset, project } from '../../test-fixtures.js';
 
 const specOf = s => partsList(s, computeLayout(s));
 const panel = (P, key, a, b) => P.panels.find(p => p.key === key && p.a === a && p.b === b);
@@ -40,6 +41,7 @@ describe('partsList — пресет «Шафа 3 секції»', () => {
     expect(P.items).toEqual([
       { key: 'part.rod', size: { key: 'itemSize.rod', params: { w: 568 } }, q: 3 },
       { key: 'part.drawer', size: { key: 'itemSize.drawer', params: { w: 594, h: 196, d: 550 } }, q: 3 },
+      { key: 'part.handle', size: { key: 'itemSize.handle' }, q: 3 }, // по ручці на фасад
     ]);
   });
 
@@ -156,11 +158,12 @@ describe('sheetTotals', () => {
 
 describe('describe', () => {
   it('описує секції та зони ключами', () => {
-    const L = computeLayout(preset('wardrobe'));
-    expect(describeSections(L)[1]).toEqual({
+    const s = preset('wardrobe');
+    const L = computeLayout(s);
+    expect(describeSections(s, L)[1]).toEqual({
       key: 'describe.section',
       params: { n: 2, w: 600 },
-      zones: [
+      children: [
         { key: 'describe.shelves', params: { cnt: 3, h: 1672 } },
         { key: 'describe.drawers', params: { cnt: 3, front: 196, h: 600 } },
       ],

@@ -1,5 +1,25 @@
+@use "../abstracts" as *;
+
+// Кнопки пресетів; якщо типів меблів кілька — групами з назвою типу
 .presets {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+
+  &__group {
+    flex-basis: 100%;
+  }
+
+  &__title {
+    margin: 2px 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: color(muted);
+  }
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 }

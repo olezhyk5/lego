@@ -10,7 +10,7 @@
 
 Враховуй це в кожному рішенні:
 
-- **Інші типи меблів** (зараз лише шафа/комод/тумба/пенал з однією моделлю). Код під конкретний тип не повинен «протікати» в загальні модулі.
+- **Інші типи меблів** (зараз шафа — з пресетами шафи, комода, тумби, пенала — і кухня). Код під конкретний тип не повинен «протікати» в загальні модулі (див. «Типи меблів»).
 - **Матеріали, кольори, ціни.** Вартість рахуватиме зовнішній **API**. Специфікація (`core/parts.js`) має лишатися машиночитною (ключі + числа, без тексту), бо саме вона піде в API.
 - **Зберігання.** Зараз це JSON-файли та localStorage. Пізніше той самий JSON зберігатиметься в базі, а файли лишаться. Формат проєкту — публічний контракт, тож міняємо його обережно (див. «Модель даних»).
 - **Багатомовність**: усі тексти лише через i18n (див. нижче).
@@ -28,14 +28,18 @@ npm run dev          # збірка + browser-sync + watch
 npm run build        # продакшн-збірка (мініфікація, без sourcemap)
 npm run lint         # ESLint + Stylelint
 npm run lint:fix     # автовиправлення
+npm run typecheck    # перевірка типів JSDoc (tsc, без збірки)
 npm run format       # Prettier
 npm test             # тести (Vitest), один прогін
 npm run test:watch   # тести в режимі спостереження
-npm run check        # lint + format:check + test + build — запускати перед комітом
+npm run check        # lint + typecheck + format:check + test + build — запускати перед комітом
+npm run test:e2e     # e2e (Playwright): збірка + сервер на :4173 + тести в Chromium і WebKit
+npm run test:e2e:golden  # перезаписати еталонні CSV/JSON (e2e/golden/) — лише коли зміна навмисна
+npm run check:full   # check + e2e — перед великими змінами й перед пушем
 ```
 
 `npm run dev` піднімає статичний сервер з кореня. Через сайт Local: `BS_PROXY=http://ideal-health.local npm run dev`.
-Pre-commit хук (husky, `.husky/pre-commit`) запускає `npm run lint`, `npm run format:check` і `npm test`. Якщо він падає, виправ (`npm run lint:fix`, `npm run format`), а **не обходь через `--no-verify`**.
+Pre-commit хук (husky, `.husky/pre-commit`) запускає `npm run lint`, `npm run typecheck`, `npm run format:check` і `npm test`. Якщо він падає, виправ (`npm run lint:fix`, `npm run format`), а **не обходь через `--no-verify`**.
 
 ## Головні правила
 
@@ -63,13 +67,22 @@ src/
     layout/              каркас сторінки: topbar, app (сітка, сайдбар, main)
     components/          один BEM-блок = один файл
   js/
-    main.js              точка входу: i18n → в'юер → UI; містить update()
-    config/              константи, пресети — лише дані
+    main.js              точка входу: i18n → в'юер → UI; містить update() і loadProject()
+    config/              спільні константи (T, GAP, кришка, ролі матеріалів 3D, ключі localStorage), матеріали
     i18n/                t(), tm(), translateDom(); locales/<мова>.js
-    core/                чиста логіка (стан, розрахунок, специфікація, експорт) — без DOM і Three.js
-    viewer/              Three.js: сцена, матеріали, побудова моделі, підписи
-    ui/                  DOM: шаблони, рендер, обробники подій
+    core/                чиста логіка — без DOM і Three.js
+      registry.js        реєстр типів меблів: getType(project.type)
+      types.js           JSDoc-типи, у т.ч. контракт типу FurnitureType
+      store.js presets.js project-format.js validate.js export.js   — загальні, працюють через реєстр
+      common/            спільні блоки для типів: корпус, збирачі специфікації й геометрії, листи
+      types/<тип>/       модуль типу: presets, layout, parts, geometry, annotations, validate, index.js
+    viewer/              Three.js: сцена, матеріали, побудова моделі з даних типу (типів не знає)
+    ui/                  DOM: оболонка (пресети, тулбар, звіт, модалка), шаблони
+      forms.js           реєстр форм типів
+      types/<тип>/       форма типу: шаблони, обробники, попапи
     utils/               дрібні універсальні хелпери
+schema/                  JSON Schema формату проєкту (контракт для бекенду)
+e2e/                     Playwright: сценарії, еталонні CSV/JSON (golden/), тестові файли
 assets/                  результат збірки
 ```
 
@@ -89,17 +102,34 @@ assets/                  результат збірки
 
 ## JavaScript
 
+- **Типи — JSDoc, а не TypeScript-файли** (рішення: файли лишаються `.js`, `tsc --noEmit` з `checkJs` лише перевіряє). Спільні типи — `core/types.js` (`Msg`, `Project`, `Panel`, `PartsList`, `Geometry`, `FurnitureType`…), підключаємо через `/** @param {import('./types.js').Project} s */`. Перевіряються `config/`, `utils/`, `core/`, `i18n/` (без тестів); `ui/` і `viewer/` поки ні. Публічні функції `core/` і контракти типів меблів мають JSDoc-типи. Переходимо на `.ts`, якщо з'явиться друга людина в команді або клієнт API, згенерований з OpenAPI.
 - ES-модулі, іменовані експорти (без `export default`; виняток — словники в `i18n/locales/`). esbuild збирає один IIFE-бандл під `browserslist`.
 - **Шари** (ESLint забороняє імпорти, що їх порушують):
   `main.js` → `ui/`, `viewer/` → `core/`, `i18n/` → `config/`, `utils/`.
   `core/` і `i18n/` не торкаються DOM і Three.js. `ui/` не імпортує `viewer/` і Three.js, з в'юером працює лише через API, яке передає `main.js`. `viewer/` не імпортує `ui/`.
-- **Стан** зберігається лише в `core/store.js` (`store.state` — проєкт, `store.sel`, `store.showDims`). Після зміни стану викликаємо `update(full)`: `true`, якщо змінилась структура (сайдбар перемальовується), `false`, якщо змінились лише значення (щоб зберегти фокус у полі).
+  Типи меблів незалежні: `core/types/<a>/` і `ui/types/<a>/` не імпортують інших типів; `core/common/` не імпортує типів і реєстру. Загальні модулі звертаються до типів лише через `core/registry.js` (і `ui/forms.js` для форм).
+- **Стан** зберігається лише в `core/store.js` (`store.state` — проєкт, `store.ui` — стан форми типу: `sel`, `collapsed`; `store.showDims`…). Після зміни стану викликаємо `update(full)`: `true`, якщо змінилась структура (форма перемальовується), `false`, якщо змінились лише значення (щоб зберегти фокус у полі). Новий проєкт (пресет, файл) — лише через `loadProject(project, preset)` з `main.js`.
 - **DOM-хуки**: `id` для статичної розмітки, `data-*` для згенерованої (`data-section`, `data-zone`, `data-field`, `data-act`, `data-preset`, `data-calc`). JS ніколи не шукає елементи за BEM-класами.
 - HTML-шаблони живуть в `ui/templates.js` (коли їх стане багато, у `ui/templates/*.js`), а не в обробниках подій.
 - Один модуль — одна відповідальність. Файл понад ~200 рядків або з двома задачами розділяємо.
 - Іменування: файли `kebab-case.js`, функції/змінні `camelCase`, константи `UPPER_SNAKE_CASE`.
 - 3D рендеримо лише на вимогу (`requestRender`), без постійного циклу. Перебудова моделі звільняє геометрії (`disposeGroup`).
 - Three.js — остання версія (зараз 0.186, точна версія в `package.json`). Додатки імпортуємо з `three/addons/...`. Світло фізично коректне: інтенсивності з legacy-режиму множимо на `Math.PI`. Canvas-текстурам з текстом ставимо `colorSpace = SRGBColorSpace`.
+
+## Типи меблів
+
+Кожен тип — модуль, що реалізує контракт `FurnitureType` (`core/types.js`): `presets`, `validate`, `layout`, `parts`, `summary`, `describe`, `geometry`, `annotations`, `fileBase`. Усі функції чисті й повертають ключі та числа. Ядро, viewer, звіт і експорт працюють через реєстр і про конкретні типи нічого не знають: **не пишемо `if (type === …)` у загальних модулях**. Якщо типу бракує можливості ядра — розширюємо контракт або `core/common/`.
+
+Як додати тип `<id>`:
+
+1. `core/types/<id>/`: `presets.js`, `layout.js` (обов'язково `errs`, `warns`, `bounds`), `parts.js` (специфікація, `summary`, `describe`), `geometry.js` (`look` з `LOOKS`), `annotations.js`, `validate.js`, `index.js` (збирає об'єкт типу) + тести поряд. Спільні деталі корпусу — з `core/common/`.
+2. Рядок у `TYPES` (`core/registry.js`).
+3. `ui/types/<id>/form.js` (+ `templates.js`) за контрактом з `ui/forms.js` і рядок у `FORMS`. Хуки — `id`/`data-*`.
+4. `schema/types/<id>.v2.schema.json` + гілка `if/then` у `schema/project.v2.schema.json` + фікстури `core/fixtures/validation/`.
+5. i18n: `type.<id>`, `preset.<id>.<ключ>`, заголовки опису (`describeTitle`), деталі `part.*`, перевірки `check.*`.
+6. e2e-сценарій і еталони для пресетів.
+
+`core/registry.test.js` автоматично перевіряє контракт кожного типу (пресети валідні й без помилок, ключі є в словнику, матеріали й ролі 3D відомі).
 
 ## i18n
 
@@ -129,15 +159,30 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
   - у кожній мові ті самі ключі й ті самі `{параметри}`, що в `uk.js`;
   - кожен ключ, згаданий у коді чи `index.html` як літерал `'namespace.key'`, існує в `uk.js`.
 
-  Ключі, що складаються динамічно (`'preset.' + k`), туди не потрапляють, тож для них потрібен окремий тест (див. пресети й типи зон).
+  Ключі, що складаються динамічно (`'preset.' + id`), туди не потрапляють, тож для них потрібен окремий тест (див. пресети, типи меблів і типи зон).
 
 - Модулі, що читають `localStorage` під час імпорту (`core/store.js`), тестуємо через `vi.stubGlobal` + `vi.resetModules()` і динамічний `import()`.
-- `ui/` (jsdom) і e2e (Playwright) поки не налаштовані. Додамо, коли UI стабілізується. `viewer/` юніт-тестами не покриваємо.
+- `ui/` (jsdom) поки не налаштовано. `viewer/` юніт-тестами не покриваємо.
+
+### E2E (Playwright)
+
+- Тести в `e2e/*.spec.js`, конфіг `playwright.config.js`. Проєкти: `desktop` (Chromium) і `mobile` (WebKit, iPhone 13 + перевірка на 375 px). Браузери ставляться один раз: `npx playwright install chromium webkit`.
+- Імпортуємо `test`/`expect` з `e2e/fixtures.js`: там мова фіксується на `uk`, а будь-яка помилка в консолі валить тест.
+- Селектори — лише `id` і `data-*`. Якщо хука немає, додаємо `data-*` у шаблон, а не чіпляємось за класи чи текст.
+- Очікування (габарити пресетів тощо) пишемо в тесті, а не імпортуємо з `src/`.
+- `e2e/golden/` — еталонні CSV/JSON кожного пресета. Розбіжність = зміна специфікації чи формату. Якщо вона навмисна, оновлюємо еталони (`npm run test:e2e:golden`) окремим комітом.
+- E2E не входять у pre-commit і `check` (довго): запускаємо `npm run check:full`.
 
 ## Модель даних проєкту
 
+Спільні для всіх типів лише `version` і `type`; решту полів визначає тип (схема — `schema/types/<тип>.v2.schema.json`).
+
+Шафа (`type: 'wardrobe'`):
+
 ```js
 {
+  version: 2,                       // версія формату (FORMAT_VERSION у core/project-format.js)
+  type: 'wardrobe',
   W, H, D, plinth,                  // мм
   top?: { mount: 'between'|'over', double: boolean,     // кришка; немає поля → between, одинарна
           overhang?: { back, front, left, right } },      // виступи, мм; лише для over, немає → 0
@@ -148,13 +193,33 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
 }
 ```
 
-Секції йдуть зліва направо, зони — зверху вниз. `'auto'` ділить залишок порівну. Умовна товщина плити `T = 16` мм, зазор фасадів `GAP = 3` мм (`config/constants.js`).
-Ключ localStorage: `wardrobe-cfg-v1`. Цей JSON зберігають у файли, а згодом і в базу. Тому **несумісна зміна формату = нова версія + міграція в `core/store.js`**, і старі файли мусять відкриватися.
+Секції йдуть зліва направо, зони — зверху вниз. `'auto'` ділить залишок порівну.
+
+Кухня (`type: 'kitchen'`) — ряд нижніх модулів на ніжках зі спільною стільницею й цокольною планкою:
+
+```js
+{
+  version: 2,
+  type: 'kitchen',
+  H, D, legs,                       // корпус модулів (висота без ніжок і стільниці, глибина), ніжки; мм
+  worktop?: { front, left, right }, // виступи стільниці, мм; немає поля → 30 / 0 / 0. Товщина — MATERIALS.worktop.t
+  modules: [{ width: number, type: 'doors'|'drawers'|'sink'|'open', count? }]  // зліва направо
+}
+```
+
+Ширини модулів фіксовані (без `'auto'`), загальна ширина — їх сума. `count`: двері 1–2, ящики 1–6, полиці відкритого модуля 0–6; у модуля під мийку поля немає (двері за шириною: від 600 мм — дві).
+
+Товщина плити `T = 16` мм (= `MATERIALS.chipboard.t`), зазор фасадів `GAP = 3` мм (`config/constants.js`).
+
+**Геометрія = специфікація.** Кожна плита специфікації має рівно один бокс у геометрії типу (`kind: 'panel'`, той самий `key` і `mat`, розміри a × b, товщина = `MATERIALS[mat].t`); фурнітура — `kind: 'hardware'`. Це перевіряє `core/registry.test.js` для кожного пресета; на цьому тримається експорт у SketchUp/DXF.
+Ключ localStorage: `lego-project` (старий `wardrobe-cfg-v1` читається з міграцією, якщо нового ще немає, і не видаляється). Цей JSON зберігають у файли, а згодом і в базу. Тому **несумісна зміна формату = нова версія + міграція в `core/project-format.js` (`MIGRATIONS`) + фікстура старого файлу в `core/fixtures/`**. Старі файли мусять відкриватися; фікстури ніколи не редагуємо. Файл без `version` — це v1 (до появи версій). Файл новішої версії, ніж знає застосунок, не відкривається (`file.tooNew`).
+Пресети (`core/types/<тип>/presets.js`) зберігаються без `version`/`type`; проєкт з них робить `createProject(type, data)`.
+**Офіційний опис формату — JSON Schema в `schema/`** (`project.v2.schema.json` + `types/<тип>.v2.schema.json`): її отримують бекенд і API. У застосунку той самий формат перевіряє валідатор типу (`validate` у модулі типу, загальні перевірки — `core/validate.js`). Будь-який JSON ззовні (файл, localStorage) проходить `parseProject` (`core/store.js`): міграція → валідація → нормалізація (невідомі поля відкидаються). Помилки — `{key, params, path}` (`validate.*`). Змінюєш формат — оновлюй і схему, і валідатор: `core/schema.test.js` звіряє їх на фікстурах `core/fixtures/validation/` (`valid-*` / `invalid-*`).
 
 ## Перевірка змін
 
 1. `npm run check` проходить без помилок (lint, формат, тести, збірка).
-2. Сторінка відкривається без помилок у консолі; пресети, редагування секцій і зон, повідомлення, CSV, PNG, збереження/відкриття JSON працюють.
+2. Сторінка відкривається без помилок у консолі; для кожного типу меблів пресети, редагування форми, повідомлення, CSV, PNG, збереження/відкриття JSON працюють (`npm run test:e2e` покриває більшість).
 3. Перевірено вигляд на десктопі та на 375px.
 
 ## Git

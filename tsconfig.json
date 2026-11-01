@@ -1,0 +1,18 @@
+{
+  // Перевірка типів JSDoc у .js (npm run typecheck). Файли лишаються .js, збірка — esbuild, без tsc.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "exclude": ["src/js/**/*.test.js"],
+  "include": ["src/js/config/**/*.js", "src/js/utils/**/*.js", "src/js/core/**/*.js", "src/js/i18n/**/*.js"]
+}

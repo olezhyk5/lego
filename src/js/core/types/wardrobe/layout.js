@@ -1,50 +1,11 @@
-import { T, GAP, TOP_MOUNTS, DEFAULT_TOP_MOUNT, TOP_OVERHANG_SIDES } from '../config/constants.js';
-import { isAuto, round } from '../utils/helpers.js';
+import { T, GAP } from '../../../config/constants.js';
+import { isAuto, round } from '../../../utils/helpers.js';
+import { carcass } from '../../common/carcass.js';
+import { msg } from '../../common/msg.js';
 
 export function drawerFront(h, cnt) {
   return (h - (cnt + 1) * GAP) / cnt;
 }
-
-// Виступи кришки: невідомі / від'ємні / нечислові значення → 0
-function overhangOf(top, mount) {
-  const src = mount === 'over' && top.overhang && typeof top.overhang === 'object' ? top.overhang : {};
-  return Object.fromEntries(
-    TOP_OVERHANG_SIDES.map(k => {
-      const v = Number(src[k]);
-      return [k, Number.isFinite(v) && v > 0 ? v : 0];
-    }),
-  );
-}
-
-// Корпус: кришка та її стик з боковинами.
-// mount: between — боковини на всю висоту, кришка між ними; over — кришка на всю ширину, боковини під нею.
-// double — кришка з двох плит: товщина topT = 2 × T, у специфікації topQ = 2.
-// overhang (лише over) — виступи кришки за корпус: кришка (topW × topD) зсувається на topX / topZ
-// (z = 0 — задня площина корпусу). Виступ ззаду → задня стінка закінчується під кришкою (backH).
-export function carcass(s) {
-  const top = s.top && typeof s.top === 'object' ? s.top : {};
-  const mount = TOP_MOUNTS.includes(top.mount) ? top.mount : DEFAULT_TOP_MOUNT;
-  const double = top.double === true;
-  const topT = double ? 2 * T : T;
-  const overhang = overhangOf(top, mount);
-  const base = { mount, double, overhang, topT, topQ: double ? 2 : 1 };
-  if (mount !== 'over') return { ...base, sideH: s.H, topW: s.W - 2 * T, topX: T, topD: s.D, topZ: 0, backH: s.H - 4 };
-  const sideH = s.H - topT;
-  return {
-    ...base,
-    sideH,
-    topW: s.W + overhang.left + overhang.right,
-    topX: 0 - overhang.left,
-    topD: s.D + overhang.back + overhang.front,
-    topZ: 0 - overhang.back,
-    // задня стінка з відступом 2 мм від країв; при виступі ззаду — по висоті боковин
-    backH: (overhang.back > 0 ? sideH : s.H) - 4,
-  };
-}
-
-// Повідомлення — {key, params} без тексту: перекладає ui/ через tm().
-// Параметр-повідомлення (name) перекладається рекурсивно.
-const msg = (key, params) => ({ key, params });
 
 // Розраховує фактичні розміри секцій і зон + помилки/попередження.
 export function computeLayout(s) {
@@ -67,7 +28,7 @@ export function computeLayout(s) {
     Hin = yTop - y0;
   let x = T;
   const secs = s.sections.map((c, i) => {
-    const name = { key: 'section.name', params: { n: i + 1 } };
+    const name = msg('section.name', { n: i + 1 });
     const w = isAuto(c.width) ? autoW : +c.width || 0;
     let fH = 0,
       aH = 0;
@@ -86,7 +47,7 @@ export function computeLayout(s) {
       const top = y,
         bottom = y - h;
       y = bottom - T;
-      const zn = { key: 'zone.name', params: { n: i + 1, z: j + 1 } };
+      const zn = msg('zone.name', { n: i + 1, z: j + 1 });
       const cnt = Math.max(1, +z.count || 1);
       if (z.type === 'rod' && h < 900) warns.push(msg('check.rodLow', { name: zn, h: round(h) }));
       if (z.type === 'rod' && w > 1000) warns.push(msg('check.rodLong', { name: zn, w: round(w) }));
@@ -106,5 +67,5 @@ export function computeLayout(s) {
     x += w + T;
     return out;
   });
-  return { secs, innerW, Hin, y0, yTop, carcass: C, errs, warns };
+  return { secs, innerW, Hin, y0, yTop, carcass: C, bounds: { W: s.W, H: s.H, D: s.D }, errs, warns };
 }

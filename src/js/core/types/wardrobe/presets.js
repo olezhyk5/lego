@@ -1,4 +1,4 @@
-// Назва пресета — у словнику: preset.<ключ>
+// Пресети шафи: поля проєкту без version/type. Назва — у словнику: preset.wardrobe.<ключ>
 export const PRESETS = {
   wardrobe: {
     data: {
@@ -93,5 +93,3 @@ export const PRESETS = {
     },
   },
 };
-
-export const DEFAULT_PRESET = 'wardrobe';

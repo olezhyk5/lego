@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "type": "wardrobe",
+  "W": 450,
+  "H": 2100,
+  "D": 400,
+  "plinth": 80,
+  "sections": [
+    {
+      "width": "auto",
+      "zones": [
+        {
+          "type": "shelves",
+          "count": 4,
+          "height": "auto"
+        },
+        {
+          "type": "drawers",
+          "count": 2,
+          "height": 400
+        }
+      ]
+    }
+  ]
+}

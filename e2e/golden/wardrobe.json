@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "type": "wardrobe",
+  "W": 1800,
+  "H": 2400,
+  "D": 600,
+  "plinth": 80,
+  "sections": [
+    {
+      "width": "auto",
+      "zones": [
+        {
+          "type": "empty",
+          "height": 400
+        },
+        {
+          "type": "rod",
+          "height": "auto"
+        },
+        {
+          "type": "rod",
+          "height": "auto"
+        }
+      ]
+    },
+    {
+      "width": 600,
+      "zones": [
+        {
+          "type": "shelves",
+          "count": 3,
+          "height": "auto"
+        },
+        {
+          "type": "drawers",
+          "count": 3,
+          "height": 600
+        }
+      ]
+    },
+    {
+      "width": "auto",
+      "zones": [
+        {
+          "type": "empty",
+          "height": 400
+        },
+        {
+          "type": "rod",
+          "height": "auto"
+        }
+      ]
+    }
+  ]
+}

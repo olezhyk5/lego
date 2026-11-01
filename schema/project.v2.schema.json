@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/olezhyk5/lego/schema/project.v2.schema.json",
+  "title": "Проєкт меблів, формат v2",
+  "description": "Канонічний JSON проєкту, як його зберігає конструктор (файл, localStorage, база). Поля, крім version і type, визначає тип меблів.",
+  "type": "object",
+  "required": ["version", "type"],
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "type": {
+      "enum": ["wardrobe", "kitchen"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "wardrobe"
+          }
+        }
+      },
+      "then": {
+        "$ref": "types/wardrobe.v2.schema.json"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "kitchen"
+          }
+        }
+      },
+      "then": {
+        "$ref": "types/kitchen.v2.schema.json"
+      }
+    }
+  ]
+}

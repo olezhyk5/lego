@@ -1,9 +1,9 @@
-import { store } from '../core/store.js';
-import { carcass } from '../core/layout.js';
-import { $, $$ } from '../utils/dom.js';
-import { openModal } from './modal.js';
+import { store } from '../../../core/store.js';
+import { carcass } from '../../../core/common/carcass.js';
+import { $, $$ } from '../../../utils/dom.js';
+import { openModal } from '../../modal.js';
 import { topSettingsForm } from './templates.js';
-import { t } from '../i18n/index.js';
+import { t } from '../../../i18n/index.js';
 
 // Попап «Налаштування кришки». Поля попапу — чернетка: у проєкт потрапляють лише після «Зберегти».
 export function initTopSettings({ update }) {

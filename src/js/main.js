@@ -1,12 +1,13 @@
 // Точка входу → assets/js/main.js
-import { store, save } from './core/store.js';
-import { computeLayout } from './core/layout.js';
+import { store, save, setProject } from './core/store.js';
+import { projectReport } from './core/export.js';
+import { getType } from './core/registry.js';
 import { createViewer } from './viewer/viewer.js';
-import { initSidebar, renderSections, refreshCalc, syncDims, markPreset } from './ui/sidebar.js';
+import { initSidebar, markPreset } from './ui/sidebar.js';
+import { getForm } from './ui/forms.js';
 import { initToolbar } from './ui/toolbar.js';
 import { renderReport, initReport } from './ui/report.js';
 import { initModal } from './ui/modal.js';
-import { initTopSettings } from './ui/top-settings.js';
 import { $ } from './utils/dom.js';
 import { translateDom } from './i18n/index.js';
 
@@ -21,34 +22,57 @@ function scheduleRebuild() {
   rebuildPending = true;
   requestAnimationFrame(() => {
     rebuildPending = false;
-    viewer.rebuild(store.state, computeLayout(store.state), store);
+    const s = store.state;
+    const type = getType(s.type);
+    const L = type.layout(s);
+    viewer.rebuild(
+      { geometry: type.geometry(s, L), annotations: type.annotations(s, L, store.ui), bounds: L.bounds },
+      store,
+    );
   });
 }
 
-// Головний цикл оновлення. full=true — перемалювати сайдбар повністю
+// Форма поточного типу меблів; перемальовується, коли змінюється тип проєкту
+let form = null;
+let formType = null;
+function ensureForm() {
+  if (formType === store.state.type) return false;
+  formType = store.state.type;
+  form = getForm(formType);
+  form.mount({ setup: $('#formSetup'), main: $('#formMain') }, app);
+  form.sync();
+  return true;
+}
+
+// Головний цикл оновлення. full=true — перемалювати форму повністю
 // (змінилась структура), false — лише розраховані значення.
 function update(full) {
-  const L = computeLayout(store.state);
-  if (store.sel >= store.state.sections.length) store.sel = store.state.sections.length - 1;
-  if (full) renderSections(L);
-  else refreshCalc(L);
+  const R = projectReport(store.state);
+  if (ensureForm() || full) form.render(R.L);
+  else form.refresh(R.L);
   scheduleRebuild();
-  renderReport(store.state, L);
+  renderReport(R);
   markPreset();
   save();
 }
 
 function fit() {
-  if (viewer) viewer.fit(store.state);
+  if (viewer) viewer.fit(getType(store.state.type).layout(store.state).bounds);
 }
 
-const app = { update, fit, viewer };
+// Новий проєкт (пресет, файл): стан форми скидається, поля переписуються
+function loadProject(project, preset) {
+  setProject(project, preset);
+  if (!ensureForm()) form.sync();
+  update(true);
+  fit();
+}
+
+const app = { update, fit, loadProject, viewer };
 initSidebar(app);
 initToolbar(app);
 initModal();
 initReport();
-initTopSettings(app);
 
-syncDims();
 update(true);
 fit();
