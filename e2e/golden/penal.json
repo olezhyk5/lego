@@ -5,6 +5,7 @@
   "H": 2100,
   "D": 400,
   "plinth": 80,
+  "base": "legs",
   "sections": [
     {
       "width": "auto",
