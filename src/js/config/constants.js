@@ -17,8 +17,8 @@ export const DEFAULT_TOP_MOUNT = 'between';
 export const TOP_OVERHANG_SIDES = ['back', 'front', 'left', 'right'];
 
 // Основа корпусу: base: 'plinth' | 'legs', висота — поле plinth. Немає поля → plinth.
-// plinth — боковини до підлоги, цокольна планка між ними; legs — корпус на регульованих ніжках
-// висотою plinth, цокольна планка на всю ширину перед ними. plinth = 0 → без основи.
+// В обох випадках боковини до підлоги, цокольна планка між ними; legs — ще й регульовані ніжки
+// висотою plinth під дном, за планкою. plinth = 0 → без основи.
 export const CARCASS_BASES = ['plinth', 'legs'];
 export const DEFAULT_BASE = 'plinth';
 

@@ -40,7 +40,7 @@ describe('exportRows', () => {
   it('містить площу й кількість листів (числа — див. parts.test.js)', () => {
     expect(rows).toContainEqual(['Матеріал', 'Площа, м²', 'Листів']);
     expect(rows).toContainEqual(['ДСП, лист 2800 × 2070 (5,80 м²)', '10,66', 2]);
-    expect(rows).toContainEqual(['ДВП, лист 2800 × 2070 (5,80 м²)', '4,30', 1]);
+    expect(rows).toContainEqual(['ДВП, лист 2800 × 2070 (5,80 м²)', '4,16', 1]);
     expect(rows.at(-1)).toEqual(['Секція 3 (568 мм): порожньо 400 → штанга, висота 1872']);
   });
 });
@@ -64,10 +64,10 @@ describe('імена та розміри', () => {
 
 describe('projectReport — виробничі попередження', () => {
   it('задня стінка ширша за лист ДВП: W 2500, H 2400', () => {
-    // задня стінка (2400 - 4) × (2500 - 4) = 2396 × 2496; лист 2800 × 2070: 2496 > 2070 і 2396 > 2070
+    // задня стінка (2400 - 2 - 80) × (2500 - 4) = 2318 × 2496; лист 2800 × 2070: 2496 > 2070 і 2318 > 2070
     const R = projectReport({ ...presetProject('wardrobe', PLINTH), W: 2500 });
     expect(R.warns).toContainEqual(
-      expect.objectContaining({ key: 'check.panelTooBig', params: expect.objectContaining({ a: 2396, b: 2496 }) }),
+      expect.objectContaining({ key: 'check.panelTooBig', params: expect.objectContaining({ a: 2318, b: 2496 }) }),
     );
   });
 

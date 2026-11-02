@@ -140,14 +140,13 @@ describe('computeLayout — повідомлення', () => {
 });
 
 describe('carcass — кришка', () => {
-  const s = { W: 1800, H: 2400 };
+  const s = { W: 1800, H: 2400, plinth: 80 };
 
   it('за замовчуванням (поля немає, старі файли) — між боковинами, одинарна', () => {
     // боковини на всю висоту 2400; кришка 1800 - 2*16 = 1768, починається після лівої боковини
-    // задня стінка 2400 - 4 (по 2 мм від країв); глибина кришки = D
+    // задня стінка від низу дна: 2400 - 2 - 80; глибина кришки = D
     expect(carcass({ ...s, D: 600 })).toEqual({
-      base: 'plinth', // поля немає → цоколь, боковини від підлоги
-      bodyY: 0,
+      base: 'plinth', // поля немає → цоколь
       mount: 'between',
       double: false,
       overhang: { back: 0, front: 0, left: 0, right: 0 },
@@ -158,7 +157,7 @@ describe('carcass — кришка', () => {
       topX: 16,
       topD: 600,
       topZ: 0,
-      backH: 2396,
+      backH: 2318,
     });
   });
 
@@ -199,18 +198,18 @@ describe('carcass — кришка', () => {
     });
 
     it('виступ ззаду — задня стінка закінчується під кришкою', () => {
-      expect(over({ back: 10 }).backH).toBe(2380); // 2400 - 16 - 4
-      expect(carcass({ ...s, top: { mount: 'over', double: true, overhang: { back: 5 } } }).backH).toBe(2364); // 2400 - 32 - 4
+      expect(over({ back: 10 }).backH).toBe(2302); // 2400 - 16 - 2 - 80
+      expect(carcass({ ...s, top: { mount: 'over', double: true, overhang: { back: 5 } } }).backH).toBe(2286); // 2400 - 32 - 2 - 80
     });
 
-    it('без виступу ззаду задня стінка на всю висоту, навіть з іншими виступами', () => {
-      expect(over({ front: 20, left: 30 }).backH).toBe(2396); // 2400 - 4
+    it('без виступу ззаду задня стінка до верху корпусу, навіть з іншими виступами', () => {
+      expect(over({ front: 20, left: 30 }).backH).toBe(2318); // 2400 - 2 - 80
     });
 
     it('між боковинами виступи ігноруються', () => {
       const c = carcass({ ...s, D: 600, top: { mount: 'between', overhang: { back: 10, front: 20, left: 30 } } });
       expect(c.overhang).toEqual({ back: 0, front: 0, left: 0, right: 0 });
-      expect(c).toMatchObject({ topW: 1768, topX: 16, topD: 600, topZ: 0, backH: 2396 });
+      expect(c).toMatchObject({ topW: 1768, topX: 16, topD: 600, topZ: 0, backH: 2318 });
     });
 
     it("від'ємні, нечислові й відсутні значення → 0", () => {

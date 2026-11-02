@@ -25,8 +25,9 @@ describe('modelGeometry — пресет «Шафа 3 секції» на цок
     expect(byKey(G, 'part.bottom').map(at)).toEqual([{ x: 16, y: 80, z: 0, w: 1768, h: 16, d: 600 }]);
     // цоколь на 30 мм глибше від фасаду: 600 - 16 - 30
     expect(byKey(G, 'part.plinth').map(at)).toEqual([{ x: 16, y: 0, z: 554, w: 1768, h: 80, d: 16 }]);
-    // задня стінка за корпусом з відступом 2 мм: 1800 - 4 = 1796, висота 2400 - 4 = 2396, товщина ДВП 3
-    expect(byKey(G, 'part.back').map(at)).toEqual([{ x: 2, y: 2, z: -3, w: 1796, h: 2396, d: 3 }]);
+    // задня стінка за корпусом: знизу врівень із дном (y = 80), зверху й з боків відступ 2 мм:
+    // 1800 - 4 = 1796, висота 2400 - 2 - 80 = 2318, товщина ДВП 3
+    expect(byKey(G, 'part.back').map(at)).toEqual([{ x: 2, y: 80, z: -3, w: 1796, h: 2318, d: 3 }]);
     expect(byKey(G, 'part.back')[0]).toMatchObject({ kind: 'panel', mat: 'hardboard' });
   });
 
@@ -134,8 +135,8 @@ describe('modelGeometry — кришка над боковинами з вист
     // 1800 + 30 + 40 = 1870; 600 + 10 + 20 = 630; y = 2400 - 16
     expect(byKey(G, 'part.top').map(at)).toEqual([{ x: -30, y: 2384, z: -10, w: 1870, h: 16, d: 630 }]);
     expect(byKey(G, 'part.side')[0].h).toBe(2384);
-    // виступ ззаду → задня стінка по висоті боковин: 2384 - 4
-    expect(byKey(G, 'part.back')[0].h).toBe(2380);
+    // виступ ззаду → задня стінка до верху боковин: 2384 - 2 - 80
+    expect(byKey(G, 'part.back')[0].h).toBe(2302);
   });
 });
 
@@ -151,25 +152,31 @@ describe('товщини', () => {
   });
 });
 
-// Пресет «Шафа 3 секції» на опорах 80: ряди ніжок 0, 572, 1188, 1760 (див. parts.test.js)
+// Пресет «Шафа 3 секції» на опорах 80: ряди ніжок 16, 572, 1188, 1744 (див. parts.test.js)
 describe('modelGeometry — опори', () => {
   const G = geomOf(preset('wardrobe'));
 
-  it('боковини й задня стінка від висоти ніжок, цоколь на всю ширину', () => {
+  it('боковини від підлоги, цоколь між ними, задня стінка від низу дна', () => {
     expect(byKey(G, 'part.side').map(at)).toEqual([
-      { x: 0, y: 80, z: 0, w: 16, h: 2320, d: 600 },
-      { x: 1784, y: 80, z: 0, w: 16, h: 2320, d: 600 },
+      { x: 0, y: 0, z: 0, w: 16, h: 2400, d: 600 },
+      { x: 1784, y: 0, z: 0, w: 16, h: 2400, d: 600 },
     ]);
     expect(byKey(G, 'part.bottom').map(at)).toEqual([{ x: 16, y: 80, z: 0, w: 1768, h: 16, d: 600 }]);
-    expect(byKey(G, 'part.plinth').map(at)).toEqual([{ x: 0, y: 0, z: 554, w: 1800, h: 80, d: 16 }]);
-    expect(byKey(G, 'part.back').map(at)).toEqual([{ x: 2, y: 82, z: -3, w: 1796, h: 2316, d: 3 }]); // 80 + 2
+    expect(byKey(G, 'part.plinth').map(at)).toEqual([{ x: 16, y: 0, z: 554, w: 1768, h: 80, d: 16 }]);
+    expect(byKey(G, 'part.back').map(at)).toEqual([{ x: 2, y: 80, z: -3, w: 1796, h: 2318, d: 3 }]);
+  });
+
+  it('крайні ніжки не заходять у боковини: 16 і 1744 + 40 = 1784', () => {
+    const legs = byKey(G, 'part.leg');
+    expect(Math.min(...legs.map(b => b.x))).toBe(16);
+    expect(Math.max(...legs.map(b => b.x + b.w))).toBe(1784);
   });
 
   it('ніжки: у кожному ряду задня (z 40) і передня (554 - 40 - 10 = 504)', () => {
     const legs = byKey(G, 'part.leg');
     expect(legs.every(b => b.kind === 'hardware' && b.y === 0 && b.h === 80)).toBe(true);
     expect(legs.map(b => [b.x, b.z])).toEqual(
-      [0, 572, 1188, 1760].flatMap(x => [
+      [16, 572, 1188, 1744].flatMap(x => [
         [x, 40],
         [x, 504],
       ]),

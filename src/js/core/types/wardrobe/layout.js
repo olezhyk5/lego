@@ -78,9 +78,9 @@ export function computeLayout(s) {
   return { secs, innerW, Hin, y0, yTop, carcass: C, legs, bounds: { W: s.W, H: s.H, D: s.D }, errs, warns };
 }
 
-// Ряди ніжок (ліві краї): обов'язкові — під боковинами (врівень із зовнішніми краями) і по осях перегородок,
+// Ряди ніжок (ліві краї): обов'язкові — впритул до боковин (ті йдуть до підлоги) і по осях перегородок,
 // між ними — проміжні (legRows)
 function legRowsOf(s, secs) {
   const dividers = secs.slice(0, -1).map(c => c.x + c.w + T / 2 - LEG / 2);
-  return legRows([0, ...dividers, s.W - LEG]);
+  return legRows([T, ...dividers, s.W - T - LEG]);
 }
