@@ -33,14 +33,14 @@ describe('exportRows', () => {
 
   it('містить перекладені деталі та опис', () => {
     expect(rows).toContainEqual(['Боковина', '2400 × 600', 2]);
-    expect(rows).toContainEqual(['Шухляда (блок)', 'фасад 594 × 196, глибина ~550', 3]);
+    expect(rows).toContainEqual(['Напрямні (пара)', '550 мм', 3]);
   });
 
   // площа листа: 2800 * 2070 = 5 796 000 мм² ≈ 5,80 м²
   it('містить площу й кількість листів (числа — див. parts.test.js)', () => {
     expect(rows).toContainEqual(['Матеріал', 'Площа, м²', 'Листів']);
-    expect(rows).toContainEqual(['ДСП, лист 2800 × 2070 (5,80 м²)', '10,66', 2]);
-    expect(rows).toContainEqual(['ДВП, лист 2800 × 2070 (5,80 м²)', '4,16', 1]);
+    expect(rows).toContainEqual(['ДСП, лист 2800 × 2070 (5,80 м²)', '11,69', 3]);
+    expect(rows).toContainEqual(['ДВП, лист 2800 × 2070 (5,80 м²)', '5,11', 1]);
     expect(rows.at(-1)).toEqual(['Секція 3 (568 мм): порожньо 400 → штанга, висота 1872']);
   });
 });

@@ -3,7 +3,7 @@ import { round } from '../../../utils/helpers.js';
 import { partsBuilder } from '../../common/parts-builder.js';
 import { addCarcassPanels, addBackPanel } from '../../common/carcass.js';
 import { msg } from '../../common/msg.js';
-import { drawerDepth } from '../../common/drawers.js';
+import { drawerBox, addDrawerParts } from '../../common/drawers.js';
 import { legCount } from '../../common/legs.js';
 import { drawerFront } from './layout.js';
 
@@ -24,11 +24,7 @@ export function partsList(s, L) {
         const fw = c.w - 2 * GAP,
           fh = drawerFront(z.h, z.cnt);
         P.panel('part.drawerFront', fw, fh, z.cnt);
-        P.item(
-          'part.drawer',
-          msg('itemSize.drawer', { w: round(fw), h: round(fh), d: round(drawerDepth(s.D)) }),
-          z.cnt,
-        );
+        addDrawerParts(P, drawerBox(c.w, fh, s.D), z.cnt);
         P.item('part.handle', msg('itemSize.handle'), z.cnt); // по одній на фасад
       }
     }),

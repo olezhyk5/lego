@@ -19,6 +19,10 @@ describe('partsList — пресет «Кухня 1,8 м»', () => {
       { key: 'part.shelf', mat: 'chipboard', a: 568, b: 540, q: 1 }, // лише в модулі з дверима; 560 - 20
       { key: 'part.drawerFront', mat: 'chipboard', a: 594, b: 176, q: 4 }, // (720 - 5*3) / 4 = 176,25
       { key: 'part.door', mat: 'chipboard', a: 296, b: 714, q: 4 }, // (600 - 6 - 3) / 2 = 295,5; 2 у мийці + 2
+      // корпус шухляди: ширина 568 - 2*13 = 542, стінки 176,25 - 40 ≈ 136, глибина 560 - 50 = 510 → 500 (ряд)
+      { key: 'part.drawerSide', mat: 'chipboard', a: 500, b: 136, q: 8 },
+      { key: 'part.drawerWall', mat: 'chipboard', a: 510, b: 136, q: 8 }, // 542 - 2*16
+      { key: 'part.drawerBottom', mat: 'hardboard', a: 542, b: 500, q: 4 },
       { key: 'part.plinth', mat: 'chipboard', a: 1800, b: 100, q: 1 },
       { key: 'part.worktop', mat: 'worktop', a: 1800, b: 590, q: 1 }, // 560 + 30
       { key: 'part.back', mat: 'hardboard', a: 716, b: 596, q: 3 }, // 720 - 4, 600 - 4
@@ -27,7 +31,7 @@ describe('partsList — пресет «Кухня 1,8 м»', () => {
 
   it('фурнітура', () => {
     expect(P.items).toEqual([
-      { key: 'part.drawer', size: { key: 'itemSize.drawer', params: { w: 594, h: 176, d: 510 } }, q: 4 },
+      { key: 'part.runner', size: { key: 'itemSize.runner', params: { l: 500 } }, q: 4 }, // пара на шухляду
       { key: 'part.handle', size: { key: 'itemSize.handle' }, q: 8 }, // 4 шухляди + 4 двері
       { key: 'part.hinge', size: { key: 'itemSize.hinge' }, q: 8 }, // по 2 на двері
       { key: 'part.sink', size: { key: 'itemSize.sink', params: { w: 600 } }, q: 1 },

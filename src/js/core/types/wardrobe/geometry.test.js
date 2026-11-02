@@ -70,6 +70,18 @@ describe('modelGeometry — пресет «Шафа 3 секції» на цок
     expect(handles[0].y).toBeCloseTo(220.52); // 99 + 196*0.62
   });
 
+  it('на кожну шухляду: корпус із 5 плит і пара напрямних за фасадом', () => {
+    expect(byKey(G, 'part.drawerSide')).toHaveLength(6); // 2 × 3 шухляди
+    expect(byKey(G, 'part.drawerWall')).toHaveLength(6);
+    expect(byKey(G, 'part.drawerBottom')).toHaveLength(3);
+    const runners = byKey(G, 'part.runner');
+    expect(runners).toHaveLength(6);
+    expect(runners[0].kind).toBe('hardware');
+    // проріз секції 600..1200, зазор 13; z = 584 - 550
+    expect(at(byKey(G, 'part.drawerBottom')[0])).toEqual({ x: 613, y: 119, z: 34, w: 574, h: 3, d: 550 });
+    expect(runners.slice(0, 2).map(r => r.x)).toEqual([600, 1187]);
+  });
+
   it('штанги на 60 мм нижче верху зони', () => {
     // секція 1: (2288 - 2*16 - 400) / 2 = 928; верх зон 2384 - 400 - 16 = 1968 і 1968 - 928 - 16 = 1024
     // секція 3: одна штанга, верх зони теж 1968

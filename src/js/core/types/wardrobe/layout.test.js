@@ -235,7 +235,7 @@ describe('carcass — кришка', () => {
 });
 
 describe('computeLayout — шухляди на напрямних', () => {
-  it('мілкий корпус: шухляда 280 - 50 = 230 < 250', () => {
+  it('мілкий корпус: шухляда 280 - 50 = 230 → 200 (ряд) < 250', () => {
     const L = computeLayout(
       project([{ width: 'auto', zones: [{ type: 'drawers', count: 3, height: 'auto' }] }], { D: 280 }),
     );

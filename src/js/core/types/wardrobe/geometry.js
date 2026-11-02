@@ -1,6 +1,7 @@
 import { T, GAP } from '../../../config/constants.js';
 import { geometryBuilder, thickness } from '../../common/geometry-builder.js';
 import { addCarcassGeometry, plinthZ } from '../../common/carcass.js';
+import { drawerBox, addDrawerGeometry } from '../../common/drawers.js';
 import { addLegGeometry } from '../../common/legs.js';
 import { drawerFront } from './layout.js';
 
@@ -38,6 +39,7 @@ export function modelGeometry(s, L) {
           const y = z.bottom + GAP + (fh + GAP) * k;
           G.panel('part.drawerFront', 'front', c.x + GAP, y, s.D - frontT, c.w - 2 * GAP, fh, frontT);
           G.hardware('part.handle', 'handle', c.x + c.w / 2 - hw / 2, y + fh * 0.62, s.D, hw, HANDLE_H, HANDLE_D);
+          addDrawerGeometry(G, drawerBox(c.w, fh, s.D), c.x, y, s.D - frontT);
         }
       }
     });

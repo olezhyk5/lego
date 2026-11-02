@@ -1,5 +1,6 @@
 import { T } from '../../../config/constants.js';
 import { geometryBuilder, thickness } from '../../common/geometry-builder.js';
+import { drawerBox, addDrawerGeometry } from '../../common/drawers.js';
 import { addLegGeometry } from '../../common/legs.js';
 import { RAIL_W } from './constants.js';
 
@@ -35,6 +36,7 @@ export function modelGeometry(s, L) {
       const hw = Math.min(HANDLE.w, f.w * 0.6);
       const hy = f.key === 'part.door' ? f.y + f.h - HANDLE.fromTop : f.y + f.h * 0.62;
       G.hardware('part.handle', 'handle', f.x + f.w / 2 - hw / 2, hy, s.D + T, hw, HANDLE.h, HANDLE.d);
+      if (f.key === 'part.drawerFront') addDrawerGeometry(G, drawerBox(inner, f.h, s.D), x + T, f.y, s.D);
     });
 
     if (m.legs.length) addLegGeometry(G, m.legs, s.legs, s.D - PLINTH_SETBACK - T);
