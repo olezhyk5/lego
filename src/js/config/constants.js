@@ -1,5 +1,5 @@
 export const T = 16; // умовна товщина плити, мм
-export const GAP = 3; // зазор між фасадами ящиків, мм
+export const GAP = 3; // зазор між фасадами шухляд, мм
 // проєкт у localStorage; старі ключі читаються (з міграцією), якщо нового ще немає
 export const STORAGE_KEY = 'lego-project';
 export const LEGACY_STORAGE_KEYS = ['wardrobe-cfg-v1'];

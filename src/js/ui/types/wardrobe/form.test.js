@@ -79,7 +79,7 @@ describe('форма шафи', () => {
     expect(store.state.sections[1].zones[1].count).toBe(20);
   });
 
-  it('тип зони → ящики з типовою кількістю, update(true)', () => {
+  it('тип зони → шухляди з типовою кількістю, update(true)', () => {
     typeInto(sec(0, '[data-zone="0"] [data-field="zType"]'), 'drawers', 'change');
     expect(store.state.sections[0].zones[0]).toMatchObject({ type: 'drawers', count: 3 });
     expect(app.update).toHaveBeenLastCalledWith(true);

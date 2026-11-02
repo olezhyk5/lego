@@ -1,17 +1,17 @@
 import { round } from '../../utils/helpers.js';
 import { msg } from './msg.js';
 
-// Ящики на напрямних — спільне для типів з ящиками. Межі стартові: погодити з технологом.
-export const DRAWER_DEPTH_GAP = 50; // ящик коротший за глибину корпусу, мм
+// Шухляди на напрямних — спільне для типів з шухлядами. Межі стартові: погодити з технологом.
+export const DRAWER_DEPTH_GAP = 50; // шухляда коротша за глибину корпусу, мм
 const MIN_DEPTH = 250; // коротших напрямних не буває
 const MIN_FRONT_W = 200;
 const MAX_FRONT_W = 1000; // ширше — дно прогинається, напрямні не тримають
 
-// Глибина ящика в корпусі глибиною D
+// Глибина шухляди в корпусі глибиною D
 export const drawerDepth = D => D - DRAWER_DEPTH_GAP;
 
 /**
- * Попередження для ящиків однієї зони / модуля
+ * Попередження для шухляд однієї зони / модуля
  * @param {{ name: import('../types.js').Msg, frontW: number, depth: number }} p
  * @returns {import('../types.js').Msg[]}
  */

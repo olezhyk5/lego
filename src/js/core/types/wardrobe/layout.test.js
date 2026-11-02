@@ -119,7 +119,7 @@ describe('computeLayout — повідомлення', () => {
     expect(keys(computeLayout(s).warns)).toContain('check.rodLow');
   });
 
-  it('ящики: замалі, завеликі, зависоко', () => {
+  it('шухляди: замалі, завеликі, зависоко', () => {
     const small = project([{ width: 'auto', zones: [{ type: 'drawers', count: 10, height: 'auto' }] }], { H: 900 });
     expect(keys(computeLayout(small).warns)).toContain('check.drawerSmall');
     const large = project([{ width: 'auto', zones: [{ type: 'drawers', count: 1, height: 'auto' }] }], { H: 900 });
@@ -235,8 +235,8 @@ describe('carcass — кришка', () => {
   });
 });
 
-describe('computeLayout — ящики на напрямних', () => {
-  it('мілкий корпус: ящик 280 - 50 = 230 < 250', () => {
+describe('computeLayout — шухляди на напрямних', () => {
+  it('мілкий корпус: шухляда 280 - 50 = 230 < 250', () => {
     const L = computeLayout(
       project([{ width: 'auto', zones: [{ type: 'drawers', count: 3, height: 'auto' }] }], { D: 280 }),
     );

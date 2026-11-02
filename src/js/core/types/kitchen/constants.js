@@ -2,7 +2,7 @@
 // Назви типів модулів — у словнику: moduleType.<тип>
 export const MODULE_TYPES = ['doors', 'drawers', 'sink', 'open'];
 
-// Межі кількості: двері, ящики, полиці відкритого модуля. Під мийку — без кількості (двері за шириною).
+// Межі кількості: двері, шухляди, полиці відкритого модуля. Під мийку — без кількості (двері за шириною).
 export const MODULE_COUNT = { doors: [1, 2], drawers: [1, 6], open: [0, 6] };
 export const DEFAULT_COUNT = { doors: 1, drawers: 3, open: 2 };
 

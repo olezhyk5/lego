@@ -18,7 +18,7 @@ describe('validateKitchen', () => {
     ['ширина — рядок', p => (p.modules[0].width = 'auto'), ['validate.number', ['modules', 0, 'width']]],
     ['невідомий тип', p => (p.modules[1].type = 'oven'), ['validate.enum', ['modules', 1, 'type']]],
     ['троє дверей', p => (p.modules[2].count = 3), ['validate.range', ['modules', 2, 'count']]],
-    ['ящики без кількості', p => delete p.modules[0].count, ['validate.integer', ['modules', 0, 'count']]],
+    ['шухляди без кількості', p => delete p.modules[0].count, ['validate.integer', ['modules', 0, 'count']]],
   ])('%s', (_, mutate, expected) => {
     const p = base();
     mutate(p);

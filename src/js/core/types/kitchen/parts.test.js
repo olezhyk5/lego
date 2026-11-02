@@ -4,7 +4,7 @@ import { partsList, summary, describe as describeModules } from './parts.js';
 import { kitchen as kitchenType } from './index.js';
 import { kitchenPreset, kitchen } from '../../test-fixtures.js';
 
-// Пресет «Кухня 1,8 м»: ящики 600 (4), мийка 600, двері 600 (2). H 720, D 560, ніжки 100.
+// Пресет «Кухня 1,8 м»: шухляди 600 (4), мийка 600, двері 600 (2). H 720, D 560, ніжки 100.
 // Всередині модуля 600 - 2*16 = 568.
 describe('partsList — пресет «Кухня 1,8 м»', () => {
   const s = kitchenPreset('line180');
@@ -28,7 +28,7 @@ describe('partsList — пресет «Кухня 1,8 м»', () => {
   it('фурнітура', () => {
     expect(P.items).toEqual([
       { key: 'part.drawer', size: { key: 'itemSize.drawer', params: { w: 594, h: 176, d: 510 } }, q: 4 },
-      { key: 'part.handle', size: { key: 'itemSize.handle' }, q: 8 }, // 4 ящики + 4 двері
+      { key: 'part.handle', size: { key: 'itemSize.handle' }, q: 8 }, // 4 шухляди + 4 двері
       { key: 'part.hinge', size: { key: 'itemSize.hinge' }, q: 8 }, // по 2 на двері
       { key: 'part.sink', size: { key: 'itemSize.sink', params: { w: 600 } }, q: 1 },
       { key: 'part.leg', size: { key: 'itemSize.leg', params: { h: 100 } }, q: 12 }, // модулі по 600: 2 ряди × 2 ніжки × 3 модулі

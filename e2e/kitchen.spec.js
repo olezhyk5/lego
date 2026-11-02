@@ -32,7 +32,7 @@ test('редагування модулів', async ({ page }) => {
   await expect(modules(page)).toHaveCount(4);
 
   await page.selectOption(mod(3, '[data-field="mType"]'), 'drawers');
-  await expect(page.locator(mod(3, '[data-field="mCount"]'))).toHaveValue('3'); // типова кількість ящиків
+  await expect(page.locator(mod(3, '[data-field="mCount"]'))).toHaveValue('3'); // типова кількість шухляд
   await page.selectOption(mod(3, '[data-field="mType"]'), 'sink');
   await expect(page.locator(mod(3, '[data-field="mCount"]'))).toBeDisabled();
 

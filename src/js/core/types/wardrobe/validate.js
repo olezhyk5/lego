@@ -6,7 +6,7 @@ import { runValidation, isPlainObject } from '../../validate.js';
 const MAX_MM = 10000;
 const MAX_SMALL_MM = 1000; // цоколь, виступи кришки
 const MAX_ITEMS = 30; // секцій, зон у секції
-const MAX_COUNT = 20; // полиць / ящиків у зоні
+const MAX_COUNT = 20; // полиць / шухляд у зоні
 
 const field = (name, params) => ({ key: `validate.field.${name}`, params });
 

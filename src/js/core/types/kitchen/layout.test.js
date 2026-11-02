@@ -3,7 +3,7 @@ import { computeLayout, moduleCount, worktopOf, drawerFront, legColumns } from '
 import { kitchenPreset, kitchen, keys } from '../../test-fixtures.js';
 
 // Пресет «Кухня 2,4 м»: H 720, D 560, ніжки 100, стільниця 38 з виступом 30 спереду.
-// Модулі: ящики 600 (3), мийка 800, двері 600 (1), відкритий 400 (2 полиці). T 16, GAP 3.
+// Модулі: шухляди 600 (3), мийка 800, двері 600 (1), відкритий 400 (2 полиці). T 16, GAP 3.
 describe('computeLayout — пресет «Кухня 2,4 м»', () => {
   const L = computeLayout(kitchenPreset('line240'));
 
@@ -20,7 +20,7 @@ describe('computeLayout — пресет «Кухня 2,4 м»', () => {
     expect(L.warns).toEqual([]);
   });
 
-  it('ящики: фасад (720 - 4*3) / 3 = 236, ширина 600 - 2*3', () => {
+  it('шухляди: фасад (720 - 4*3) / 3 = 236, ширина 600 - 2*3', () => {
     expect(L.modules[0].fronts).toEqual(
       [103, 342, 581].map(y => ({ key: 'part.drawerFront', x: 3, y, w: 594, h: 236 })), // 100 + 3, крок 236 + 3
     );
@@ -102,7 +102,7 @@ describe('computeLayout — повідомлення', () => {
     );
   });
 
-  it('малий ящик: (500 - 7*3) / 6 = 79,8', () => {
+  it('мала шухляда: (500 - 7*3) / 6 = 79,8', () => {
     expect(drawerFront(500, 6)).toBeCloseTo(79.83, 2);
     expect(keys(one({ width: 600, type: 'drawers', count: 6 }, { H: 500 }).warns)).toContain('check.drawerSmall');
   });
@@ -167,8 +167,8 @@ describe('ніжки', () => {
   });
 });
 
-describe('computeLayout — ящики на напрямних', () => {
-  it('мілкий корпус: ящик 280 - 50 = 230 < 250; вузький модуль: фасад 200 - 2*3 = 194 < 200', () => {
+describe('computeLayout — шухляди на напрямних', () => {
+  it('мілкий корпус: шухляда 280 - 50 = 230 < 250; вузький модуль: фасад 200 - 2*3 = 194 < 200', () => {
     const L = computeLayout(
       kitchen(
         [
