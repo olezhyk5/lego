@@ -7,6 +7,10 @@
   align-items: center;
   cursor: pointer;
 
+  .dims + & {
+    margin-top: 8px;
+  }
+
   &__input {
     margin: 0;
     accent-color: color(accent);
