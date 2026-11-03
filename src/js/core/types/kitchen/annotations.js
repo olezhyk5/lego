@@ -21,7 +21,7 @@ export function annotations(s, L, { sel }) {
   if (s.legs > 0) dim([xr, 0, bd], [xr, s.legs, bd], `${s.legs}`, SIDE, 0.75);
 
   const labels = L.modules.map(m => ({
-    lines: [msg(`viewer.label.module.${m.type}`, { cnt: m.cnt }), `${round(m.w)}`],
+    lines: [msg(`viewer.label.module.${m.type}`, { cnt: m.cnt }), `${round(m.niche ? m.niche.w : m.w)}`],
     pos: [m.x + m.w / 2, L.y0 + s.H / 2, s.D + 40],
     size: lh * 0.8,
     style: 'zone',

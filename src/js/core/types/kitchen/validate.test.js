@@ -19,6 +19,11 @@ describe('validateKitchen', () => {
     ['невідомий тип', p => (p.modules[1].type = 'oven'), ['validate.enum', ['modules', 1, 'type']]],
     ['троє дверей', p => (p.modules[2].count = 3), ['validate.range', ['modules', 2, 'count']]],
     ['шухляди без кількості', p => delete p.modules[0].count, ['validate.integer', ['modules', 0, 'count']]],
+    [
+      'посудомийка нестандартної ширини',
+      p => (p.modules[1] = { width: 500, type: 'dishwasher' }),
+      ['validate.enum', ['modules', 1, 'width']],
+    ],
   ])('%s', (_, mutate, expected) => {
     const p = base();
     mutate(p);

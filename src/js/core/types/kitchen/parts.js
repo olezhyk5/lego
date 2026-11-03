@@ -4,6 +4,7 @@ import { partsBuilder } from '../../common/parts-builder.js';
 import { msg } from '../../common/msg.js';
 import { drawerBox, addDrawerParts } from '../../common/drawers.js';
 import { legCount } from '../../common/legs.js';
+import { isNiche } from './layout.js';
 import { RAIL_W } from './constants.js';
 
 const SHELF_SETBACK = 20; // полиці коротші за глибину модуля
@@ -13,11 +14,14 @@ const SHELF_SETBACK = 20; // полиці коротші за глибину м�
 export function partsList(s, L) {
   const P = partsBuilder();
   const inner = m => m.w - 2 * T;
-  L.modules.forEach(m => {
+  const cabinets = L.modules.filter(m => !isNiche(m));
+  cabinets.forEach(m => {
     P.panel('part.side', s.H, s.D, 2);
     P.panel('part.bottom', inner(m), s.D, 1);
     P.panel('part.rail', inner(m), RAIL_W, 2);
   });
+  // додаткові боковини ніші: від підлоги до стільниці
+  L.modules.forEach(m => P.panel('part.side', s.legs + s.H, s.D, m.endSides.length));
   L.modules.forEach(m => P.panel('part.shelf', inner(m), s.D - SHELF_SETBACK, m.shelves.length));
   L.modules.forEach(m => m.fronts.forEach(f => P.panel(f.key, f.w, f.h, 1)));
   L.modules.forEach(m =>
@@ -25,14 +29,15 @@ export function partsList(s, L) {
       .filter(f => f.key === 'part.drawerFront')
       .forEach(f => addDrawerParts(P, drawerBox(inner(m), f.h, s.D), 1)),
   );
-  if (s.legs > 0) P.panel('part.plinth', L.W, s.legs, 1);
+  if (s.legs > 0) P.panel('part.plinth', L.plinth.w, s.legs, 1);
   P.panel('part.worktop', L.worktop.w, L.worktop.d, 1, 'worktop');
-  L.modules.forEach(m => P.panel('part.back', s.H - 4, m.w - 4, 1, 'hardboard'));
+  cabinets.forEach(m => P.panel('part.back', s.H - 4, m.w - 4, 1, 'hardboard'));
 
   L.modules.forEach(m => {
     P.item('part.handle', msg('itemSize.handle'), m.fronts.length);
     P.item('part.hinge', msg('itemSize.hinge'), 2 * m.fronts.filter(f => f.key === 'part.door').length);
     if (m.type === 'sink') P.item('part.sink', msg('itemSize.sink', { w: round(m.w) }), 1);
+    if (m.type === 'dishwasher') P.item('part.dishwasher', msg('itemSize.dishwasher', { w: round(m.niche.w) }), 1);
   });
   const legs = L.modules.reduce((n, m) => n + legCount(m.legs), 0);
   if (legs) P.item('part.leg', msg('itemSize.leg', { h: round(s.legs) }), legs);
@@ -48,6 +53,8 @@ function moduleMsg(s, m) {
       return msg('describe.moduleDrawers', { cnt: m.cnt, front: round(f.h) });
     case 'sink':
       return msg('describe.moduleSink', { cnt: m.cnt });
+    case 'dishwasher':
+      return msg('describe.moduleDishwasher', { w: round(f.w), h: round(f.h) });
     case 'open':
       return msg('describe.moduleOpen', { cnt: m.cnt });
   }

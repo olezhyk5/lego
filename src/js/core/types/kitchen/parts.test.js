@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { computeLayout } from './layout.js';
 import { partsList, summary, describe as describeModules } from './parts.js';
 import { kitchen as kitchenType } from './index.js';
-import { kitchenPreset, kitchen } from '../../test-fixtures.js';
+import { modelGeometry } from './geometry.js';
+import { annotations } from './annotations.js';
+import { kitchenPreset, kitchen, expectGeometryMatchesParts } from '../../test-fixtures.js';
+import uk from '../../../i18n/locales/uk.js';
 
 // Пресет «Кухня 1,8 м»: шухляди 600 (4), мийка 600, двері 600 (2). H 720, D 560, ніжки 100.
 // Всередині модуля 600 - 2*16 = 568.
@@ -58,6 +61,49 @@ describe('partsList — пресет «Кухня 1,8 м»', () => {
       { key: 'describe.moduleSink', params: { cnt: 2 } },
       { key: 'describe.moduleDoors', params: { cnt: 2, w: 296, h: 714 } },
     ]);
+  });
+});
+
+describe('посудомийка (пресети її не містять)', () => {
+  const s = kitchen([
+    { width: 600, type: 'open', count: 0 },
+    { width: 450, type: 'dishwasher' },
+  ]);
+  const L = computeLayout(s);
+  const P = partsList(s, L);
+
+  it('плити: фасад 444 × 714 і додаткова боковина скраю; корпус — тільки у відкритого модуля', () => {
+    expect(P.panels).toEqual([
+      { key: 'part.side', mat: 'chipboard', a: 720, b: 560, q: 2 },
+      { key: 'part.bottom', mat: 'chipboard', a: 568, b: 560, q: 1 }, // 600 - 2*16
+      { key: 'part.rail', mat: 'chipboard', a: 568, b: 100, q: 2 },
+      { key: 'part.side', mat: 'chipboard', a: 820, b: 560, q: 1 }, // від підлоги: 100 + 720
+      { key: 'part.dishwasherFront', mat: 'chipboard', a: 444, b: 714, q: 1 }, // 450 - 2*3, 720 - 2*3
+      { key: 'part.plinth', mat: 'chipboard', a: 1050, b: 100, q: 1 }, // 600 + 450, до боковини
+      { key: 'part.worktop', mat: 'worktop', a: 1066, b: 590, q: 1 }, // 600 + 450 + 16
+      { key: 'part.back', mat: 'hardboard', a: 716, b: 596, q: 1 }, // 720 - 4, 600 - 4
+    ]);
+  });
+
+  it('фурнітура: ручка й техніка без петель; ніжки лише під відкритим модулем', () => {
+    expect(P.items).toEqual([
+      { key: 'part.handle', size: { key: 'itemSize.handle' }, q: 1 },
+      { key: 'part.dishwasher', size: { key: 'itemSize.dishwasher', params: { w: 450 } }, q: 1 },
+      { key: 'part.leg', size: { key: 'itemSize.leg', params: { h: 100 } }, q: 4 }, // 2 ряди × 2 ніжки
+    ]);
+  });
+
+  it('опис і геометрія = специфікація', () => {
+    expect(describeModules(s, L)[1].children).toEqual([
+      { key: 'describe.moduleDishwasher', params: { w: 444, h: 714 } },
+    ]);
+    expectGeometryMatchesParts(modelGeometry(s, L), P);
+  });
+
+  it('ключі, що складаються динамічно, є в словнику', () => {
+    expect(uk.moduleType.dishwasher).toBeTruthy();
+    expect(annotations(s, L, { sel: 0 }).labels[1].lines[0].key).toBe('viewer.label.module.dishwasher');
+    expect(uk.viewer.label.module.dishwasher).toBeTruthy();
   });
 });
 

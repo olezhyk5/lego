@@ -37,6 +37,9 @@ const LEG_SIDE_INSET = 40; // крайні ряди ніжок — від бок
 // Ряди ніжок модуля шириною w від x (ліві краї ніжок): крайні — на LEG_SIDE_INSET від боків, проміжні — legRows
 export const legColumns = (x, w) => legRows([x + LEG_SIDE_INSET, x + w - LEG_SIDE_INSET - LEG]);
 
+// Ніша під посудомийку: без корпусу й ніжок
+export const isNiche = m => m.type === 'dishwasher';
+
 // Модулі, фасади, полиці, стільниця + помилки/попередження.
 // Координати: x — від лівого краю першого модуля, y — від підлоги, z — від задньої площини модулів.
 export function computeLayout(s) {
@@ -48,6 +51,7 @@ export function computeLayout(s) {
   const y0 = s.legs; // низ модулів
   const Hin = s.H - 2 * T; // між дном і царгами
   let x = 0;
+  let dishwashers = 0;
   const modules = s.modules.map((m, i) => {
     const name = msg('module.name', { n: i + 1 });
     const w = +m.width || 0;
@@ -67,19 +71,34 @@ export function computeLayout(s) {
       if (fh < 100) warns.push(msg('check.drawerSmall', { name, h: round(fh) }));
       warns.push(...drawerWarnings({ name, frontW: w - 2 * GAP, depth: drawerDepth(s.D) }));
     }
+    // ніша скраю ряду: додаткова боковина назовні (ширина ніші не змінюється), щоб стільниця не висіла
+    const sideL = isNiche(m) && i === 0;
+    const sideR = isNiche(m) && i === s.modules.length - 1;
+    const nicheX = x + (sideL ? T : 0);
+    const endSides = [...(sideL ? [x] : []), ...(sideR ? [nicheX + w] : [])];
+    if (m.type === 'dishwasher') {
+      fronts.push({ key: 'part.dishwasherFront', x: nicheX + GAP, y: y0 + GAP, w: w - 2 * GAP, h: s.H - 2 * GAP });
+      if (++dishwashers > 1) warns.push(msg('check.dishwasherRepeat', { name }));
+    }
     if (m.type === 'sink' && w < 450) warns.push(msg('check.sinkNarrow', { name, w: round(w) }));
     // полиці рівномірно між дном і царгами: у модулі з дверима — одна, у відкритому — cnt
     const nShelves = m.type === 'doors' ? 1 : m.type === 'open' ? cnt : 0;
     const gap = (Hin - nShelves * T) / (nShelves + 1);
     const shelves = Array.from({ length: nShelves }, (_, k) => y0 + T + gap * (k + 1) + T * k);
     if (nShelves && w - 2 * T > SHELF_MAX_SPAN) warns.push(msg('check.shelfSag', { name, w: round(w - 2 * T) }));
-    const legs = s.legs > 0 ? legColumns(x, w) : [];
-    const out = { i, x, w, type: m.type, cnt, fronts, shelves, legs };
-    x += w;
+    const legs = s.legs > 0 && !isNiche(m) ? legColumns(x, w) : [];
+    const outerW = w + endSides.length * T;
+    const niche = isNiche(m) ? { x: nicheX, w } : null;
+    const out = { i, x, w: outerW, type: m.type, cnt, fronts, shelves, legs, niche, endSides };
+    x += outerW;
     return out;
   });
 
   const W = x;
+  // цокольна планка впирається в додаткові боковини
+  const sides = modules.flatMap(m => m.endSides);
+  const plinthX = sides.includes(0) ? T : 0;
+  const plinth = { x: plinthX, w: (sides.includes(W - T) ? W - T : W) - plinthX };
   const ov = worktopOf(s);
   const wt = { ...ov, t: MATERIALS.worktop.t, x: 0 - ov.left, w: W + ov.left + ov.right, d: s.D + ov.front };
   const sheet = MATERIALS.worktop.sheet;
@@ -89,5 +108,5 @@ export function computeLayout(s) {
   if (Htot < COUNTER_H[0] || Htot > COUNTER_H[1])
     warns.push(msg('check.counterHeight', { h: round(Htot), min: COUNTER_H[0], max: COUNTER_H[1] }));
 
-  return { modules, W, Htot, y0, Hin, worktop: wt, bounds: { W: wt.w, H: Htot, D: wt.d }, errs, warns };
+  return { modules, W, Htot, y0, Hin, plinth, worktop: wt, bounds: { W: wt.w, H: Htot, D: wt.d }, errs, warns };
 }

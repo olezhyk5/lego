@@ -109,6 +109,7 @@ export default {
     doors: 'Doors',
     drawers: 'Drawers',
     sink: 'Sink base',
+    dishwasher: 'Dishwasher',
     open: 'Open',
   },
   worktopSide: {
@@ -146,6 +147,7 @@ export default {
         doors: 'Doors ×{cnt}',
         drawers: 'Drawers ×{cnt}',
         sink: 'Sink',
+        dishwasher: 'Dishwasher',
         open: 'Shelves ×{cnt}',
       },
     },
@@ -195,9 +197,11 @@ export default {
     handle: 'Handle',
     rail: 'Rail',
     door: 'Door (front)',
+    dishwasherFront: 'Dishwasher front',
     worktop: 'Worktop',
     hinge: 'Hinge',
     sink: 'Sink',
+    dishwasher: 'Dishwasher',
     leg: 'Leg',
   },
   itemSize: {
@@ -206,6 +210,7 @@ export default {
     handle: 'per front',
     hinge: 'overlay, soft-close',
     sink: 'inset, for a {w} mm module',
+    dishwasher: 'built-in, for a {w} mm niche',
     leg: 'adjustable, height {h} mm',
   },
   describe: {
@@ -218,6 +223,7 @@ export default {
     moduleDoors: '{cnt} doors {w} × {h}',
     moduleDrawers: '{cnt} drawers of {front}',
     moduleSink: 'sink base, {cnt} doors',
+    moduleDishwasher: 'dishwasher niche, front {w} × {h}, door opens downward',
     moduleOpen: 'open, shelves: {cnt}',
   },
   export: {
@@ -318,6 +324,7 @@ export default {
     moduleNarrow: '{name}: width {w} mm — too narrow for a module (from 150 mm).',
     doorWide: '{name}: door {w} mm — too wide; better two doors or a narrower module (up to ~600 mm).',
     sinkNarrow: '{name}: {w} mm — too narrow for a sink (from ~450 mm).',
+    dishwasherRepeat: '{name}: the kitchen already has a dishwasher — this is another one.',
     shelfSag: '{name}: a {w} mm shelf will sag (16 mm chipboard — up to ~800 mm).',
     worktopJoin: 'The worktop is {len} mm, longer than standard ({max} mm) — there will be a joint.',
     worktopDeep: 'Worktop depth {d} mm — more than the standard {max} mm.',

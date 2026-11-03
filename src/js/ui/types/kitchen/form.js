@@ -1,4 +1,4 @@
-import { MODULE_COUNT, DEFAULT_COUNT } from '../../../core/types/kitchen/constants.js';
+import { MODULE_COUNT, DEFAULT_COUNT, DISHWASHER_WIDTHS } from '../../../core/types/kitchen/constants.js';
 import { worktopOf } from '../../../core/types/kitchen/layout.js';
 import { store } from '../../../core/store.js';
 import { clone } from '../../../utils/helpers.js';
@@ -41,10 +41,15 @@ function onModuleAction(act, i) {
   }
 }
 
-// Новий тип модуля — типова для нього кількість; під мийку поле прибирається (двері за шириною)
-function resetCount(m) {
+// Новий тип модуля — типова для нього кількість; під мийку й посудомийку поле прибирається.
+// Посудомийка: ширина — найближча стандартна, що не більша за поточну (інакше найменша).
+function resetModule(m) {
   if (MODULE_COUNT[m.type]) m.count = DEFAULT_COUNT[m.type];
   else delete m.count;
+  if (m.type === 'dishwasher') {
+    const fit = DISHWASHER_WIDTHS.filter(w => w <= m.width);
+    m.width = fit.length ? fit[fit.length - 1] : DISHWASHER_WIDTHS[0];
+  }
 }
 
 function initWorktopSettings({ update }) {
@@ -106,7 +111,7 @@ function bind({ update, fit }) {
     if (e.target.dataset.field !== 'mType') return;
     const m = store.state.modules[+e.target.closest('[data-module]').dataset.module];
     m.type = e.target.value;
-    resetCount(m);
+    resetModule(m);
     update(true);
   });
 

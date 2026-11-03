@@ -35,6 +35,14 @@ describe('форма кухні', () => {
     expect(mod(0, '[data-field="mCount"]').disabled).toBe(false);
   });
 
+  it('заголовок «К-сть» лише в модулів, де є кількість', () => {
+    expect($('[data-module="0"]').textContent).toContain('К-сть'); // шухляди
+    expect($('[data-module="1"]').textContent).not.toContain('К-сть'); // мийка
+    typeInto(mod(0, '[data-field="mType"]'), 'dishwasher', 'change');
+    render();
+    expect($('[data-module="0"]').textContent).not.toContain('К-сть');
+  });
+
   it('ширина й кількість (у межах типу) → store, update(false)', () => {
     typeInto(mod(0, '[data-field="mWidth"]'), '450');
     expect(store.state.modules[0].width).toBe(450);
@@ -49,6 +57,19 @@ describe('форма кухні', () => {
     typeInto(mod(2, '[data-field="mType"]'), 'sink', 'change');
     expect(store.state.modules[2]).toEqual({ width: 600, type: 'sink' });
     expect(app.update).toHaveBeenLastCalledWith(true);
+  });
+
+  it('посудомийка: ширина лише зі списку, без кількості', () => {
+    typeInto(mod(0, '[data-field="mWidth"]'), '500');
+    typeInto(mod(0, '[data-field="mType"]'), 'dishwasher', 'change');
+    expect(store.state.modules[0]).toEqual({ width: 450, type: 'dishwasher' }); // 500 → 450
+    render();
+    const width = mod(0, '[data-field="mWidth"]');
+    expect(width.tagName).toBe('SELECT');
+    expect($$('option', width).map(o => o.value)).toEqual(['450', '600']);
+    expect(mod(0, '[data-field="mCount"]').disabled).toBe(true);
+    typeInto(width, '600');
+    expect(store.state.modules[0].width).toBe(600);
   });
 
   it('додати, дублювати, перемістити, видалити модуль', () => {

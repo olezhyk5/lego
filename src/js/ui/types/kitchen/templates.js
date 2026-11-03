@@ -1,4 +1,4 @@
-import { MODULE_TYPES, MODULE_COUNT, WORKTOP_SIDES } from '../../../core/types/kitchen/constants.js';
+import { MODULE_TYPES, MODULE_COUNT, WORKTOP_SIDES, DISHWASHER_WIDTHS } from '../../../core/types/kitchen/constants.js';
 import { t } from '../../../i18n/index.js';
 import { round } from '../../../utils/helpers.js';
 import { COPY_ICON, GEAR_ICON, iconBtn, dimField } from '../../templates.js';
@@ -43,6 +43,13 @@ export function moduleCard(m, i, lm, { selected, total }) {
   const count = range
     ? `<input class="input zone__count" data-field="mCount" type="number" min="${range[0]}" max="${range[1]}" value="${lm.cnt}" title="${t('module.countTitle')}">`
     : `<input class="input zone__count" data-field="mCount" type="number" value="" disabled title="${t('module.noCount')}">`;
+  // посудомийка — лише стандартні ширини ніші
+  const width =
+    m.type === 'dishwasher'
+      ? `<select class="select" data-field="mWidth">${DISHWASHER_WIDTHS.map(
+          w => `<option value="${w}"${w === m.width ? ' selected' : ''}>${w}</option>`,
+        ).join('')}</select>`
+      : `<input class="input" data-field="mWidth" type="number" inputmode="numeric" min="150" max="1200" step="50" value="${m.width}">`;
   return `<div class="section${selected ? ' is-selected' : ''}" data-module="${i}">
     <div class="section__head">
       <span class="section__label"><b class="section__name">${t('module.name', { n: i + 1 })}</b></span>
@@ -52,11 +59,11 @@ export function moduleCard(m, i, lm, { selected, total }) {
       ${iconBtn('modDel', 'module.delete', '✕', total === 1)}
     </div>
     <div class="zones">
-      <div class="zone-head"><span>${t('module.type')}</span><span>${t('module.count')}</span><span>${t('module.width')}</span></div>
+      <div class="zone-head"><span>${t('module.type')}</span><span>${range ? t('module.count') : ''}</span><span>${t('module.width')}</span></div>
       <div class="zone">
         <select class="select zone__type" data-field="mType">${opts}</select>
         ${count}
-        <input class="input" data-field="mWidth" type="number" inputmode="numeric" min="150" max="1200" step="50" value="${m.width}">
+        ${width}
       </div>
     </div>
   </div>`;

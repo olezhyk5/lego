@@ -2,6 +2,7 @@ import { T } from '../../../config/constants.js';
 import { geometryBuilder, thickness } from '../../common/geometry-builder.js';
 import { drawerBox, addDrawerGeometry } from '../../common/drawers.js';
 import { addLegGeometry } from '../../common/legs.js';
+import { isNiche } from './layout.js';
 import { RAIL_W } from './constants.js';
 
 // Розміри, потрібні лише для моделі (у специфікації їх немає), мм
@@ -10,6 +11,7 @@ const BACK_INSET = 2;
 const PLINTH_SETBACK = 50; // цокольна планка відступає від фасадів
 const HANDLE = { w: 128, h: 12, d: 18, fromTop: 60 };
 const SINK_MARGIN = { side: 100, back: 60, front: 90 }; // контур мийки на стільниці від країв модуля
+const DISHWASHER_CLEARANCE = 2; // техніка вужча за нішу з кожного боку
 
 // Геометрія кухні без Three.js, у мм; формат і координати — Geometry у core/types.js.
 export function modelGeometry(s, L) {
@@ -21,20 +23,36 @@ export function modelGeometry(s, L) {
   L.modules.forEach(m => {
     const x = m.x,
       inner = m.w - 2 * T;
-    G.panel('part.side', 'wood', x, y0, 0, T, s.H, s.D);
-    G.panel('part.side', 'wood', x + m.w - T, y0, 0, T, s.H, s.D);
-    G.panel('part.bottom', 'wood', x + T, y0, 0, inner, T, s.D);
-    // царги під стільницею: задня й передня
-    G.panel('part.rail', 'wood', x + T, yTop - T, 0, inner, T, RAIL_W);
-    G.panel('part.rail', 'wood', x + T, yTop - T, s.D - RAIL_W, inner, T, RAIL_W);
-    m.shelves.forEach(y => G.panel('part.shelf', 'shelf', x + T, y, 0, inner, T, s.D - SHELF_SETBACK));
-    G.panel('part.back', 'back', x + BACK_INSET, y0 + BACK_INSET, -backT, m.w - 4, s.H - 4, backT, 'hardboard');
+    if (isNiche(m)) {
+      // техніка на підлозі, за цокольною планкою; фасад (нижче) — на її дверці
+      const depth = s.D - PLINTH_SETBACK - T;
+      G.hardware(
+        'part.dishwasher',
+        'handle',
+        m.niche.x + DISHWASHER_CLEARANCE,
+        0,
+        0,
+        m.niche.w - 2 * DISHWASHER_CLEARANCE,
+        yTop,
+        depth,
+      );
+      m.endSides.forEach(sx => G.panel('part.side', 'wood', sx, 0, 0, T, yTop, s.D));
+    } else {
+      G.panel('part.side', 'wood', x, y0, 0, T, s.H, s.D);
+      G.panel('part.side', 'wood', x + m.w - T, y0, 0, T, s.H, s.D);
+      G.panel('part.bottom', 'wood', x + T, y0, 0, inner, T, s.D);
+      // царги під стільницею: задня й передня
+      G.panel('part.rail', 'wood', x + T, yTop - T, 0, inner, T, RAIL_W);
+      G.panel('part.rail', 'wood', x + T, yTop - T, s.D - RAIL_W, inner, T, RAIL_W);
+      m.shelves.forEach(y => G.panel('part.shelf', 'shelf', x + T, y, 0, inner, T, s.D - SHELF_SETBACK));
+      G.panel('part.back', 'back', x + BACK_INSET, y0 + BACK_INSET, -backT, m.w - 4, s.H - 4, backT, 'hardboard');
+    }
 
-    // накладні фасади перед корпусом; ручка — біля верхнього краю, по центру
+    // накладні фасади перед корпусом; ручка — біля верхнього краю, по центру (у шухляд — вище середини)
     m.fronts.forEach(f => {
       G.panel(f.key, 'front', f.x, f.y, s.D, f.w, f.h, T);
       const hw = Math.min(HANDLE.w, f.w * 0.6);
-      const hy = f.key === 'part.door' ? f.y + f.h - HANDLE.fromTop : f.y + f.h * 0.62;
+      const hy = f.key === 'part.drawerFront' ? f.y + f.h * 0.62 : f.y + f.h - HANDLE.fromTop;
       G.hardware('part.handle', 'handle', f.x + f.w / 2 - hw / 2, hy, s.D + T, hw, HANDLE.h, HANDLE.d);
       if (f.key === 'part.drawerFront') addDrawerGeometry(G, drawerBox(inner, f.h, s.D), x + T, f.y, s.D);
     });
@@ -47,7 +65,7 @@ export function modelGeometry(s, L) {
     }
   });
 
-  if (s.legs > 0) G.panel('part.plinth', 'wood', 0, 0, s.D - PLINTH_SETBACK - T, L.W, s.legs, T);
+  if (s.legs > 0) G.panel('part.plinth', 'wood', L.plinth.x, 0, s.D - PLINTH_SETBACK - T, L.plinth.w, s.legs, T);
   const wt = L.worktop;
   G.panel('part.worktop', 'worktop', wt.x, yTop, 0, wt.w, wt.t, wt.d, 'worktop');
 

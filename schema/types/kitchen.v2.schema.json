@@ -38,10 +38,10 @@
       "additionalProperties": false,
       "properties": {
         "width": { "$ref": "#/$defs/mm" },
-        "type": { "enum": ["doors", "drawers", "sink", "open"] },
+        "type": { "enum": ["doors", "drawers", "sink", "dishwasher", "open"] },
         "count": {
           "type": "integer",
-          "description": "Двері (1–2), шухляди (1–6) або полиці відкритого модуля (0–6). Для sink поля немає."
+          "description": "Двері (1–2), шухляди (1–6) або полиці відкритого модуля (0–6). Для sink і dishwasher поля немає."
         }
       },
       "allOf": [
@@ -60,6 +60,11 @@
         {
           "if": { "properties": { "type": { "const": "sink" } } },
           "then": { "not": { "required": ["count"] } }
+        },
+        {
+          "description": "Ніша під посудомийку без корпусу: ширина лише 450 або 600 мм.",
+          "if": { "properties": { "type": { "const": "dishwasher" } } },
+          "then": { "properties": { "width": { "enum": [450, 600] } }, "not": { "required": ["count"] } }
         }
       ]
     }

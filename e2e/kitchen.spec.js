@@ -51,6 +51,22 @@ test('редагування модулів', async ({ page }) => {
   await expect(page.locator('#legs')).toHaveValue('150');
 });
 
+test('посудомийка: ширина зі списку, попередження про другу', async ({ page }) => {
+  await preset(page, 'line180');
+  const warn = page.locator('[data-msg="warn"]');
+  const before = await warn.count();
+
+  await page.selectOption(mod(2, '[data-field="mType"]'), 'dishwasher');
+  await expect(page.locator(mod(2, 'select[data-field="mWidth"]'))).toHaveValue('600');
+  await page.selectOption(mod(2, '[data-field="mWidth"]'), '450');
+  await expect(warn).toHaveCount(before);
+
+  await page.click(mod(2, '[data-act="modDup"]'));
+  await expect(warn).toHaveCount(before + 1);
+  await page.click(mod(3, '[data-act="modDel"]'));
+  await expect(warn).toHaveCount(before);
+});
+
 test('еталонні CSV і JSON кухні', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'еталони перевіряємо в одному браузері');
   for (const [key, p] of Object.entries(PRESETS)) {

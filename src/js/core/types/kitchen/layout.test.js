@@ -167,6 +167,52 @@ describe('ніжки', () => {
   });
 });
 
+describe('computeLayout — посудомийка', () => {
+  const doors = { width: 600, type: 'doors', count: 1 };
+  const dw = width => ({ width, type: 'dishwasher' });
+
+  it('ніша між модулями: один фасад 450 - 2*3 × 720 - 2*3, без полиць, ніжок і боковин', () => {
+    const L = computeLayout(kitchen([doors, dw(450), doors]));
+    const m = L.modules[1];
+    expect(m.fronts).toEqual([{ key: 'part.dishwasherFront', x: 603, y: 103, w: 444, h: 714 }]); // 600 + 3, 100 + 3
+    expect(m.shelves).toEqual([]);
+    expect(m.legs).toEqual([]);
+    expect(m.endSides).toEqual([]);
+    expect(L.W).toBe(1650); // 600 + 450 + 600
+    expect(L.plinth).toEqual({ x: 0, w: 1650 });
+  });
+
+  it('ніша останньою: боковина справа назовні, цоколь до неї', () => {
+    const L = computeLayout(kitchen([doors, dw(450)]));
+    expect(L.modules[1].endSides).toEqual([1050]); // 600 + 450
+    expect(L.modules[1].niche).toEqual({ x: 600, w: 450 });
+    expect(L.W).toBe(1066); // 600 + 450 + 16
+    expect(L.plinth).toEqual({ x: 0, w: 1050 });
+  });
+
+  it('ніша першою: боковина зліва, ніша й наступні модулі зсунуті на 16', () => {
+    const L = computeLayout(kitchen([dw(600), doors]));
+    expect(L.modules[0].endSides).toEqual([0]);
+    expect(L.modules[0].fronts[0].x).toBe(19); // 16 + 3
+    expect(L.modules[1].x).toBe(616); // 16 + 600
+    expect(L.W).toBe(1216); // 16 + 600 + 600
+    expect(L.plinth).toEqual({ x: 16, w: 1200 });
+  });
+
+  it('єдиний модуль-ніша: боковини з обох боків', () => {
+    const L = computeLayout(kitchen([dw(600)]));
+    expect(L.modules[0].endSides).toEqual([0, 616]); // 16 + 600
+    expect(L.W).toBe(632); // 600 + 2*16
+    expect(L.plinth).toEqual({ x: 16, w: 600 });
+  });
+
+  it('перша без попередження, кожна наступна — з попередженням', () => {
+    const repeats = mods => computeLayout(kitchen(mods)).warns.filter(w => w.key === 'check.dishwasherRepeat');
+    expect(repeats([doors, dw(600)])).toEqual([]);
+    expect(repeats([dw(600), doors, dw(450), dw(450)]).map(w => w.params.name.params.n)).toEqual([3, 4]);
+  });
+});
+
 describe('computeLayout — шухляди на напрямних', () => {
   it('мілкий корпус: шухляда 280 - 50 = 230 → 200 (ряд) < 250; вузький модуль: фасад 200 - 2*3 = 194 < 200', () => {
     const L = computeLayout(

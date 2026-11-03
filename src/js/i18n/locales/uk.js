@@ -109,6 +109,7 @@ export default {
     doors: 'Двері',
     drawers: 'Шухляди',
     sink: 'Під мийку',
+    dishwasher: 'Посудомийка',
     open: 'Відкритий',
   },
   worktopSide: {
@@ -146,6 +147,7 @@ export default {
         doors: 'Двері ×{cnt}',
         drawers: 'Шухляди ×{cnt}',
         sink: 'Мийка',
+        dishwasher: 'Посудомийка',
         open: 'Полиці ×{cnt}',
       },
     },
@@ -195,9 +197,11 @@ export default {
     handle: 'Ручка',
     rail: 'Царга',
     door: 'Двері (фасад)',
+    dishwasherFront: 'Фасад посудомийки',
     worktop: 'Стільниця',
     hinge: 'Петля',
     sink: 'Мийка',
+    dishwasher: 'Посудомийка',
     leg: 'Ніжка',
   },
   itemSize: {
@@ -206,6 +210,7 @@ export default {
     handle: 'на фасад',
     hinge: 'накладна, з доводчиком',
     sink: 'врізна, під модуль {w} мм',
+    dishwasher: 'вбудована, у нішу {w} мм',
     leg: 'регульована, висота {h} мм',
   },
   describe: {
@@ -218,6 +223,7 @@ export default {
     moduleDoors: '{cnt} двер. {w} × {h}',
     moduleDrawers: '{cnt} ящ. по {front}',
     moduleSink: 'під мийку, {cnt} двер.',
+    moduleDishwasher: 'ніша під посудомийку, фасад {w} × {h}, дверка відкривається вниз',
     moduleOpen: 'відкритий, полиць: {cnt}',
   },
   export: {
@@ -318,6 +324,7 @@ export default {
     moduleNarrow: '{name}: ширина {w} мм — замало для модуля (від 150 мм).',
     doorWide: '{name}: двері {w} мм — заширокі, краще дві або вужчий модуль (до ~600 мм).',
     sinkNarrow: '{name}: {w} мм — під мийку замало (від ~450 мм).',
+    dishwasherRepeat: '{name}: у кухні вже є посудомийка — це ще одна.',
     shelfSag: '{name}: полиця {w} мм прогинатиметься (ДСП 16 — до ~800 мм).',
     worktopJoin: 'Стільниця {len} мм довша за стандартну ({max} мм) — буде стик.',
     worktopDeep: 'Стільниця глибиною {d} мм — більше за стандартні {max} мм.',

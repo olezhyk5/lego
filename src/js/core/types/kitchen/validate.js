@@ -1,5 +1,5 @@
 import { runValidation } from '../../validate.js';
-import { MODULE_TYPES, MODULE_COUNT, WORKTOP_SIDES } from './constants.js';
+import { MODULE_TYPES, MODULE_COUNT, WORKTOP_SIDES, DISHWASHER_WIDTHS } from './constants.js';
 
 // Межі навмисно широкі: це перевірка формату, а не конструкції (її робить check.* у layout)
 const MAX_MM = 10000;
@@ -14,7 +14,13 @@ function normalizeModule(m, i, check) {
   const p = { n: i + 1 };
   if (!check.object(m, path, field('module', p))) return null;
   const out = {};
-  if (check.number(m.width, [...path, 'width'], field('moduleWidth', p), 1, MAX_MM)) out.width = m.width;
+  const widthPath = [...path, 'width'];
+  const widthField = field('moduleWidth', p);
+  const widthOk =
+    m.type === 'dishwasher'
+      ? check.oneOf(m.width, DISHWASHER_WIDTHS, widthPath, widthField)
+      : check.number(m.width, widthPath, widthField, 1, MAX_MM);
+  if (widthOk) out.width = m.width;
   if (check.oneOf(m.type, MODULE_TYPES, [...path, 'type'], field('moduleType', p))) out.type = m.type;
   const range = MODULE_COUNT[m.type];
   if (range && check.integer(m.count, [...path, 'count'], field('moduleCount', p), range[0], range[1]))
