@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "modules": [
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    }
+  ],
+  "uppers": [
+    {
+      "width": 600,
+      "type": "sink"
+    }
+  ]
+}

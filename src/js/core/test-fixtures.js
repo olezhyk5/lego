@@ -22,24 +22,24 @@ export const project = (sections, dims = {}) =>
 export const keys = msgs => msgs.map(m => m.key);
 
 // Плити специфікації поштучно і бокси-плити геометрії в однаковому вигляді:
-// 'key|mat|більший×менший', для боксу два більші розміри — a × b, найменший — товщина.
+// 'key|mat|більший×менший|товщина', для боксу два більші розміри — a × b, найменший — товщина.
 const sortedPair = (a, b) => [Math.round(a), Math.round(b)].sort((x, y) => y - x).join('×');
-const specPieces = P => P.panels.flatMap(p => Array(p.q).fill(`${p.key}|${p.mat}|${sortedPair(p.a, p.b)}`)).sort();
+const specPieces = P =>
+  P.panels
+    .flatMap(p => Array(p.q).fill(`${p.key}|${p.mat}|${sortedPair(p.a, p.b)}|${p.t ?? MATERIALS[p.mat].t}`))
+    .sort();
 const geomPieces = G =>
   G.boxes
     .filter(b => b.kind === 'panel')
     .map(b => {
-      const [a, c] = [b.w, b.h, b.d].sort((x, y) => y - x);
-      return `${b.key}|${b.mat}|${sortedPair(a, c)}`;
+      const [a, c, t] = [b.w, b.h, b.d].sort((x, y) => y - x);
+      return `${b.key}|${b.mat}|${sortedPair(a, c)}|${t}`;
     })
     .sort();
 
 // Інваріант для експорту: кожна плита специфікації — рівно один бокс у геометрії, і навпаки
 export function expectGeometryMatchesParts(G, P) {
   expect(geomPieces(G)).toEqual(specPieces(P));
-  G.boxes
-    .filter(b => b.kind === 'panel')
-    .forEach(b => expect(Math.min(b.w, b.h, b.d), `${b.key}: товщина`).toBe(MATERIALS[b.mat].t));
 }
 
 // Кухня: пресет як проєкт і проєкт з довільними модулями

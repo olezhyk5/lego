@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "modules": [
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    }
+  ],
+  "walls": [
+    {
+      "corner": {
+        "type": "blind",
+        "width": 1100,
+        "filler": 70,
+        "count": 1
+      },
+      "modules": [
+        {
+          "width": 600,
+          "type": "doors",
+          "count": 1
+        }
+      ],
+      "uppers": [
+        {
+          "width": 600,
+          "type": "doors",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "corner": {
+        "type": "lShape",
+        "a": 900,
+        "b": 900,
+        "count": 0
+      },
+      "modules": []
+    }
+  ]
+}

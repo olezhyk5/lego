@@ -26,4 +26,72 @@ export const PRESETS = {
   base60: {
     data: { ...BASE, modules: [{ width: 600, type: 'doors', count: 1 }] },
   },
+  full: {
+    data: {
+      ...BASE,
+      modules: [
+        { width: 600, type: 'fridge', nicheH: 1800, nicheD: 550 },
+        { width: 600, type: 'drawers', count: 3 },
+        { width: 800, type: 'sink' },
+        { width: 600, type: 'doors', count: 1 },
+        {
+          width: 600,
+          type: 'tall',
+          zones: [
+            { type: 'shelves', count: 1, height: 'auto' },
+            { type: 'microwave', height: 400 },
+            { type: 'oven', height: 600 },
+            { type: 'drawers', count: 2, height: 'auto' },
+          ],
+        },
+      ],
+      uppers: [
+        { width: 600, type: 'doors', count: 1 },
+        { width: 800, type: 'doors', count: 2 },
+        { width: 600, type: 'doors', count: 1 },
+      ],
+    },
+  },
+  cornerL: {
+    data: {
+      ...BASE,
+      modules: [
+        { width: 600, type: 'drawers', count: 3 },
+        { width: 800, type: 'sink' },
+      ],
+      uppers: [{ width: 800, type: 'doors', count: 2 }],
+      walls: [
+        {
+          corner: { type: 'lShape', a: 900, b: 900, count: 1 },
+          modules: [
+            { width: 600, type: 'doors', count: 1 },
+            { width: 600, type: 'drawers', count: 3 },
+          ],
+          uppers: [{ width: 600, type: 'doors', count: 1 }],
+        },
+      ],
+    },
+  },
+  cornerU: {
+    data: {
+      ...BASE,
+      modules: [
+        { width: 600, type: 'doors', count: 1 },
+        { width: 600, type: 'drawers', count: 3 },
+      ],
+      walls: [
+        {
+          corner: { type: 'blind', width: 1100, filler: 70, count: 0 },
+          modules: [{ width: 800, type: 'sink' }],
+        },
+        {
+          corner: { type: 'lShape', a: 900, b: 900, count: 1 },
+          modules: [
+            { width: 600, type: 'drawers', count: 3 },
+            { width: 600, type: 'doors', count: 1 },
+          ],
+        },
+      ],
+    },
+  },
 };

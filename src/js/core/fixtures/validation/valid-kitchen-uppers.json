@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "upper": {
+    "H": 700,
+    "D": 300,
+    "gap": 600
+  },
+  "modules": [
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    }
+  ],
+  "uppers": [
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    },
+    {
+      "width": 600,
+      "type": "gap"
+    },
+    {
+      "width": 400,
+      "type": "open",
+      "count": 2
+    }
+  ]
+}

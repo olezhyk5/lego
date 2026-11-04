@@ -2,71 +2,471 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/olezhyk5/lego/schema/types/kitchen.v2.schema.json",
   "title": "Кухня (type: kitchen), формат v2",
-  "description": "Ряд нижніх модулів зліва направо на ніжках, зі спільною стільницею (товщина — з матеріалу) і цокольною планкою. Розміри в мм; ширини модулів фіксовані.",
+  "description": "Нижні модулі зліва направо на ніжках, верхні модулі, пенали й холодильники; стільниця й цоколь. Перша стіна — modules/uppers, наступні стіни (кут) — walls. Розміри в мм; ширини модулів фіксовані.",
   "type": "object",
   "required": ["version", "type", "H", "D", "legs", "modules"],
   "additionalProperties": false,
   "properties": {
-    "version": { "const": 2 },
-    "type": { "const": "kitchen" },
-    "H": { "$ref": "#/$defs/mm", "description": "Висота корпусу модулів (без ніжок і стільниці)." },
-    "D": { "$ref": "#/$defs/mm", "description": "Глибина корпусу модулів." },
-    "legs": { "$ref": "#/$defs/smallMm", "description": "Висота ніжок; 0 — без ніжок і цокольної планки." },
+    "version": {
+      "const": 2
+    },
+    "type": {
+      "const": "kitchen"
+    },
+    "H": {
+      "$ref": "#/$defs/mm",
+      "description": "Висота корпусу модулів (без ніжок і стільниці)."
+    },
+    "D": {
+      "$ref": "#/$defs/mm",
+      "description": "Глибина корпусу модулів."
+    },
+    "legs": {
+      "$ref": "#/$defs/smallMm",
+      "description": "Висота ніжок; 0 — без ніжок і цокольної планки."
+    },
     "worktop": {
-      "description": "Виступи стільниці за модулі. Немає поля → спереду 30, з боків 0.",
+      "description": "Виступи й товщина стільниці. Немає поля → спереду 30, з боків 0, товщина типова (38).",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "front": { "$ref": "#/$defs/smallMm" },
-        "left": { "$ref": "#/$defs/smallMm" },
-        "right": { "$ref": "#/$defs/smallMm" }
+        "front": {
+          "$ref": "#/$defs/smallMm"
+        },
+        "left": {
+          "$ref": "#/$defs/smallMm"
+        },
+        "right": {
+          "$ref": "#/$defs/smallMm"
+        },
+        "t": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Товщина стільниці. Немає поля → типова (38)."
+        }
       }
     },
     "modules": {
       "type": "array",
       "minItems": 1,
       "maxItems": 30,
-      "items": { "$ref": "#/$defs/module" }
+      "items": {
+        "$ref": "#/$defs/module"
+      }
+    },
+    "upper": {
+      "description": "Спільні розміри верхніх модулів. Немає поля → висота 720, глибина 320, відступ від стільниці 550. Висота кухні = ніжки + H + стільниця + gap + upper.H.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "H": {
+          "$ref": "#/$defs/mm"
+        },
+        "D": {
+          "$ref": "#/$defs/mm"
+        },
+        "gap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      }
+    },
+    "uppers": {
+      "$ref": "#/$defs/uppers"
+    },
+    "walls": {
+      "description": "Наступні стіни після першої, зі стиком із попередньою: одна — Г-подібна кухня, дві — П-подібна.",
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "$ref": "#/$defs/wall"
+      }
     }
   },
   "$defs": {
-    "mm": { "type": "number", "minimum": 1, "maximum": 10000 },
-    "smallMm": { "type": "number", "minimum": 0, "maximum": 1000 },
+    "mm": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "smallMm": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000
+    },
     "module": {
       "type": "object",
       "required": ["width", "type"],
       "additionalProperties": false,
       "properties": {
-        "width": { "$ref": "#/$defs/mm" },
-        "type": { "enum": ["doors", "drawers", "sink", "dishwasher", "open"] },
+        "width": {
+          "$ref": "#/$defs/mm",
+          "description": "Ширина модуля; для dishwasher і fridge — ширина ніші."
+        },
+        "type": {
+          "enum": ["doors", "drawers", "sink", "dishwasher", "open", "tall", "fridge"]
+        },
         "count": {
           "type": "integer",
-          "description": "Двері (1–2), шухляди (1–6) або полиці відкритого модуля (0–6). Для sink і dishwasher поля немає."
+          "description": "Двері (1–2), шухляди (1–6) або полиці відкритого модуля (0–6). Для sink, dishwasher, tall і fridge поля немає."
+        },
+        "nicheH": {
+          "$ref": "#/$defs/mm",
+          "description": "Висота ніші холодильника."
+        },
+        "nicheD": {
+          "$ref": "#/$defs/mm",
+          "description": "Глибина ніші холодильника = глибина корпусу."
+        },
+        "zones": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/$defs/zone"
+          },
+          "description": "Зони пенала зверху вниз."
         }
       },
       "allOf": [
         {
-          "if": { "properties": { "type": { "const": "doors" } } },
-          "then": { "required": ["count"], "properties": { "count": { "minimum": 1, "maximum": 2 } } }
+          "if": {
+            "properties": {
+              "type": {
+                "const": "doors"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 1,
+                "maximum": 2
+              }
+            }
+          }
         },
         {
-          "if": { "properties": { "type": { "const": "drawers" } } },
-          "then": { "required": ["count"], "properties": { "count": { "minimum": 1, "maximum": 6 } } }
+          "if": {
+            "properties": {
+              "type": {
+                "const": "drawers"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 1,
+                "maximum": 6
+              }
+            }
+          }
         },
         {
-          "if": { "properties": { "type": { "const": "open" } } },
-          "then": { "required": ["count"], "properties": { "count": { "minimum": 0, "maximum": 6 } } }
+          "if": {
+            "properties": {
+              "type": {
+                "const": "open"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 0,
+                "maximum": 6
+              }
+            }
+          }
         },
         {
-          "if": { "properties": { "type": { "const": "sink" } } },
-          "then": { "not": { "required": ["count"] } }
+          "if": {
+            "properties": {
+              "type": {
+                "const": "sink"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": ["count"]
+            }
+          }
         },
         {
           "description": "Ніша під посудомийку без корпусу: ширина лише 450 або 600 мм.",
-          "if": { "properties": { "type": { "const": "dishwasher" } } },
-          "then": { "properties": { "width": { "enum": [450, 600] } }, "not": { "required": ["count"] } }
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dishwasher"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "width": {
+                "enum": [450, 600]
+              }
+            },
+            "not": {
+              "required": ["count"]
+            }
+          }
+        },
+        {
+          "description": "Пенал: зони обов'язкові, кількості немає.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tall"
+              }
+            }
+          },
+          "then": {
+            "required": ["zones"],
+            "not": {
+              "required": ["count"]
+            }
+          }
+        },
+        {
+          "description": "Холодильник: розміри ніші обов'язкові, кількості немає.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "fridge"
+              }
+            }
+          },
+          "then": {
+            "required": ["nicheH", "nicheD"],
+            "not": {
+              "required": ["count"]
+            }
+          }
         }
       ]
+    },
+    "zone": {
+      "type": "object",
+      "required": ["type", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": ["shelves", "drawers", "oven", "microwave", "empty"]
+        },
+        "height": {
+          "oneOf": [
+            {
+              "const": "auto"
+            },
+            {
+              "$ref": "#/$defs/mm"
+            }
+          ]
+        },
+        "count": {
+          "type": "integer"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "shelves"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 1,
+                "maximum": 10
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "drawers"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 1,
+                "maximum": 6
+              }
+            }
+          }
+        }
+      ]
+    },
+    "upperModule": {
+      "type": "object",
+      "required": ["width", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "$ref": "#/$defs/mm"
+        },
+        "type": {
+          "enum": ["doors", "open", "gap"]
+        },
+        "count": {
+          "type": "integer"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "doors"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 1,
+                "maximum": 2
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "open"
+              }
+            }
+          },
+          "then": {
+            "required": ["count"],
+            "properties": {
+              "count": {
+                "minimum": 0,
+                "maximum": 6
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gap"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": ["count"]
+            }
+          }
+        }
+      ]
+    },
+    "uppers": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "$ref": "#/$defs/upperModule"
+      },
+      "description": "Верхні модулі зліва направо; високі модулі ряд оминає."
+    },
+    "corner": {
+      "type": "object",
+      "required": ["type", "count"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": ["blind", "lShape"]
+        },
+        "width": {
+          "$ref": "#/$defs/mm"
+        },
+        "filler": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "a": {
+          "$ref": "#/$defs/mm"
+        },
+        "b": {
+          "$ref": "#/$defs/mm"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3,
+          "description": "Полиці."
+        }
+      },
+      "allOf": [
+        {
+          "description": "Глухий кут стоїть на попередній стіні.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "blind"
+              }
+            }
+          },
+          "then": {
+            "required": ["width", "filler"]
+          }
+        },
+        {
+          "description": "Г-подібний кут: a — уздовж попередньої стіни, b — уздовж цієї.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "lShape"
+              }
+            }
+          },
+          "then": {
+            "required": ["a", "b"]
+          }
+        }
+      ]
+    },
+    "wall": {
+      "type": "object",
+      "required": ["corner", "modules"],
+      "additionalProperties": false,
+      "properties": {
+        "corner": {
+          "$ref": "#/$defs/corner"
+        },
+        "modules": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/module"
+          }
+        },
+        "uppers": {
+          "$ref": "#/$defs/uppers"
+        }
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeLayout, moduleCount, worktopOf, drawerFront, legColumns } from './layout.js';
+import { computeLayout, moduleCount, worktopOf, worktopThickness, drawerFront, legColumns } from './layout.js';
 import { kitchenPreset, kitchen, keys } from '../../test-fixtures.js';
 
 // Пресет «Кухня 2,4 м»: H 720, D 560, ніжки 100, стільниця 38 з виступом 30 спереду.
@@ -10,7 +10,7 @@ describe('computeLayout — пресет «Кухня 2,4 м»', () => {
   it('ширина, висота, стільниця, габарити', () => {
     expect(L.W).toBe(2400); // 600 + 800 + 600 + 400
     expect(L.Htot).toBe(858); // 100 + 720 + 38
-    expect(L.worktop).toMatchObject({ x: 0, w: 2400, d: 590, t: 38 }); // 560 + 30
+    expect(L.walls[0].worktops).toEqual([{ x: 0, w: 2400, d: 590, t: 38 }]); // 560 + 30
     expect(L.bounds).toEqual({ W: 2400, H: 858, D: 590 });
     expect(L.modules.map(m => m.x)).toEqual([0, 600, 1400, 2000]);
   });
@@ -57,6 +57,23 @@ describe('moduleCount', () => {
   ])('%j, ширина %i → %i', (m, w, n) => expect(moduleCount(m, w)).toBe(n));
 });
 
+describe('worktopThickness', () => {
+  it('немає поля або не додатне число → типова з матеріалу', () => {
+    expect(worktopThickness({})).toBe(38);
+    expect(worktopThickness({ worktop: { front: 30 } })).toBe(38);
+    expect(worktopThickness({ worktop: { t: 0 } })).toBe(38);
+    expect(worktopThickness({ worktop: { t: -5 } })).toBe(38);
+    expect(worktopThickness({ worktop: { t: 'x' } })).toBe(38);
+  });
+
+  it('задана товщина змінює загальну висоту', () => {
+    const L = computeLayout(kitchen([{ width: 600, type: 'doors', count: 1 }], { worktop: { front: 30, t: 28 } }));
+    expect(L.walls[0].worktops[0].t).toBe(28);
+    expect(L.Htot).toBe(848); // 100 + 720 + 28
+    expect(L.bounds.H).toBe(848);
+  });
+});
+
 describe('worktopOf', () => {
   it('немає поля → типові виступи; від’ємні й нечислові → 0', () => {
     expect(worktopOf({})).toEqual({ front: 30, left: 0, right: 0 });
@@ -67,7 +84,7 @@ describe('worktopOf', () => {
     const L = computeLayout(
       kitchen([{ width: 600, type: 'doors', count: 1 }], { worktop: { front: 30, left: 10, right: 20 } }),
     );
-    expect(L.worktop).toMatchObject({ x: -10, w: 630 }); // 600 + 10 + 20
+    expect(L.walls[0].worktops[0]).toMatchObject({ x: -10, w: 630 }); // 600 + 10 + 20
     expect(L.bounds.W).toBe(630);
   });
 });
@@ -179,7 +196,7 @@ describe('computeLayout — посудомийка', () => {
     expect(m.legs).toEqual([]);
     expect(m.endSides).toEqual([]);
     expect(L.W).toBe(1650); // 600 + 450 + 600
-    expect(L.plinth).toEqual({ x: 0, w: 1650 });
+    expect(L.walls[0].plinths).toEqual([{ x: 0, w: 1650, depth: 560 }]);
   });
 
   it('ніша останньою: боковина справа назовні, цоколь до неї', () => {
@@ -187,7 +204,7 @@ describe('computeLayout — посудомийка', () => {
     expect(L.modules[1].endSides).toEqual([1050]); // 600 + 450
     expect(L.modules[1].niche).toEqual({ x: 600, w: 450 });
     expect(L.W).toBe(1066); // 600 + 450 + 16
-    expect(L.plinth).toEqual({ x: 0, w: 1050 });
+    expect(L.walls[0].plinths).toEqual([{ x: 0, w: 1050, depth: 560 }]);
   });
 
   it('ніша першою: боковина зліва, ніша й наступні модулі зсунуті на 16', () => {
@@ -196,14 +213,14 @@ describe('computeLayout — посудомийка', () => {
     expect(L.modules[0].fronts[0].x).toBe(19); // 16 + 3
     expect(L.modules[1].x).toBe(616); // 16 + 600
     expect(L.W).toBe(1216); // 16 + 600 + 600
-    expect(L.plinth).toEqual({ x: 16, w: 1200 });
+    expect(L.walls[0].plinths).toEqual([{ x: 16, w: 1200, depth: 560 }]);
   });
 
   it('єдиний модуль-ніша: боковини з обох боків', () => {
     const L = computeLayout(kitchen([dw(600)]));
     expect(L.modules[0].endSides).toEqual([0, 616]); // 16 + 600
     expect(L.W).toBe(632); // 600 + 2*16
-    expect(L.plinth).toEqual({ x: 16, w: 600 });
+    expect(L.walls[0].plinths).toEqual([{ x: 16, w: 600, depth: 560 }]);
   });
 
   it('перша без попередження, кожна наступна — з попередженням', () => {

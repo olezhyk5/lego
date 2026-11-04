@@ -13,7 +13,8 @@
 
 /**
  * Плита специфікації: розміри в мм (цілі), mat — ключ з MATERIALS.
- * @typedef {{ key: string, mat: string, a: number, b: number, q: number }} Panel
+ * t — товщина, лише якщо відрізняється від типової MATERIALS[mat].t.
+ * @typedef {{ key: string, mat: string, a: number, b: number, q: number, t?: number }} Panel
  */
 
 /**
@@ -28,13 +29,18 @@
  * z — від задньої площини до фасаду. key — ключ деталі (part.*), той самий, що в специфікації.
  * kind: panel — плита (є в специфікації рівно один раз), hardware — фурнітура.
  * look — роль матеріалу в 3D (див. LOOKS).
+ * holes — наскрізні прямокутні вирізи в площині xz, у координатах моделі (лише вигляд: на специфікацію не впливають).
+ * notch — прямокутний виріз із кута плити в площині xz, у координатах моделі (у специфікації — розмір заготовки).
  * @typedef {{ key: string, kind: 'panel' | 'hardware', mat?: string, look: string,
- *   x: number, y: number, z: number, w: number, h: number, d: number }} GeometryBox
+ *   x: number, y: number, z: number, w: number, h: number, d: number,
+ *   holes?: { x: number, z: number, w: number, d: number }[],
+ *   notch?: { x: number, z: number, w: number, d: number } }} GeometryBox
  */
 
 /**
- * Циліндр уздовж x від x до x + len; (y, z) — його вісь.
- * @typedef {{ key: string, look: string, x: number, y: number, z: number, len: number, r: number }} GeometryRod
+ * Циліндр уздовж осі axis (немає поля → x) від точки (x, y, z) на len у додатний бік; r — радіус.
+ * @typedef {{ key: string, look: string, x: number, y: number, z: number, len: number, r: number,
+ *   axis?: 'x' | 'y' | 'z' }} GeometryRod
  */
 
 /** @typedef {{ boxes: GeometryBox[], rods: GeometryRod[] }} Geometry */

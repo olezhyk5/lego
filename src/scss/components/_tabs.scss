@@ -1,0 +1,33 @@
+@use "../abstracts" as *;
+
+// Перемикач у формі кухні: стіни, нижній / верхній ряд
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+
+  &__tab {
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 13px;
+    color: inherit;
+    cursor: pointer;
+    background: color(surface-alt);
+    border: 1px solid color(line);
+    border-radius: $radius-sm;
+
+    &:focus-visible {
+      outline: 2px solid color(focus-ring);
+    }
+
+    &.is-selected {
+      background: color(accent-soft);
+      border-color: color(accent);
+    }
+
+    @include touch {
+      min-height: $touch-target;
+    }
+  }
+}

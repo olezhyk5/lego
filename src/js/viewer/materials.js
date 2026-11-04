@@ -32,6 +32,7 @@ export function createMaterials() {
     worktop: new THREE.MeshStandardMaterial({ color: 0x8a8580, roughness: 0.55 }),
     handle: new THREE.MeshStandardMaterial({ color: 0x4b5563, metalness: 0.6, roughness: 0.4 }),
     rod: new THREE.MeshStandardMaterial({ color: 0xa3a9b3, metalness: 0.75, roughness: 0.3 }),
+    steel: new THREE.MeshStandardMaterial({ color: 0xd5dae1, metalness: 0.25, roughness: 0.35 }),
     hl: new THREE.MeshBasicMaterial({ color: 0xea580c, transparent: true, opacity: 0.1, depthWrite: false }),
     edge: new THREE.LineBasicMaterial({ color: 0x7a5c34, transparent: true, opacity: EDGE_OPACITY.normal }),
     dim: new THREE.LineBasicMaterial({ color: 0x374151 }),

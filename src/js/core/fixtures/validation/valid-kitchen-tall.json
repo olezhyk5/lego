@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "modules": [
+    {
+      "width": 600,
+      "type": "tall",
+      "zones": [
+        {
+          "type": "shelves",
+          "count": 3,
+          "height": "auto"
+        },
+        {
+          "type": "oven",
+          "height": 600
+        },
+        {
+          "type": "microwave",
+          "height": 400
+        },
+        {
+          "type": "drawers",
+          "count": 2,
+          "height": "auto"
+        },
+        {
+          "type": "empty",
+          "height": 300
+        }
+      ]
+    }
+  ]
+}

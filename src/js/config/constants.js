@@ -23,4 +23,4 @@ export const CARCASS_BASES = ['plinth', 'legs'];
 export const DEFAULT_BASE = 'plinth';
 
 // Ролі матеріалів у 3D (look у геометрії типу): viewer/materials.js має матеріал для кожної
-export const LOOKS = ['wood', 'shelf', 'back', 'front', 'handle', 'rod', 'worktop'];
+export const LOOKS = ['wood', 'shelf', 'back', 'front', 'handle', 'rod', 'steel', 'worktop'];

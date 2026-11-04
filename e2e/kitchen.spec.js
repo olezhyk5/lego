@@ -6,6 +6,9 @@ const PRESETS = {
   line240: { H: 720, D: 560, legs: 100, modules: 4, file: 'kukhnia-2400x858x590' },
   line180: { H: 720, D: 560, legs: 100, modules: 3, file: 'kukhnia-1800x858x590' },
   base60: { H: 720, D: 560, legs: 100, modules: 1, file: 'kukhnia-600x858x590' },
+  full: { H: 720, D: 560, legs: 100, modules: 5, file: 'kukhnia-3232x2128x590' },
+  cornerL: { H: 720, D: 560, legs: 100, modules: 2, file: 'kukhnia-2300x2128x2100' },
+  cornerU: { H: 720, D: 560, legs: 100, modules: 2, file: 'kukhnia-2300x858x2346' },
 };
 
 const preset = (page, key) => page.click(`[data-preset="kitchen.${key}"]`);
@@ -67,6 +70,44 @@ test('посудомийка: ширина зі списку, попередже
   await expect(warn).toHaveCount(before);
 });
 
+test('верхні модулі, пенал і холодильник', async ({ page }) => {
+  await preset(page, 'line180');
+  await page.click('[data-tier="upper"]');
+  await expect(modules(page)).toHaveCount(0);
+  await page.click('#addModule');
+  await expect(modules(page)).toHaveCount(1);
+  await page.click('[data-tier="base"]');
+  await expect(modules(page)).toHaveCount(3);
+
+  await page.selectOption(mod(2, '[data-field="mType"]'), 'fridge');
+  await expect(page.locator(mod(2, '[data-field="fNicheH"]'))).toHaveValue('1800');
+  await expect(page.locator(mod(2, '[data-field="fNicheD"]'))).toHaveValue('550');
+  await expect(page.locator('[data-calc="fridge-2"]')).toContainText('180');
+  await page.selectOption(mod(0, '[data-field="mType"]'), 'tall');
+  await page.click(mod(0, '[data-act="zAdd"]'));
+  await page.selectOption(`[data-module="0"] [data-zone="2"] [data-field="zType"]`, 'oven');
+  await expect(page.locator(`[data-module="0"] [data-zone="2"] [data-field="zHeight"]`)).toHaveValue('600');
+  await expect(page.locator('[data-msg="error"]')).toHaveCount(0);
+
+  await page.click('#upperSettings');
+  await page.fill('[data-field="upperGap"]', '500');
+  await page.click('#modalSubmit');
+  await expect(page.locator('[data-calc="totalH"]')).toContainText('2078'); // 100 + 720 + 38 + 500 + 720
+});
+
+test('кути: стіна, тип кутового модуля, видалення', async ({ page }) => {
+  await preset(page, 'line180');
+  await page.click('#addWall');
+  await expect(page.locator('[data-wall]')).toHaveCount(2);
+  await expect(page.locator('[data-field="cWidth"]')).toHaveValue('1100');
+  await page.selectOption('[data-field="cType"]', 'lShape');
+  await expect(page.locator('[data-field="cA"]')).toHaveValue('900');
+  await expect(page.locator('[data-msg="error"]')).toHaveCount(0);
+  await page.click('[data-act="wallDel"]');
+  await expect(page.locator('[data-wall]')).toHaveCount(1);
+  await expect(modules(page)).toHaveCount(3);
+});
+
 test('еталонні CSV і JSON кухні', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'еталони перевіряємо в одному браузері');
   for (const [key, p] of Object.entries(PRESETS)) {
@@ -124,6 +165,8 @@ test('375 px: кухня без горизонтального скролу', as
   await page.click('#reportToggle');
   for (const key of Object.keys(PRESETS)) {
     await preset(page, key);
+    await page.click('[data-tier="base"]');
+    if (key === 'cornerU') await page.click('[data-wall="1"]');
     const m = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       width: window.innerWidth,

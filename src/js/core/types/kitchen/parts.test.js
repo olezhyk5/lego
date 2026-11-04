@@ -9,6 +9,27 @@ import uk from '../../../i18n/locales/uk.js';
 
 // Пресет «Кухня 1,8 м»: шухляди 600 (4), мийка 600, двері 600 (2). H 720, D 560, ніжки 100.
 // Всередині модуля 600 - 2*16 = 568.
+describe('нетипова товщина стільниці', () => {
+  const s = kitchen([{ width: 600, type: 'doors', count: 1 }], { worktop: { front: 30, left: 0, right: 0, t: 28 } });
+  const L = computeLayout(s);
+  const P = partsList(s, L);
+
+  it('є в плиті специфікації (типова 38 — без поля, див. пресет нижче)', () => {
+    expect(P.panels).toContainEqual({ key: 'part.worktop', mat: 'worktop', a: 600, b: 590, q: 1, t: 28 }); // 560 + 30
+  });
+
+  it('геометрія збігається зі специфікацією', () => {
+    expectGeometryMatchesParts(modelGeometry(s, L), P);
+  });
+
+  it('шапка показує задану товщину', () => {
+    expect(summary(s, L)).toContainEqual({
+      label: { key: 'export.worktop' },
+      value: { key: 'export.worktopValue', params: { t: 28, front: 30, left: 0, right: 0 } },
+    });
+  });
+});
+
 describe('partsList — пресет «Кухня 1,8 м»', () => {
   const s = kitchenPreset('line180');
   const L = computeLayout(s);
