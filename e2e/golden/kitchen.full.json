@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "worktop": {
+    "front": 30,
+    "left": 0,
+    "right": 0
+  },
+  "modules": [
+    {
+      "width": 600,
+      "type": "fridge",
+      "nicheH": 1800,
+      "nicheD": 550
+    },
+    {
+      "width": 600,
+      "type": "drawers",
+      "count": 3
+    },
+    {
+      "width": 800,
+      "type": "sink"
+    },
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    },
+    {
+      "width": 600,
+      "type": "tall",
+      "zones": [
+        {
+          "type": "shelves",
+          "count": 1,
+          "height": "auto"
+        },
+        {
+          "type": "microwave",
+          "height": 400
+        },
+        {
+          "type": "oven",
+          "height": 600
+        },
+        {
+          "type": "drawers",
+          "count": 2,
+          "height": "auto"
+        }
+      ]
+    }
+  ],
+  "uppers": [
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    },
+    {
+      "width": 800,
+      "type": "doors",
+      "count": 2
+    },
+    {
+      "width": 600,
+      "type": "doors",
+      "count": 1
+    }
+  ]
+}

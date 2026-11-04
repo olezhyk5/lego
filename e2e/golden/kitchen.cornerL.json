@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "type": "kitchen",
+  "H": 720,
+  "D": 560,
+  "legs": 100,
+  "worktop": {
+    "front": 30,
+    "left": 0,
+    "right": 0
+  },
+  "modules": [
+    {
+      "width": 600,
+      "type": "drawers",
+      "count": 3
+    },
+    {
+      "width": 800,
+      "type": "sink"
+    }
+  ],
+  "uppers": [
+    {
+      "width": 800,
+      "type": "doors",
+      "count": 2
+    }
+  ],
+  "walls": [
+    {
+      "corner": {
+        "type": "lShape",
+        "a": 900,
+        "b": 900,
+        "count": 1
+      },
+      "modules": [
+        {
+          "width": 600,
+          "type": "doors",
+          "count": 1
+        },
+        {
+          "width": 600,
+          "type": "drawers",
+          "count": 3
+        }
+      ],
+      "uppers": [
+        {
+          "width": 600,
+          "type": "doors",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
