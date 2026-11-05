@@ -9,6 +9,10 @@
   padding: 8px 10px;
   text-align: left;
 
+  & + & {
+    margin-top: 8px;
+  }
+
   &__icon {
     flex: none;
     color: color(muted);
