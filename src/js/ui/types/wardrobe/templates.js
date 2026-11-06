@@ -13,7 +13,7 @@ export const DIMS = [
   { id: 'plinth', labelKey: 'sidebar.plinth', min: 0, max: 200 },
 ];
 
-// Над 3D на мобільному: габарити, основа (цоколь / регульовані опори) й кнопка налаштувань кришки
+// Над 3D на мобільному: габарити, основа (цоколь / регульовані опори) й кнопки налаштувань кришки та дверей
 export const setupMarkup = () => `<section class="card">
     <h2 class="card__title">${t('sidebar.dimensions')}</h2>
     <div class="dims">${DIMS.map(dimField).join('')}</div>
@@ -26,6 +26,10 @@ export const setupMarkup = () => `<section class="card">
     <button type="button" class="btn option-btn" id="topSettings">
       ${GEAR_ICON}
       <span>${t('sidebar.topSettings')}</span>
+    </button>
+    <button type="button" class="btn option-btn" id="doorSettings">
+      ${GEAR_ICON}
+      <span>${t('sidebar.doorSettings')}</span>
     </button>
   </section>`;
 
@@ -63,7 +67,7 @@ export function sectionCard(c, i, lc, { selected, collapsed, total }) {
   return `<div class="section${selected ? ' is-selected' : ''}${collapsed ? ' is-collapsed' : ''}" data-section="${i}">
     <div class="section__head">
       <button class="section__toggle" data-act="secToggle" aria-expanded="${!collapsed}" aria-controls="section-body-${i}" title="${t(toggleKey)}">
-        <span class="section__chevron" aria-hidden="true">▾</span>
+        <span class="section__chevron" aria-hidden="true"></span>
         <b class="section__name">${t('section.name', { n: i + 1 })}</b>
         <span class="calc section__summary" data-calc="sum-${i}">${sectionSummary(lc)}</span>
       </button>

@@ -28,6 +28,16 @@ describe('форма шафи', () => {
     expect(sec(0, '').classList.contains('is-selected')).toBe(true);
   });
 
+  it('налаштування дверей: порожній попап, проєкт не змінюється', () => {
+    const before = structuredClone(store.state);
+    click($('#doorSettings'));
+    expect($('#modal').open).toBe(true);
+    expect($('#modalTitle').textContent).toBe('Налаштування дверей');
+    expect($('#modalBody').innerHTML).toBe('');
+    expect(store.state).toEqual(before);
+    expect(app.update).not.toHaveBeenCalled();
+  });
+
   it('введення габариту → store, update(false)', () => {
     typeInto($('#W'), '1300');
     expect(store.state.W).toBe(1300);

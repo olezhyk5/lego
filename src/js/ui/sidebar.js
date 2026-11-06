@@ -17,14 +17,27 @@ export function markPreset() {
   });
 }
 
+// Згорнуто / розгорнуто: стан лише на час сесії, як у специфікації
+function syncPresetsToggle() {
+  const collapsed = store.presetsCollapsed;
+  $('#presets').hidden = collapsed;
+  $('#presetsToggle').setAttribute('aria-expanded', String(!collapsed));
+  $('#presetsToggle').title = t(collapsed ? 'sidebar.presetsExpand' : 'sidebar.presetsCollapse');
+}
+
 // Кнопки пресетів (і після зміни мови)
 export function renderPresets() {
   $('#presets').innerHTML = presetButtons();
   markPreset();
+  syncPresetsToggle();
 }
 
 export function initSidebar({ loadProject }) {
   renderPresets();
+  $('#presetsToggle').addEventListener('click', () => {
+    store.presetsCollapsed = !store.presetsCollapsed;
+    syncPresetsToggle();
+  });
   $('#presets').addEventListener('click', e => {
     const b = e.target.closest('[data-preset]');
     if (!b) return;

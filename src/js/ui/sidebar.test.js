@@ -12,6 +12,7 @@ beforeEach(() => {
   setupDom();
   initModal();
   setProject(presetProject('wardrobe.wardrobe'), 'wardrobe.wardrobe');
+  store.presetsCollapsed = false;
   loadProject = vi.fn();
   initSidebar({ loadProject });
 });
@@ -64,5 +65,14 @@ describe('зміна типу при зміненому проєкті', () => {
     click($('#modal button[type="button"][data-modal-close]'));
     expect(loadProject).not.toHaveBeenCalled();
     expect($('#modal').open).toBe(false);
+  });
+
+  it('заголовок згортає й розгортає кнопки', () => {
+    click($('#presetsToggle'));
+    expect($('#presets').hidden).toBe(true);
+    expect($('#presetsToggle').title).toBe('Розгорнути пресети');
+    click($('#presetsToggle'));
+    expect($('#presets').hidden).toBe(false);
+    expect($('#presetsToggle').getAttribute('aria-expanded')).toBe('true');
   });
 });

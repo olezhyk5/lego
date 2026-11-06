@@ -19,6 +19,31 @@
   }
 }
 
+// Стрілка-перемикач (згорнути / розгорнути): трикутник «вниз» по центру квадрата.
+// Розміри — лише змінні $chevron-* у _variables.scss: усі стрілки змінюються разом.
+// Символ ▾ сидить у рядку нижче центру, тож після повороту на -90° стрибав би по вертикалі.
+@mixin chevron {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: $chevron-size;
+  height: $chevron-size;
+  transition: transform $transition-base;
+
+  &::before {
+    width: $chevron-arrow-width;
+    height: $chevron-arrow-height;
+    content: "";
+    background: currentcolor;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
 @mixin focus-ring {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 0;

@@ -6,6 +6,7 @@ import { $, $$ } from '../../../utils/dom.js';
 import { calcMm } from '../../templates.js';
 import { DIMS, setupMarkup, mainMarkup, sectionCard, sectionSummary } from './templates.js';
 import { initTopSettings } from './top-settings.js';
+import { initDoorSettings } from './door-settings.js';
 
 // Форма шафи: габарити, кришка, секції й зони. Контракт форми — див. ui/forms.js.
 
@@ -141,6 +142,7 @@ export const wardrobeForm = {
     main.innerHTML = mainMarkup();
     bind(app);
     initTopSettings(app);
+    initDoorSettings();
   },
 
   sync() {

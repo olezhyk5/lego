@@ -38,9 +38,20 @@
     <div class="app">
       <aside class="app__sidebar">
         <div class="app__setup">
-          <section class="card">
-            <h2 class="card__title" data-i18n="sidebar.presets">Пресети</h2>
-            <div class="presets" id="presets"></div>
+          <section class="card presets">
+            <h2 class="card__title">
+              <button
+                type="button"
+                class="presets__toggle"
+                id="presetsToggle"
+                aria-expanded="true"
+                aria-controls="presets"
+              >
+                <span class="presets__chevron" aria-hidden="true"></span>
+                <span data-i18n="sidebar.presets">Пресети</span>
+              </button>
+            </h2>
+            <div class="presets__body" id="presets"></div>
           </section>
           <div id="formSetup"></div>
         </div>
@@ -54,7 +65,7 @@
         <div class="report app__report">
           <div id="msgs"></div>
           <button class="report__toggle" id="reportToggle" aria-expanded="false" aria-controls="reportCols">
-            <span class="report__chevron" aria-hidden="true">▾</span>
+            <span class="report__chevron" aria-hidden="true"></span>
             <span data-i18n="report.toggle">Специфікація</span>
           </button>
           <div class="report__cols" id="reportCols" hidden>

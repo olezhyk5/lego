@@ -39,6 +39,11 @@ $topbar-height: 52px;
 $sidebar-width: 380px;
 $modal-width: 480px;
 $transition-base: 0.2s;
+
+// Стрілка-перемикач (міксин chevron): секції, пресети, специфікація
+$chevron-size: 10px; // квадрат, у центрі якого трикутник
+$chevron-arrow-width: 8px;
+$chevron-arrow-height: 5px;
 $breakpoints: (
   sm: 600px,
   md: 900px,

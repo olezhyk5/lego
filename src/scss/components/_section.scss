@@ -53,16 +53,9 @@
   }
 
   &__chevron {
-    width: 14px;
-    font-size: 16px;
-    line-height: 1;
-    color: color(muted);
-    text-align: center;
-    transition: transform $transition-base;
+    @include chevron;
 
-    @media (prefers-reduced-motion: reduce) {
-      transition: none;
-    }
+    color: color(muted);
   }
 
   &__summary {

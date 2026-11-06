@@ -1,10 +1,54 @@
 @use "../abstracts" as *;
 
-// Кнопки пресетів; якщо типів меблів кілька — групами з назвою типу
+// Картка пресетів: заголовок-перемикач (згортає кнопки) і кнопки;
+// якщо типів меблів кілька — групами з назвою типу
 .presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  // Шеврон + «Пресети»: одна кнопка на всю ширину заголовка
+  &__toggle {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    width: calc(100% + 6px);
+    min-width: 0;
+    padding: 4px 6px;
+    margin: -4px 0 -4px -6px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: $radius-sm;
+
+    &:focus-visible {
+      outline: 2px solid color(focus-ring);
+    }
+
+    @include touch {
+      min-height: $touch-target;
+    }
+  }
+
+  &__chevron {
+    @include chevron;
+  }
+
+  &__toggle[aria-expanded="false"] &__chevron {
+    transform: rotate(-90deg);
+  }
+
+  &__body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    // display: flex перебиває атрибут hidden
+    &[hidden] {
+      display: none;
+    }
+  }
 
   &__group {
     flex-basis: 100%;

@@ -67,6 +67,7 @@ export const store = {
   showDims: true, // показувати розміри в 3D
   transparent: false, // напівпрозорі плити в 3D, щоб бачити наповнення
   reportCollapsed: true, // згорнуті списки плит і елементів під 3D
+  presetsCollapsed: false, // згорнуті кнопки пресетів
 };
 
 export function save() {

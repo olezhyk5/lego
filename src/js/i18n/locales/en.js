@@ -20,6 +20,8 @@ export default {
   },
   sidebar: {
     presets: 'Presets',
+    presetsCollapse: 'Collapse presets',
+    presetsExpand: 'Expand presets',
     dimensions: 'Overall size, mm',
     width: 'Width',
     height: 'Height',
@@ -29,6 +31,7 @@ export default {
     sections: 'Sections (left to right)',
     addSection: '+ Add section',
     topSettings: 'Top panel settings',
+    doorSettings: 'Door settings',
     switchTypeTitle: 'Another furniture type',
     switchTypeText:
       'The current project has been changed. Open a preset of another type? Unsaved changes will be lost.',
