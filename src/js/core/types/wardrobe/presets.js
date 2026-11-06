@@ -59,24 +59,6 @@ export const PRESETS = {
       ],
     },
   },
-  komod: {
-    data: {
-      W: 1000,
-      H: 900,
-      D: 450,
-      plinth: 60,
-      sections: [{ width: 'auto', zones: [{ type: 'drawers', count: 4, height: 'auto' }] }],
-    },
-  },
-  tumba: {
-    data: {
-      W: 600,
-      H: 700,
-      D: 400,
-      plinth: 0,
-      sections: [{ width: 'auto', zones: [{ type: 'shelves', count: 2, height: 'auto' }] }],
-    },
-  },
   penal: {
     data: {
       W: 450,
@@ -93,6 +75,24 @@ export const PRESETS = {
           ],
         },
       ],
+    },
+  },
+  komod: {
+    data: {
+      W: 1000,
+      H: 900,
+      D: 450,
+      plinth: 60,
+      sections: [{ width: 'auto', zones: [{ type: 'drawers', count: 4, height: 'auto' }] }],
+    },
+  },
+  tumba: {
+    data: {
+      W: 600,
+      H: 700,
+      D: 400,
+      plinth: 0,
+      sections: [{ width: 'auto', zones: [{ type: 'shelves', count: 2, height: 'auto' }] }],
     },
   },
 };
