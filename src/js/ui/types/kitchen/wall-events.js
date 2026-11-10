@@ -1,7 +1,5 @@
 import { DEFAULT_CORNER, CORNER_COUNT, MAX_WALLS } from '../../../core/types/kitchen/constants.js';
-import { store } from '../../../core/store.js';
 import { clone } from '../../../utils/helpers.js';
-import { $ } from '../../../utils/dom.js';
 import { wallIndex, tierOf, runOf, selectRow } from './row.js';
 
 // Обробники стін, рядів і картки кута.
@@ -9,20 +7,20 @@ import { wallIndex, tierOf, runOf, selectRow } from './row.js';
 const NEW_MODULE = { width: 600, type: 'doors', count: 1 };
 const CORNER_FIELDS = { cWidth: 'width', cFiller: 'filler', cA: 'a', cB: 'b' };
 
-function bindCorner({ update, fit }) {
-  const corner = $('#corner');
+function bindCorner({ store, ref, update, fit }) {
+  const corner = ref('corner');
   corner.addEventListener('click', e => {
     if (!e.target.closest('[data-act="wallDel"]')) return;
     const walls = store.state.walls;
-    const k = wallIndex();
+    const k = wallIndex(store);
     walls.splice(k - 1, 1);
     if (!walls.length) delete store.state.walls;
-    selectRow(k - 1, tierOf());
+    selectRow(store, k - 1, tierOf(store));
     update(true);
     fit();
   });
   corner.addEventListener('input', e => {
-    const c = runOf().corner;
+    const c = runOf(store).corner;
     const f = e.target.dataset.field;
     const v = parseInt(e.target.value);
     const key = CORNER_FIELDS[f];
@@ -34,35 +32,36 @@ function bindCorner({ update, fit }) {
     const f = e.target.dataset.field;
     if (!f) return;
     if (f === 'cType') {
-      runOf().corner = clone(DEFAULT_CORNER[e.target.value]);
+      runOf(store).corner = clone(DEFAULT_CORNER[e.target.value]);
       update(true);
     }
     fit();
   });
 }
 
+/** @param {import('../../app.js').App} app */
 export function bindWalls(app) {
-  const { update, fit } = app;
-  $('#walls').addEventListener('click', e => {
-    if (e.target.closest('#addWall')) {
+  const { store, ref, update, fit } = app;
+  ref('walls').addEventListener('click', e => {
+    if (e.target.closest('[data-ref="addWall"]')) {
       const walls = store.state.walls || (store.state.walls = []);
       if (walls.length + 1 >= MAX_WALLS) return;
       walls.push({ corner: clone(DEFAULT_CORNER.blind), modules: [clone(NEW_MODULE)] });
-      selectRow(walls.length, tierOf());
+      selectRow(store, walls.length, tierOf(store));
       update(true);
       fit();
       return;
     }
     const b = e.target.closest('[data-wall]');
     if (!b) return;
-    selectRow(+b.dataset.wall, tierOf());
+    selectRow(store, +b.dataset.wall, tierOf(store));
     update(true);
   });
 
-  $('#tiers').addEventListener('click', e => {
+  ref('tiers').addEventListener('click', e => {
     const b = e.target.closest('[data-tier]');
     if (!b) return;
-    selectRow(wallIndex(), b.dataset.tier);
+    selectRow(store, wallIndex(store), b.dataset.tier);
     update(true);
   });
 

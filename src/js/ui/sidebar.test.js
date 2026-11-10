@@ -1,25 +1,23 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { setupDom, click } from './test-dom.js';
-import { initSidebar, markPreset } from './sidebar.js';
-import { initModal } from './modal.js';
-import { store, setProject } from '../core/store.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { setupDom, createTestApp, ref, click } from './test-dom.js';
+import { createSidebar } from './sidebar.js';
 import { presetProject } from '../core/presets.js';
 import { $, $$ } from '../utils/dom.js';
 
-let loadProject;
+let store, loadProject, markPreset;
 beforeEach(() => {
   setupDom();
-  initModal();
-  setProject(presetProject('wardrobe.wardrobe'), 'wardrobe.wardrobe');
-  store.presetsCollapsed = false;
-  loadProject = vi.fn();
-  initSidebar({ loadProject });
+  const app = createTestApp();
+  store = app.store;
+  loadProject = app.loadProject;
+  store.setProject(presetProject('wardrobe.wardrobe'), 'wardrobe.wardrobe');
+  ({ markPreset } = createSidebar(app));
 });
 
 describe('пресети', () => {
   it('групи за типами меблів з кнопками всіх пресетів', () => {
-    expect($$('#presets h3')).toHaveLength(2); // заголовок групи на кожен тип
+    expect($$('[data-ref="presets"] h3')).toHaveLength(2); // заголовок групи на кожен тип
     expect($$('[data-preset]').map(b => b.dataset.preset)).toEqual(
       expect.arrayContaining(['wardrobe.komod', 'kitchen.line240']),
     );
@@ -40,7 +38,7 @@ describe('пресети', () => {
   it('інший тип при незміненому проєкті — без підтвердження', () => {
     click($('[data-preset="kitchen.line180"]'));
     expect(loadProject).toHaveBeenCalledOnce();
-    expect($('#modal').open).toBeFalsy();
+    expect(ref('modal').open).toBeFalsy();
   });
 });
 
@@ -51,28 +49,28 @@ describe('зміна типу при зміненому проєкті', () => {
   });
 
   it('спершу модалка, проєкт ще не завантажено', () => {
-    expect($('#modal').open).toBe(true);
+    expect(ref('modal').open).toBe(true);
     expect(loadProject).not.toHaveBeenCalled();
   });
 
   it('«Продовжити» — завантажує', () => {
-    $('#modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    ref('modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
     expect(loadProject).toHaveBeenCalledWith(presetProject('kitchen.line180'), 'kitchen.line180');
-    expect($('#modal').open).toBe(false);
+    expect(ref('modal').open).toBe(false);
   });
 
   it('«Скасувати» — ні', () => {
-    click($('#modal button[type="button"][data-modal-close]'));
+    click($('[data-ref="modal"] button[type="button"][data-modal-close]'));
     expect(loadProject).not.toHaveBeenCalled();
-    expect($('#modal').open).toBe(false);
+    expect(ref('modal').open).toBe(false);
   });
 
   it('заголовок згортає й розгортає кнопки', () => {
-    click($('#presetsToggle'));
-    expect($('#presets').hidden).toBe(true);
-    expect($('#presetsToggle').title).toBe('Розгорнути пресети');
-    click($('#presetsToggle'));
-    expect($('#presets').hidden).toBe(false);
-    expect($('#presetsToggle').getAttribute('aria-expanded')).toBe('true');
+    click(ref('presetsToggle'));
+    expect(ref('presets').hidden).toBe(true);
+    expect(ref('presetsToggle').title).toBe('Розгорнути пресети');
+    click(ref('presetsToggle'));
+    expect(ref('presets').hidden).toBe(false);
+    expect(ref('presetsToggle').getAttribute('aria-expanded')).toBe('true');
   });
 });

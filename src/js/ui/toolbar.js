@@ -1,52 +1,59 @@
-import { store, parseProject } from '../core/store.js';
+import { parseProject } from '../core/store.js';
 import { exportRows, toCsv, toTsv, fileBase } from '../core/export.js';
 import { download, readText, copyText } from '../utils/file.js';
-import { $ } from '../utils/dom.js';
-import { toast } from './toast.js';
-import { t, LOCALES, getLocale, setLocale } from '../i18n/index.js';
+import { t, LOCALES, getLocale } from '../i18n/index.js';
 
-// Кнопки верхньої панелі: вид, експорт, збереження/відкриття проєкту.
-export function initToolbar({ loadProject, fit, viewer, relocalize }) {
-  // Мова: назва кожної мови — її ж мовою (locale.<код>), тож список не перекладається
-  const loc = $('#locale');
-  loc.innerHTML = LOCALES.map(code => `<option value="${code}">${t('locale.' + code)}</option>`).join('');
-  loc.value = getLocale();
-  loc.addEventListener('change', () => {
-    setLocale(loc.value);
-    relocalize();
-  });
+// Кнопки верхньої панелі: вид, експорт, збереження/відкриття проєкту, мова.
+// Кнопок, вимкнених опцією ui, у розмітці немає — їх обробники не вішаються.
 
-  $('#showDims').addEventListener('change', e => {
+// Список мов: назва кожної мови — її ж мовою (locale.<код>), тож список не перекладається
+function renderLocales(select) {
+  select.innerHTML = LOCALES.map(code => `<option value="${code}">${t('locale.' + code)}</option>`).join('');
+  select.value = getLocale();
+}
+
+/** @param {import('./app.js').App} app */
+export function createToolbar(app) {
+  const { store, ref, viewer, toast } = app;
+  const on = (name, event, handler) => ref(name)?.addEventListener(event, handler);
+
+  const loc = ref('locale');
+  if (loc) {
+    renderLocales(loc);
+    loc.addEventListener('change', () => app.changeLocale(loc.value));
+  }
+
+  on('showDims', 'change', e => {
     store.showDims = e.target.checked;
     if (viewer) viewer.setDimsVisible(store.showDims);
   });
-  $('#transparent').addEventListener('change', e => {
+  on('transparent', 'change', e => {
     store.transparent = e.target.checked;
     if (viewer) viewer.setTransparent(store.transparent);
   });
-  $('#resetView').addEventListener('click', fit);
+  on('resetView', 'click', app.fit);
 
-  $('#csv').addEventListener('click', () => {
+  on('csv', 'click', () => {
     download(toCsv(exportRows(store.state)), `${fileBase(store.state)}.csv`, 'text/csv;charset=utf-8');
   });
 
-  $('#copy').addEventListener('click', () => {
+  on('copy', 'click', () => {
     copyText(toTsv(exportRows(store.state))).then(
       () => toast(t('toast.copied')),
       () => toast(t('toast.copyFailed')),
     );
   });
 
-  $('#png').addEventListener('click', () => {
+  on('png', 'click', () => {
     if (!viewer) return;
     viewer.toBlob(b => download(b, `${fileBase(store.state)}.png`));
   });
 
-  $('#saveJson').addEventListener('click', () => {
+  on('saveJson', 'click', () => {
     download(JSON.stringify(store.state, null, 2), `${fileBase(store.state)}.json`, 'application/json');
   });
-  $('#loadJson').addEventListener('click', () => $('#fileIn').click());
-  $('#fileIn').addEventListener('change', async e => {
+  on('loadJson', 'click', () => ref('fileIn').click());
+  on('fileIn', 'change', async e => {
     const f = e.target.files[0];
     if (!f) return;
     e.target.value = '';
@@ -64,7 +71,14 @@ export function initToolbar({ loadProject, fit, viewer, relocalize }) {
       const more = res.errors.length - 1;
       return toast(more ? t('toast.badFileMore', { error, more }) : t('toast.badFileDetails', { error }));
     }
-    loadProject(res.project);
+    app.loadProject(res.project);
     toast(t('toast.opened'));
   });
+
+  return {
+    // Після зміни мови (в цьому чи іншому екземплярі): вибране значення списку
+    syncLocale() {
+      if (loc) loc.value = getLocale();
+    },
+  };
 }

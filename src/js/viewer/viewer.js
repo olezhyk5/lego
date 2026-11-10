@@ -41,7 +41,8 @@ export function createViewer(container) {
   const dl2 = new THREE.DirectionalLight(0xffffff, 0.25 * Math.PI);
   dl2.position.set(-3000, 1500, -1000);
   scene.add(dl2);
-  scene.add(new THREE.GridHelper(10000, 50, SCENE_COLORS.gridMain, SCENE_COLORS.gridSub));
+  const grid = new THREE.GridHelper(10000, 50, SCENE_COLORS.gridMain, SCENE_COLORS.gridSub);
+  scene.add(grid);
 
   const M = createMaterials();
   let model = new THREE.Group();
@@ -49,16 +50,15 @@ export function createViewer(container) {
   scene.add(model);
 
   // рендер лише на вимогу: коли камера рухається або модель змінилась
-  let renderPending = false;
+  let frame = 0;
   function renderFrame() {
-    renderPending = false;
+    frame = 0;
     controls.update(); // при інерції сам викличе 'change' → наступний кадр
     renderer.render(scene, camera);
   }
   function requestRender() {
-    if (renderPending) return;
-    renderPending = true;
-    requestAnimationFrame(renderFrame);
+    if (frame) return;
+    frame = requestAnimationFrame(renderFrame);
   }
 
   function resize() {
@@ -70,7 +70,8 @@ export function createViewer(container) {
     requestRender();
   }
   controls.addEventListener('change', requestRender);
-  new ResizeObserver(resize).observe(container);
+  const observer = new ResizeObserver(resize);
+  observer.observe(container);
   resize();
 
   return {
@@ -102,6 +103,22 @@ export function createViewer(container) {
     toBlob(cb) {
       renderer.render(scene, camera); // буфер очищається після кадру — рендеримо синхронно перед зняттям
       renderer.domElement.toBlob(cb);
+    },
+    // Звільняє все, що тримає в'юер: кадр, спостерігач, обробники OrbitControls, геометрії, матеріали,
+    // WebGL-контекст (браузер дає їх обмежену кількість на сторінку) і canvas
+    destroy() {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      observer.disconnect();
+      controls.dispose();
+      disposeGroup(model);
+      scene.remove(model);
+      grid.dispose();
+      dims = null;
+      Object.values(M).forEach(m => m.dispose());
+      renderer.dispose();
+      renderer.forceContextLoss();
+      renderer.domElement.remove();
     },
   };
 }

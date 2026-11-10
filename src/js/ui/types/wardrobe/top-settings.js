@@ -1,13 +1,15 @@
-import { store } from '../../../core/store.js';
 import { carcass } from '../../../core/common/carcass.js';
-import { $, $$ } from '../../../utils/dom.js';
-import { openModal } from '../../modal.js';
 import { topSettingsForm } from './templates.js';
 import { t } from '../../../i18n/index.js';
 
 // Попап «Налаштування кришки». Поля попапу — чернетка: у проєкт потрапляють лише після «Зберегти».
-export function initTopSettings({ update }) {
-  $('#topSettings').addEventListener('click', () => {
+// Пошук у тілі попапу
+const $ = (sel, body) => body.querySelector(sel);
+const $$ = (sel, body) => Array.from(body.querySelectorAll(sel));
+
+/** @param {import('../../app.js').App} app */
+export function initTopSettings({ store, ref, update, openModal }) {
+  ref('topSettings').addEventListener('click', () => {
     openModal({
       title: t('sidebar.topSettings'),
       body: topSettingsForm(carcass(store.state)),

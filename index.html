@@ -3,114 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title data-i18n="app.title">Конструктор меблів</title>
+    <title>Конструктор меблів</title>
     <link rel="stylesheet" href="assets/css/main.css" />
   </head>
   <body>
-    <!-- Тексти в розмітці — лише fallback; актуальні підставляє JS за data-i18n* (src/js/i18n). -->
-    <header class="topbar">
-      <h1 class="topbar__title" data-i18n="app.title">Конструктор меблів</h1>
-      <div class="topbar__actions">
-        <label class="topbar__toggle"
-          ><input type="checkbox" id="showDims" checked /> <span data-i18n="toolbar.dims">Розміри</span></label
-        >
-        <label class="topbar__toggle"
-          ><input type="checkbox" id="transparent" /> <span data-i18n="toolbar.transparent">Прозорий режим</span></label
-        >
-        <button class="btn" id="resetView" data-i18n="toolbar.resetView">Скинути вид</button>
-        <button class="btn" id="png" data-i18n="toolbar.png">PNG</button>
-        <button class="btn" id="copy" data-i18n="toolbar.copy">Копіювати список</button>
-        <button class="btn btn--primary" id="csv" data-i18n="toolbar.csv">CSV для дизайнера</button>
-        <button class="btn" id="saveJson" data-i18n="toolbar.save">Зберегти</button>
-        <button class="btn" id="loadJson" data-i18n="toolbar.open">Відкрити</button>
-        <select
-          class="select"
-          id="locale"
-          data-i18n-title="toolbar.locale"
-          data-i18n-aria-label="toolbar.locale"
-          title="Мова інтерфейсу"
-          aria-label="Мова інтерфейсу"
-        ></select>
-      </div>
-      <input type="file" id="fileIn" accept=".json,application/json" hidden />
-    </header>
+    <!-- Конфігуратор малює свою розмітку в [data-lego] (src/js/ui/templates/shell.js); запуск — assets/js/main.js,
+         так само, як на сайті клієнта. Заголовок вкладки перекладає main.js. -->
+    <div data-lego></div>
 
-    <div class="app">
-      <aside class="app__sidebar">
-        <div class="app__setup">
-          <section class="card presets">
-            <h2 class="card__title">
-              <button
-                type="button"
-                class="presets__toggle"
-                id="presetsToggle"
-                aria-expanded="true"
-                aria-controls="presets"
-              >
-                <span class="presets__chevron" aria-hidden="true"></span>
-                <span data-i18n="sidebar.presets">Пресети</span>
-              </button>
-            </h2>
-            <div class="presets__body" id="presets"></div>
-          </section>
-          <div id="formSetup"></div>
-        </div>
-        <div class="app__sections" id="formMain"></div>
-      </aside>
-
-      <main class="app__main">
-        <div class="viewer app__viewer" id="view">
-          <div class="viewer__fallback" id="nogl" data-i18n="viewer.noWebgl"></div>
-        </div>
-        <div class="report app__report">
-          <div id="msgs"></div>
-          <button class="report__toggle" id="reportToggle" aria-expanded="false" aria-controls="reportCols">
-            <span class="report__chevron" aria-hidden="true"></span>
-            <span data-i18n="report.toggle">Специфікація</span>
-          </button>
-          <div class="report__cols" id="reportCols" hidden>
-            <div>
-              <h3 class="report__title" data-i18n="report.panels">Плити</h3>
-              <div class="report__scroll"><table class="table" id="tP"></table></div>
-              <div class="report__scroll"><table class="table" id="tS"></table></div>
-              <p class="hint" data-i18n="report.sheetsHint"></p>
-            </div>
-            <div>
-              <h3 class="report__title" data-i18n="report.items">Елементи</h3>
-              <div class="report__scroll"><table class="table" id="tI"></table></div>
-              <h3 class="report__title" id="descTitle"></h3>
-              <ul class="report__list" id="desc"></ul>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-    <dialog class="modal" id="modal" aria-labelledby="modalTitle">
-      <div class="modal__overlay" data-modal-close></div>
-      <form class="modal__panel" id="modalForm" novalidate>
-        <div class="modal__head">
-          <h2 class="modal__title" id="modalTitle"></h2>
-          <button
-            type="button"
-            class="btn btn--icon modal__close"
-            data-modal-close
-            data-i18n-title="modal.close"
-            data-i18n-aria-label="modal.close"
-            title="Закрити"
-            aria-label="Закрити"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="modal__body" id="modalBody"></div>
-        <div class="modal__foot">
-          <button type="button" class="btn" data-modal-close data-i18n="modal.cancel">Скасувати</button>
-          <button type="submit" class="btn btn--primary" id="modalSubmit" data-i18n="modal.save">Зберегти</button>
-        </div>
-      </form>
-    </dialog>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
+    <script src="assets/js/lego.js"></script>
     <script src="assets/js/main.js"></script>
   </body>
 </html>

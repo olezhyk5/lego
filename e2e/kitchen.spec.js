@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { test, expect, open, download, expectGolden } from './fixtures.js';
+import { test, expect, open, ref, download, expectGolden } from './fixtures.js';
 
 // Очікування задані тут, а не імпортом з src: тест має ловити й випадкові зміни пресетів.
 const PRESETS = {
@@ -20,18 +20,18 @@ test.beforeEach(async ({ page }) => open(page));
 test('пресети кухні заповнюють корпус і модулі', async ({ page }) => {
   for (const [key, p] of Object.entries(PRESETS)) {
     await preset(page, key);
-    for (const k of ['H', 'D', 'legs']) await expect(page.locator('#' + k)).toHaveValue(String(p[k]));
+    for (const k of ['H', 'D', 'legs']) await expect(page.locator(ref(k))).toHaveValue(String(p[k]));
     await expect(modules(page)).toHaveCount(p.modules);
     await expect(page.locator(`[data-preset="kitchen.${key}"]`)).toHaveAttribute('aria-pressed', 'true');
     // форма шафи прибрана
-    await expect(page.locator('#W')).toHaveCount(0);
+    await expect(page.locator(ref('W'))).toHaveCount(0);
     await expect(page.locator('[data-section]')).toHaveCount(0);
   }
 });
 
 test('редагування модулів', async ({ page }) => {
   await preset(page, 'line180');
-  await page.click('#addModule');
+  await page.click(ref('addModule'));
   await expect(modules(page)).toHaveCount(4);
 
   await page.selectOption(mod(3, '[data-field="mType"]'), 'drawers');
@@ -50,8 +50,8 @@ test('редагування модулів', async ({ page }) => {
   await page.fill(mod(1, '[data-field="mWidth"]'), '600');
   await expect(page.locator('[data-msg="error"]')).toHaveCount(0);
 
-  await page.fill('#legs', '150');
-  await expect(page.locator('#legs')).toHaveValue('150');
+  await page.fill(ref('legs'), '150');
+  await expect(page.locator(ref('legs'))).toHaveValue('150');
 });
 
 test('посудомийка: ширина зі списку, попередження про другу', async ({ page }) => {
@@ -74,7 +74,7 @@ test('верхні модулі, пенал і холодильник', async ({
   await preset(page, 'line180');
   await page.click('[data-tier="upper"]');
   await expect(modules(page)).toHaveCount(0);
-  await page.click('#addModule');
+  await page.click(ref('addModule'));
   await expect(modules(page)).toHaveCount(1);
   await page.click('[data-tier="base"]');
   await expect(modules(page)).toHaveCount(3);
@@ -89,15 +89,15 @@ test('верхні модулі, пенал і холодильник', async ({
   await expect(page.locator(`[data-module="0"] [data-zone="2"] [data-field="zHeight"]`)).toHaveValue('600');
   await expect(page.locator('[data-msg="error"]')).toHaveCount(0);
 
-  await page.click('#upperSettings');
+  await page.click(ref('upperSettings'));
   await page.fill('[data-field="upperGap"]', '500');
-  await page.click('#modalSubmit');
+  await page.click(ref('modalSubmit'));
   await expect(page.locator('[data-calc="totalH"]')).toContainText('2078'); // 100 + 720 + 38 + 500 + 720
 });
 
 test('кути: стіна, тип кутового модуля, видалення', async ({ page }) => {
   await preset(page, 'line180');
-  await page.click('#addWall');
+  await page.click(ref('addWall'));
   await expect(page.locator('[data-wall]')).toHaveCount(2);
   await expect(page.locator('[data-field="cWidth"]')).toHaveValue('1100');
   await page.selectOption('[data-field="cType"]', 'lShape');
@@ -112,10 +112,10 @@ test('еталонні CSV і JSON кухні', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'еталони перевіряємо в одному браузері');
   for (const [key, p] of Object.entries(PRESETS)) {
     await preset(page, key);
-    const csv = await download(page, '#csv');
+    const csv = await download(page, ref('csv'));
     expect(csv.name).toBe(`${p.file}.csv`);
     expectGolden(`kitchen.${key}.csv`, csv.text);
-    const json = await download(page, '#saveJson');
+    const json = await download(page, ref('saveJson'));
     expect(json.name).toBe(`${p.file}.json`);
     expectGolden(`kitchen.${key}.json`, json.text);
   }
@@ -123,21 +123,21 @@ test('еталонні CSV і JSON кухні', async ({ page }, info) => {
 
 test('збереження й відкриття JSON кухні', async ({ page }, info) => {
   await preset(page, 'line240');
-  await page.fill('#H', '700');
-  const json = await download(page, '#saveJson');
+  await page.fill(ref('H'), '700');
+  const json = await download(page, ref('saveJson'));
   expect(JSON.parse(json.text)).toMatchObject({ version: 2, type: 'kitchen', H: 700 });
   const file = info.outputPath('kitchen.json');
   writeFileSync(file, json.text);
 
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await expect(page.locator('#W')).toBeVisible(); // за замовчуванням — шафа
+  await expect(page.locator(ref('W'))).toBeVisible(); // за замовчуванням — шафа
 
-  await page.setInputFiles('#fileIn', file);
-  await expect(page.locator('#H')).toHaveValue('700');
+  await page.setInputFiles(ref('fileIn'), file);
+  await expect(page.locator(ref('H'))).toHaveValue('700');
   await expect(modules(page)).toHaveCount(4);
   await page.reload();
-  await expect(page.locator('#H')).toHaveValue('700'); // і переживає перезавантаження
+  await expect(page.locator(ref('H'))).toHaveValue('700'); // і переживає перезавантаження
 });
 
 test('зміна типу зі зміненим проєктом — з підтвердженням', async ({ page }) => {
@@ -145,24 +145,27 @@ test('зміна типу зі зміненим проєктом — з підт
   await preset(page, 'line180');
   await expect(modules(page)).toHaveCount(3);
 
-  await page.fill('#H', '700');
+  await page.fill(ref('H'), '700');
   await page.click('[data-preset="wardrobe.komod"]');
-  await expect(page.locator('#modal')).toHaveAttribute('open', '');
+  await expect(page.locator(ref('modal'))).toHaveAttribute('open', '');
   // скасування — лишаємось на кухні зі змінами
-  await page.locator('#modal button[data-modal-close]').first().click();
-  await expect(page.locator('#modal')).not.toHaveAttribute('open', '');
-  await expect(page.locator('#H')).toHaveValue('700');
+  await page
+    .locator(`${ref('modal')} button[data-modal-close]`)
+    .first()
+    .click();
+  await expect(page.locator(ref('modal'))).not.toHaveAttribute('open', '');
+  await expect(page.locator(ref('H'))).toHaveValue('700');
 
   await page.click('[data-preset="wardrobe.komod"]');
-  await page.click('#modalSubmit');
-  await expect(page.locator('#W')).toHaveValue('1000');
+  await page.click(ref('modalSubmit'));
+  await expect(page.locator(ref('W'))).toHaveValue('1000');
   await expect(page.locator('[data-section]')).toHaveCount(1);
 });
 
 test('375 px: кухня без горизонтального скролу', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile', 'лише мобільний');
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.click('#reportToggle');
+  await page.click(ref('reportToggle'));
   for (const key of Object.keys(PRESETS)) {
     await preset(page, key);
     await page.click('[data-tier="base"]');

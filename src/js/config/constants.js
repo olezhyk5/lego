@@ -5,6 +5,8 @@ export const STORAGE_KEY = 'lego-project';
 export const LEGACY_STORAGE_KEYS = ['wardrobe-cfg-v1'];
 // останній вибраний пресет (<тип>.<ключ>) — окремо від проєкту, у JSON не потрапляє
 export const PRESET_STORAGE_KEY = 'lego-preset';
+// вибрана мова інтерфейсу
+export const LOCALE_STORAGE_KEY = 'lego-locale';
 
 // Кришка в проєкті: top: { mount, double, overhang? }. Немає поля (старі файли) → між боковинами, одинарна.
 // mount — між боковинами (боковини на всю висоту) або над ними (кришка на всю ширину);

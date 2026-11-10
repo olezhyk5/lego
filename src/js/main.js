@@ -1,88 +1,10 @@
-// Точка входу → assets/js/main.js
-import { store, save, setProject } from './core/store.js';
-import { projectReport } from './core/export.js';
-import { getType } from './core/registry.js';
-import { createViewer } from './viewer/viewer.js';
-import { initSidebar, markPreset, renderPresets } from './ui/sidebar.js';
-import { getForm } from './ui/forms.js';
-import { initToolbar } from './ui/toolbar.js';
-import { renderReport, initReport, syncReportToggle } from './ui/report.js';
-import { initModal } from './ui/modal.js';
-import { $ } from './utils/dom.js';
-import { translateDom } from './i18n/index.js';
+// Сторінка index.html → assets/js/main.js. Запускає lego так само, як це зробив би сайт клієнта:
+// через window.lego з assets/js/lego.js, без імпортів з src/js.
 
-translateDom();
-
-const viewer = createViewer($('#view'));
-if (!viewer) $('#nogl').classList.add('is-visible');
-
-let rebuildPending = false;
-function scheduleRebuild() {
-  if (!viewer || rebuildPending) return;
-  rebuildPending = true;
-  requestAnimationFrame(() => {
-    rebuildPending = false;
-    const s = store.state;
-    const type = getType(s.type);
-    const L = type.layout(s);
-    viewer.rebuild(
-      { geometry: type.geometry(s, L), annotations: type.annotations(s, L, store.ui), bounds: L.bounds },
-      store,
-    );
-  });
-}
-
-// Форма поточного типу меблів; перемальовується, коли змінюється тип проєкту
-let form = null;
-let formType = null;
-function ensureForm() {
-  if (formType === store.state.type) return false;
-  formType = store.state.type;
-  form = getForm(formType);
-  form.mount({ setup: $('#formSetup'), main: $('#formMain') }, app);
-  form.sync();
-  return true;
-}
-
-// Головний цикл оновлення. full=true — перемалювати форму повністю
-// (змінилась структура), false — лише розраховані значення.
-function update(full) {
-  const R = projectReport(store.state);
-  if (ensureForm() || full) form.render(R.L);
-  else form.refresh(R.L);
-  scheduleRebuild();
-  renderReport(R);
-  markPreset();
-  save();
-}
-
-function fit() {
-  if (viewer) viewer.fit(getType(store.state.type).layout(store.state).bounds);
-}
-
-// Новий проєкт (пресет, файл): стан форми скидається, поля переписуються
-function loadProject(project, preset) {
-  setProject(project, preset);
-  if (!ensureForm()) form.sync();
-  update(true);
-  fit();
-}
-
-// Після зміни мови: статична розмітка, пресети, форма (перемонтовується з тим самим проєктом і store.ui),
-// звіт і 3D-підписи — без перезавантаження сторінки
-function relocalize() {
-  translateDom();
-  renderPresets();
-  syncReportToggle();
-  formType = null;
-  update(true);
-}
-
-const app = { update, fit, loadProject, relocalize, viewer };
-initSidebar(app);
-initToolbar(app);
-initModal();
-initReport();
-
-update(true);
-fit();
+window.lego.createConfigurator(document.querySelector('[data-lego]'), {
+  // Заголовок вкладки й мова документа — частина сторінки, а не конфігуратора
+  onLocaleChange(locale, t) {
+    document.documentElement.lang = locale;
+    document.title = t('app.title');
+  },
+});

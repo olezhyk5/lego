@@ -39,8 +39,8 @@ export const iconBtn = (act, titleKey, icon, disabled = false) =>
 
 export const calcMm = v => t('common.calcMm', { value: round(v) });
 
-// Поле габариту з id (статичний хук): {id, labelKey, min, max}
+// Поле габариту з data-ref (статичний хук): {id, labelKey, min, max}; id — поле проєкту
 export const dimField = ({ id, labelKey, min, max }) => `<label class="field"
     ><span>${t(labelKey)}</span>
-    <input class="input" id="${id}" type="number" inputmode="numeric" min="${min}" max="${max}" step="10"
+    <input class="input" data-ref="${id}" type="number" inputmode="numeric" min="${min}" max="${max}" step="10"
   /></label>`;

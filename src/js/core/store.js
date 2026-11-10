@@ -1,12 +1,13 @@
-import { STORAGE_KEY, LEGACY_STORAGE_KEYS, PRESET_STORAGE_KEY } from '../config/constants.js';
 import { upgradeProject } from './project-format.js';
 import { validateProject } from './registry.js';
 import { DEFAULT_PRESET, presetProject, matchPreset, isPresetId, upgradePresetId } from './presets.js';
+import { memoryStorage } from './storage.js';
 
 /** @typedef {import('./types.js').Project} Project */
+/** @typedef {import('./storage.js').StorageAdapter} StorageAdapter */
 
 /**
- * Сирий JSON (файл, localStorage) → перевірений проєкт поточної версії або помилки.
+ * Сирий JSON (файл, сховище) → перевірений проєкт поточної версії або помилки.
  * @param {unknown} raw
  * @returns {{ ok: true, project: Project } | { ok: false, errors: import('./types.js').Msg[] }}
  */
@@ -16,75 +17,76 @@ export function parseProject(raw) {
   return validateProject(up.project);
 }
 
-// Проєкт з localStorage або null (зіпсовані дані — у консоль)
-function readProject(key) {
-  const res = parseProject(JSON.parse(localStorage.getItem(key) ?? 'null'));
-  if (res.ok) return res.project;
-  console.warn(`localStorage['${key}']: проєкт не пройшов перевірку`, res.errors);
-  return null;
+// Збережене значення як JSON; сховище недоступне або дані зіпсовані → undefined
+function read(storage, name) {
+  try {
+    const raw = storage.get(name);
+    return raw == null ? undefined : JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
 }
 
-function load() {
-  try {
-    if (localStorage.getItem(STORAGE_KEY) != null) return readProject(STORAGE_KEY) ?? presetProject(DEFAULT_PRESET);
-    // старий ключ не видаляємо: відкат на попередню збірку не втратить дані
-    for (const key of LEGACY_STORAGE_KEYS) {
-      const d = readProject(key);
-      if (d) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
-        return d;
-      }
-    }
-  } catch {
-    // localStorage недоступний (приватний режим тощо) або дані зіпсовані — працюємо без них
-  }
+// Збережений проєкт або пресет за замовчуванням (зіпсовані дані — у консоль)
+function loadProject(storage) {
+  const raw = read(storage, 'project');
+  if (raw === undefined) return presetProject(DEFAULT_PRESET);
+  const res = parseProject(raw);
+  if (res.ok) return res.project;
+  console.warn('Збережений проєкт не пройшов перевірку', res.errors);
   return presetProject(DEFAULT_PRESET);
 }
 
 // Збережений ідентифікатор пресета; якщо його немає — пресет, з яким збігається проєкт
-function loadPreset(state) {
-  try {
-    const id = upgradePresetId(JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) ?? 'null'));
-    if (isPresetId(id)) return id;
-  } catch {
-    // localStorage недоступний або значення зіпсоване
-  }
-  return matchPreset(state);
+function loadPreset(storage, state) {
+  const id = upgradePresetId(read(storage, 'preset'));
+  return isPresetId(id) ? id : matchPreset(state);
 }
 
 // Стан форми поточного типу: sel — індекс вибраної групи (секції тощо),
 // collapsed — згорнуті в сайдбарі об'єкти (переживають переміщення, з новим проєктом скидаються)
 const freshUi = () => ({ sel: 0, collapsed: new WeakSet() });
 
-const initial = load();
-
-// Єдине джерело стану застосунку. Модулі читають/змінюють store напряму,
-// після змін викликають update() з main.js.
-export const store = {
-  state: initial, // проєкт поточної версії формату (зберігається)
-  preset: loadPreset(initial), // останній вибраний пресет (лишається активним і після змін) або null
-  ui: freshUi(), // у JSON проєкту не потрапляє
-  showDims: true, // показувати розміри в 3D
-  transparent: false, // напівпрозорі плити в 3D, щоб бачити наповнення
-  reportCollapsed: true, // згорнуті списки плит і елементів під 3D
-  presetsCollapsed: false, // згорнуті кнопки пресетів
-};
-
-export function save() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store.state));
-    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(store.preset));
-  } catch {
-    // localStorage недоступний (приватний режим тощо) — працюємо без нього
-  }
-}
-
 /**
- * @param {Project} data проєкт поточної версії (presetProject або parseProject)
- * @param {string | null} preset ідентифікатор вибраного пресета; для проєкту з файлу — за збігом
+ * Стан одного екземпляра конфігуратора. Модулі екземпляра читають/змінюють його напряму,
+ * після змін викликають update() екземпляра.
+ * @param {{ storage?: StorageAdapter }} [options] storage — де зберігати проєкт; за замовчуванням — у пам'яті
  */
-export function setProject(data, preset = matchPreset(data)) {
-  store.state = data;
-  store.preset = preset;
-  store.ui = freshUi();
+export function createStore({ storage = memoryStorage() } = {}) {
+  const initial = loadProject(storage);
+
+  const store = {
+    /** @type {Project} проєкт поточної версії формату (зберігається) */
+    state: initial,
+    /** @type {string | null} останній вибраний пресет (лишається активним і після змін) або null */
+    preset: loadPreset(storage, initial),
+    /** @type {{ sel: number, collapsed: WeakSet<object>, [field: string]: any }} у JSON проєкту не потрапляє */
+    ui: freshUi(),
+    showDims: true, // показувати розміри в 3D
+    transparent: false, // напівпрозорі плити в 3D, щоб бачити наповнення
+    reportCollapsed: true, // згорнуті списки плит і елементів під 3D
+    presetsCollapsed: false, // згорнуті кнопки пресетів
+
+    save() {
+      try {
+        storage.set('project', JSON.stringify(store.state));
+        storage.set('preset', JSON.stringify(store.preset));
+      } catch {
+        // сховище недоступне (приватний режим тощо) — працюємо без нього
+      }
+    },
+
+    /**
+     * @param {Project} data проєкт поточної версії (presetProject або parseProject)
+     * @param {string | null} preset ідентифікатор вибраного пресета; для проєкту з файлу — за збігом
+     */
+    setProject(data, preset = matchPreset(data)) {
+      store.state = data;
+      store.preset = preset;
+      store.ui = freshUi();
+    },
+  };
+  return store;
 }
+
+/** @typedef {ReturnType<typeof createStore>} Store */

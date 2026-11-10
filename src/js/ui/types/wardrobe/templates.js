@@ -18,16 +18,16 @@ export const setupMarkup = () => `<section class="card">
     <h2 class="card__title">${t('sidebar.dimensions')}</h2>
     <div class="dims">${DIMS.map(dimField).join('')}</div>
     <label class="check">
-      <input class="check__input" type="checkbox" id="baseLegs">
+      <input class="check__input" type="checkbox" data-ref="baseLegs">
       <span>${t('sidebar.baseLegs')}</span>
     </label>
   </section>
   <section class="card">
-    <button type="button" class="btn option-btn" id="topSettings">
+    <button type="button" class="btn option-btn" data-ref="topSettings">
       ${GEAR_ICON}
       <span>${t('sidebar.topSettings')}</span>
     </button>
-    <button type="button" class="btn option-btn" id="doorSettings">
+    <button type="button" class="btn option-btn" data-ref="doorSettings">
       ${GEAR_ICON}
       <span>${t('sidebar.doorSettings')}</span>
     </button>
@@ -36,8 +36,8 @@ export const setupMarkup = () => `<section class="card">
 // Під 3D на мобільному: секції
 export const mainMarkup = () => `<section class="card">
     <h2 class="card__title">${t('sidebar.sections')}</h2>
-    <div id="sections"></div>
-    <button class="btn" id="addSec">${t('sidebar.addSection')}</button>
+    <div data-ref="sections"></div>
+    <button class="btn" data-ref="addSec">${t('sidebar.addSection')}</button>
     <p class="hint">${t('sidebar.hint')}</p>
   </section>`;
 
@@ -62,11 +62,12 @@ function zoneRow(z, i, j, lz, total) {
   </div>`;
 }
 
-export function sectionCard(c, i, lc, { selected, collapsed, total }) {
+// uid — префікс id екземпляра (для aria-controls)
+export function sectionCard(c, i, lc, { selected, collapsed, total, uid }) {
   const toggleKey = collapsed ? 'section.expand' : 'section.collapse';
   return `<div class="section${selected ? ' is-selected' : ''}${collapsed ? ' is-collapsed' : ''}" data-section="${i}">
     <div class="section__head">
-      <button class="section__toggle" data-act="secToggle" aria-expanded="${!collapsed}" aria-controls="section-body-${i}" title="${t(toggleKey)}">
+      <button class="section__toggle" data-act="secToggle" aria-expanded="${!collapsed}" aria-controls="${uid}-section-${i}" title="${t(toggleKey)}">
         <span class="section__chevron" aria-hidden="true"></span>
         <b class="section__name">${t('section.name', { n: i + 1 })}</b>
         <span class="calc section__summary" data-calc="sum-${i}">${sectionSummary(lc)}</span>
@@ -76,7 +77,7 @@ export function sectionCard(c, i, lc, { selected, collapsed, total }) {
       ${iconBtn('secDup', 'section.duplicate', COPY_ICON)}
       ${iconBtn('secDel', 'section.delete', '✕', total === 1)}
     </div>
-    <div class="section__body" id="section-body-${i}"${collapsed ? ' hidden' : ''}>
+    <div class="section__body" id="${uid}-section-${i}"${collapsed ? ' hidden' : ''}>
     <div class="section__row">${t('section.width')} <input class="input section__width" data-field="secWidth" inputmode="numeric" placeholder="${t('common.auto')}" value="${isAuto(c.width) ? '' : c.width}"> <span class="calc" data-calc="s-${i}">${calcMm(lc.w)}</span></div>
     <div class="zones">
       <div class="zone-head"><span>${t('section.zonesHead')}</span><span>${t('section.count')}</span><span>${t('section.height')}</span></div>

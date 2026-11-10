@@ -1,13 +1,14 @@
 import { DEFAULT_UPPER } from '../../../core/types/kitchen/constants.js';
 import { worktopOf, worktopThickness, upperOf } from '../../../core/types/kitchen/layout.js';
 import { MATERIALS } from '../../../config/materials.js';
-import { store } from '../../../core/store.js';
-import { $, $$ } from '../../../utils/dom.js';
 import { t } from '../../../i18n/index.js';
-import { openModal } from '../../modal.js';
 import { WORKTOP_T, worktopSettingsForm, upperSettingsForm } from './templates.js';
 
 // Попапи налаштувань кухні: стільниця й верхні модулі.
+
+// Пошук у тілі попапу
+const $ = (sel, body) => body.querySelector(sel);
+const $$ = (sel, body) => Array.from(body.querySelectorAll(sel));
 
 // Поле товщини → частина worktop. Порожнє / не додатне або типове → поля немає, інше — у межах WORKTOP_T
 // (модалка novalidate, а значення поза форматом не відкрилося б після перезавантаження).
@@ -18,8 +19,8 @@ function thicknessField(el) {
   return thick === MATERIALS.worktop.t ? {} : { t: thick };
 }
 
-function initWorktopSettings({ update }) {
-  $('#worktopSettings').addEventListener('click', () => {
+function initWorktopSettings({ store, ref, update, openModal }) {
+  ref('worktopSettings').addEventListener('click', () => {
     openModal({
       title: t('kitchen.worktopSettings'),
       body: worktopSettingsForm(worktopOf(store.state), worktopThickness(store.state)),
@@ -46,8 +47,8 @@ const positive = (el, fallback) => {
   return v > 0 ? v : fallback;
 };
 
-function initUpperSettings({ update, fit }) {
-  $('#upperSettings').addEventListener('click', () => {
+function initUpperSettings({ store, ref, update, fit, openModal }) {
+  ref('upperSettings').addEventListener('click', () => {
     openModal({
       title: t('kitchen.upperSettings'),
       body: upperSettingsForm(upperOf(store.state)),
@@ -68,6 +69,7 @@ function initUpperSettings({ update, fit }) {
   });
 }
 
+/** @param {import('../../app.js').App} app */
 export function initSettings(app) {
   initWorktopSettings(app);
   initUpperSettings(app);

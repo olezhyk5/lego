@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { test, expect, open, download, expectGolden } from './fixtures.js';
+import { test, expect, open, ref, download, expectGolden } from './fixtures.js';
 
 // Очікування задані тут, а не імпортом з src: тест має ловити й випадкові зміни пресетів.
 const PRESETS = {
@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => open(page));
 test('пресети заповнюють габарити й секції', async ({ page }) => {
   for (const [key, p] of Object.entries(PRESETS)) {
     await preset(page, key);
-    for (const k of ['W', 'H', 'D', 'plinth']) await expect(page.locator('#' + k)).toHaveValue(String(p[k]));
+    for (const k of ['W', 'H', 'D', 'plinth']) await expect(page.locator(ref(k))).toHaveValue(String(p[k]));
     await expect(sections(page)).toHaveCount(p.sections);
     await expect(page.locator(`[data-preset="wardrobe.${key}"]`)).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('[data-preset][aria-pressed="true"]')).toHaveCount(1);
@@ -56,20 +56,20 @@ test('редагування секцій і зон', async ({ page }) => {
   await page.fill(sec(0, '[data-field="secWidth"]'), '');
   await expect(page.locator('[data-msg="error"]')).toHaveCount(0);
 
-  await page.fill('#W', '1300');
-  await expect(page.locator('#W')).toHaveValue('1300');
+  await page.fill(ref('W'), '1300');
+  await expect(page.locator(ref('W'))).toHaveValue('1300');
 });
 
 test('еталонні CSV і JSON для кожного пресета', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'еталони перевіряємо в одному браузері');
   for (const key of Object.keys(PRESETS)) {
     await preset(page, key);
-    const csv = await download(page, '#csv');
+    const csv = await download(page, ref('csv'));
     const p = PRESETS[key];
     expect(csv.name).toBe(`shafa-${p.W}x${p.H}x${p.D}.csv`);
     expect(csv.text.startsWith('﻿')).toBe(true);
     expectGolden(`${key}.csv`, csv.text);
-    const json = await download(page, '#saveJson');
+    const json = await download(page, ref('saveJson'));
     expect(json.name).toBe(`shafa-${p.W}x${p.H}x${p.D}.json`);
     expectGolden(`${key}.json`, json.text);
   }
@@ -77,8 +77,8 @@ test('еталонні CSV і JSON для кожного пресета', async 
 
 test('збереження й відкриття JSON', async ({ page }, info) => {
   await preset(page, 'penal');
-  await page.fill('#H', '2000');
-  const json = await download(page, '#saveJson');
+  await page.fill(ref('H'), '2000');
+  const json = await download(page, ref('saveJson'));
   const saved = JSON.parse(json.text);
   expect(saved).toMatchObject({ version: 2, type: 'wardrobe', H: 2000 });
   expect(saved.sections).toHaveLength(1);
@@ -88,52 +88,52 @@ test('збереження й відкриття JSON', async ({ page }, info) =
 
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await expect(page.locator('#H')).toHaveValue(String(PRESETS.wardrobe.H));
+  await expect(page.locator(ref('H'))).toHaveValue(String(PRESETS.wardrobe.H));
 
-  await page.setInputFiles('#fileIn', file);
-  await expect(page.locator('#H')).toHaveValue('2000');
-  await expect(page.locator('#W')).toHaveValue(String(PRESETS.penal.W));
+  await page.setInputFiles(ref('fileIn'), file);
+  await expect(page.locator(ref('H'))).toHaveValue('2000');
+  await expect(page.locator(ref('W'))).toHaveValue(String(PRESETS.penal.W));
   await expect(sections(page)).toHaveCount(1);
   await expect(zones(page, 0)).toHaveCount(2);
-  await expect(page.locator('#toast')).not.toBeEmpty();
+  await expect(page.locator(ref('toast'))).not.toBeEmpty();
 
   // зіпсований JSON і файл з неправильною структурою не змінюють проєкт
   for (const name of ['broken.json', 'invalid-zone.json']) {
-    await page.evaluate(() => (document.querySelector('#toast').textContent = ''));
-    await page.setInputFiles('#fileIn', join(import.meta.dirname, 'files', name));
-    await expect(page.locator('#toast'), name).not.toBeEmpty();
-    await expect(page.locator('#H'), name).toHaveValue('2000');
+    await page.evaluate(() => (document.querySelector('[data-ref="toast"]').textContent = ''));
+    await page.setInputFiles(ref('fileIn'), join(import.meta.dirname, 'files', name));
+    await expect(page.locator(ref('toast')), name).not.toBeEmpty();
+    await expect(page.locator(ref('H')), name).toHaveValue('2000');
   }
 });
 
 test('файл старого формату (v1) відкривається', async ({ page }) => {
-  await page.setInputFiles('#fileIn', join(import.meta.dirname, 'files/v1-komod.json'));
-  for (const k of ['W', 'H', 'D', 'plinth']) await expect(page.locator('#' + k)).toHaveValue(String(PRESETS.komod[k]));
+  await page.setInputFiles(ref('fileIn'), join(import.meta.dirname, 'files/v1-komod.json'));
+  for (const k of ['W', 'H', 'D', 'plinth']) await expect(page.locator(ref(k))).toHaveValue(String(PRESETS.komod[k]));
   await expect(page.locator('[data-preset="wardrobe.komod"]')).toHaveAttribute('aria-pressed', 'true');
-  const json = await download(page, '#saveJson');
+  const json = await download(page, ref('saveJson'));
   expect(JSON.parse(json.text)).toMatchObject({ version: 2, type: 'wardrobe' });
 });
 
 test('проєкт переживає перезавантаження', async ({ page }) => {
   await preset(page, 'komod');
-  await page.fill('#W', '1100');
+  await page.fill(ref('W'), '1100');
   await page.reload();
-  await expect(page.locator('#W')).toHaveValue('1100');
+  await expect(page.locator(ref('W'))).toHaveValue('1100');
   await expect(page.locator('[data-preset="wardrobe.komod"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('375 px: без горизонтального скролу', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile', 'лише мобільний');
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.click('#reportToggle');
+  await page.click(ref('reportToggle'));
   for (const key of Object.keys(PRESETS)) {
     await preset(page, key);
     const m = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       width: window.innerWidth,
-      viewer: document.querySelector('#view').getBoundingClientRect().height,
+      viewer: document.querySelector('[data-ref="view"]').getBoundingClientRect().height,
       height: window.innerHeight,
-      font: parseFloat(getComputedStyle(document.querySelector('#W')).fontSize),
+      font: parseFloat(getComputedStyle(document.querySelector('[data-ref="W"]')).fontSize),
     }));
     expect(m.scroll, key).toBeLessThanOrEqual(m.width);
     expect(m.viewer, key).toBeLessThan(m.height);

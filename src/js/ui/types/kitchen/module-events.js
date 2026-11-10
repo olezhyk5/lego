@@ -8,22 +8,19 @@ import {
   DEFAULT_ZONE_COUNT,
   APPLIANCE_NICHE,
 } from '../../../core/types/kitchen/constants.js';
-import { store } from '../../../core/store.js';
 import { clone } from '../../../utils/helpers.js';
-import { $, $$ } from '../../../utils/dom.js';
 import { runOf, isUpper, rowOf, minCount } from './row.js';
 
 // Обробники карток модулів поточного ряду: модулі й зони пенала.
 
-const box = () => $('#modules');
 const NEW_MODULE = { width: 600, type: 'doors', count: 1 };
 const NEW_TALL_ZONES = [
   { type: 'shelves', count: 3, height: 'auto' },
   { type: 'drawers', count: 2, height: 500 },
 ];
 
-function onModuleAction(act, i) {
-  const M = rowOf();
+function onModuleAction(store, act, i) {
+  const M = rowOf(store);
   const ui = store.ui;
   switch (act) {
     case 'modDup':
@@ -31,11 +28,11 @@ function onModuleAction(act, i) {
       ui.sel = i + 1;
       break;
     case 'modDel':
-      if (M.length > minCount()) {
+      if (M.length > minCount(store)) {
         M.splice(i, 1);
         ui.sel = Math.max(0, Math.min(ui.sel, M.length - 1));
         // порожній верхній ряд не зберігаємо: проєкт збігається з проєктом без верхніх модулів
-        if (isUpper() && !M.length) delete runOf().uppers;
+        if (isUpper(store) && !M.length) delete runOf(store).uppers;
       }
       break;
     case 'modLeft':
@@ -63,8 +60,8 @@ function onZoneAction(act, m, j) {
 
 // Новий тип модуля — типові для нього поля; зайві прибираються.
 // Посудомийка: ширина — найближча стандартна, що не більша за поточну (інакше найменша).
-function resetModule(m) {
-  const counts = isUpper() ? UPPER_COUNT : MODULE_COUNT;
+function resetModule(m, upper) {
+  const counts = upper ? UPPER_COUNT : MODULE_COUNT;
   if (counts[m.type]) m.count = DEFAULT_COUNT[m.type];
   else delete m.count;
   delete m.zones;
@@ -92,12 +89,12 @@ function position(el) {
   return { i: +el.closest('[data-module]').dataset.module, j: zone ? +zone.dataset.zone : -1 };
 }
 
-function onModuleInput(el, m, j) {
+function onModuleInput(el, m, j, upper) {
   const f = el.dataset.field;
   const v = parseInt(el.value);
   if (f === 'mWidth') m.width = isNaN(v) ? 0 : v;
   if (f === 'mCount') {
-    const [min, max] = (isUpper() ? UPPER_COUNT : MODULE_COUNT)[m.type];
+    const [min, max] = (upper ? UPPER_COUNT : MODULE_COUNT)[m.type];
     m.count = Math.max(min, Math.min(max, isNaN(v) ? min : v));
   }
   if (f === 'fNicheH') m.nicheH = v > 0 ? v : DEFAULT_FRIDGE.nicheH;
@@ -109,55 +106,57 @@ function onModuleInput(el, m, j) {
   }
 }
 
-export function bindModules({ update, fit }) {
-  box().addEventListener('click', e => {
+/** @param {import('../../app.js').App} app */
+export function bindModules({ store, ref, update, fit }) {
+  const box = ref('modules');
+  box.addEventListener('click', e => {
     if (!e.target.closest('[data-module]')) return;
     const { i, j } = position(e.target);
     const b = e.target.closest('[data-act]');
     if (store.ui.sel !== i) {
       store.ui.sel = i;
-      $$('[data-module]', box()).forEach(m => m.classList.toggle('is-selected', +m.dataset.module === i));
+      box.querySelectorAll('[data-module]').forEach(m => m.classList.toggle('is-selected', +m.dataset.module === i));
       if (!b) update(false);
     }
     if (!b) return;
     const act = b.dataset.act;
-    if (act.startsWith('z')) onZoneAction(act, rowOf()[i], j);
-    else onModuleAction(act, i);
+    if (act.startsWith('z')) onZoneAction(act, rowOf(store)[i], j);
+    else onModuleAction(store, act, i);
     update(true);
   });
 
-  box().addEventListener('input', e => {
+  box.addEventListener('input', e => {
     const f = e.target.dataset.field;
     if (!['mWidth', 'mCount', 'fNicheH', 'fNicheD', 'zCount', 'zHeight'].includes(f)) return;
     const { i, j } = position(e.target);
-    onModuleInput(e.target, rowOf()[i], j);
+    onModuleInput(e.target, rowOf(store)[i], j, isUpper(store));
     update(false);
   });
 
-  box().addEventListener('change', e => {
+  box.addEventListener('change', e => {
     const f = e.target.dataset.field;
     if (f === 'mWidth' || f === 'fNicheH' || f === 'fNicheD') return fit();
     if (f !== 'mType' && f !== 'zType') return;
     const { i, j } = position(e.target);
     if (f === 'mType') {
-      const m = rowOf()[i];
+      const m = rowOf(store)[i];
       m.type = e.target.value;
-      resetModule(m);
+      resetModule(m, isUpper(store));
       update(true);
       fit();
     } else {
-      const z = rowOf()[i].zones[j];
+      const z = rowOf(store)[i].zones[j];
       z.type = e.target.value;
       resetZone(z);
       update(true);
     }
   });
 
-  $('#addModule').addEventListener('click', () => {
-    const run = runOf();
-    if (isUpper() && !run.uppers) run.uppers = [];
-    rowOf().push(clone(NEW_MODULE));
-    store.ui.sel = rowOf().length - 1;
+  ref('addModule').addEventListener('click', () => {
+    const run = runOf(store);
+    if (isUpper(store) && !run.uppers) run.uppers = [];
+    rowOf(store).push(clone(NEW_MODULE));
+    store.ui.sel = rowOf(store).length - 1;
     update(true);
     fit();
   });

@@ -1,28 +1,28 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { setupDom, typeInto, click } from '../../test-dom.js';
-import { wardrobeForm } from './form.js';
-import { store, setProject } from '../../../core/store.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { setupDom, createTestApp, ref, typeInto, click } from '../../test-dom.js';
+import { createWardrobeForm } from './form.js';
 import { presetProject } from '../../../core/presets.js';
 import { projectReport } from '../../../core/export.js';
 import { $, $$ } from '../../../utils/dom.js';
 
-let app;
-const render = () => wardrobeForm.render(projectReport(store.state).L);
+let app, store, form;
+const render = () => form.render(projectReport(store.state).L);
 const sec = (i, sel) => $(`[data-section="${i}"] ${sel}`);
 
 beforeEach(() => {
   setupDom();
-  setProject(presetProject('wardrobe.wardrobe2'), 'wardrobe.wardrobe2');
-  app = { update: vi.fn(), fit: vi.fn() };
-  wardrobeForm.mount({ setup: $('#formSetup'), main: $('#formMain') }, app);
-  wardrobeForm.sync();
+  app = createTestApp();
+  store = app.store;
+  store.setProject(presetProject('wardrobe.wardrobe2'), 'wardrobe.wardrobe2');
+  form = createWardrobeForm({ setup: ref('formSetup'), main: ref('formMain') }, app);
+  form.sync();
   render();
 });
 
 describe('форма шафи', () => {
   it('габарити й картки секцій і зон', () => {
-    expect($('#W').value).toBe('1200');
+    expect(ref('W').value).toBe('1200');
     expect($$('[data-section]')).toHaveLength(2);
     expect($$('[data-section="1"] [data-zone]')).toHaveLength(3);
     expect(sec(0, '').classList.contains('is-selected')).toBe(true);
@@ -30,33 +30,33 @@ describe('форма шафи', () => {
 
   it('налаштування дверей: порожній попап, проєкт не змінюється', () => {
     const before = structuredClone(store.state);
-    click($('#doorSettings'));
-    expect($('#modal').open).toBe(true);
-    expect($('#modalTitle').textContent).toBe('Налаштування дверей');
-    expect($('#modalBody').innerHTML).toBe('');
+    click(ref('doorSettings'));
+    expect(ref('modal').open).toBe(true);
+    expect(ref('modalTitle').textContent).toBe('Налаштування дверей');
+    expect(ref('modalBody').innerHTML).toBe('');
     expect(store.state).toEqual(before);
     expect(app.update).not.toHaveBeenCalled();
   });
 
   it('введення габариту → store, update(false)', () => {
-    typeInto($('#W'), '1300');
+    typeInto(ref('W'), '1300');
     expect(store.state.W).toBe(1300);
     expect(app.update).toHaveBeenLastCalledWith(false);
   });
 
   it('опори: галочка з пресета; на тумбі (цоколь 0) вмикання піднімає основу до 100', () => {
     const toggle = on => {
-      $('#baseLegs').checked = on;
-      $('#baseLegs').dispatchEvent(new Event('change', { bubbles: true }));
+      ref('baseLegs').checked = on;
+      ref('baseLegs').dispatchEvent(new Event('change', { bubbles: true }));
     };
-    expect($('#baseLegs').checked).toBe(true); // wardrobe2 — на опорах
+    expect(ref('baseLegs').checked).toBe(true); // wardrobe2 — на опорах
 
-    setProject(presetProject('wardrobe.tumba'), 'wardrobe.tumba');
-    wardrobeForm.sync();
-    expect($('#baseLegs').checked).toBe(false);
+    store.setProject(presetProject('wardrobe.tumba'), 'wardrobe.tumba');
+    form.sync();
+    expect(ref('baseLegs').checked).toBe(false);
     toggle(true);
     expect(store.state).toMatchObject({ base: 'legs', plinth: 100 });
-    expect($('#plinth').value).toBe('100');
+    expect(ref('plinth').value).toBe('100');
     expect(app.update).toHaveBeenLastCalledWith(false);
 
     // вимкнули — поля немає (= цоколь), висота лишається
@@ -66,11 +66,11 @@ describe('форма шафи', () => {
   });
 
   it('опори при достатній висоті: висота не змінюється', () => {
-    typeInto($('#plinth'), '90');
-    $('#baseLegs').checked = false;
-    $('#baseLegs').dispatchEvent(new Event('change'));
-    $('#baseLegs').checked = true;
-    $('#baseLegs').dispatchEvent(new Event('change'));
+    typeInto(ref('plinth'), '90');
+    ref('baseLegs').checked = false;
+    ref('baseLegs').dispatchEvent(new Event('change'));
+    ref('baseLegs').checked = true;
+    ref('baseLegs').dispatchEvent(new Event('change'));
     expect(store.state.plinth).toBe(90);
   });
 

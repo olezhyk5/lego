@@ -32,7 +32,7 @@ export const totalWidthText = w => t('kitchen.totalWidth', { w: round(w) });
 export const totalHeightText = h => t('kitchen.totalHeight', { h: round(h) });
 export const fridgeNote = m => (m.antresolH ? t('module.antresol', { h: round(m.antresolH) }) : t('module.noAntresol'));
 
-const settingsBtn = (id, key) => `<button type="button" class="btn option-btn" id="${id}">
+const settingsBtn = (ref, key) => `<button type="button" class="btn option-btn" data-ref="${ref}">
       ${GEAR_ICON}
       <span>${t(key)}</span>
     </button>`;
@@ -52,11 +52,11 @@ export const setupMarkup = () => `<section class="card">
 // Під 3D на мобільному: стіни, кут, ряди, модулі
 export const mainMarkup = () => `<section class="card">
     <h2 class="card__title">${t('kitchen.modules')}</h2>
-    <div class="tabs" id="walls" role="group" aria-label="${t('kitchen.wallsLabel')}"></div>
-    <div id="corner"></div>
-    <div class="tabs" id="tiers" role="group" aria-label="${t('kitchen.tierLabel')}"></div>
-    <div id="modules"></div>
-    <button class="btn" id="addModule"></button>
+    <div class="tabs" data-ref="walls" role="group" aria-label="${t('kitchen.wallsLabel')}"></div>
+    <div data-ref="corner"></div>
+    <div class="tabs" data-ref="tiers" role="group" aria-label="${t('kitchen.tierLabel')}"></div>
+    <div data-ref="modules"></div>
+    <button class="btn" data-ref="addModule"></button>
     <p class="hint">${t('kitchen.hint')}</p>
   </section>`;
 
@@ -68,7 +68,9 @@ export function wallTabs(total, active) {
     tab('data-wall', k, t('kitchen.wall', { n: k + 1 }), k === active),
   ).join('');
   const add =
-    total < MAX_WALLS ? `<button type="button" class="tabs__tab" id="addWall">${t('kitchen.addWall')}</button>` : '';
+    total < MAX_WALLS
+      ? `<button type="button" class="tabs__tab" data-ref="addWall">${t('kitchen.addWall')}</button>`
+      : '';
   return tabs + add;
 }
 

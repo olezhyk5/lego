@@ -1,31 +1,29 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { setupDom, typeInto, click } from '../../test-dom.js';
-import { kitchenForm } from './form.js';
-import { initModal } from '../../modal.js';
-import { store, setProject } from '../../../core/store.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { setupDom, createTestApp, ref, typeInto, click } from '../../test-dom.js';
+import { createKitchenForm } from './form.js';
 import { presetProject } from '../../../core/presets.js';
 import { projectReport } from '../../../core/export.js';
 import { $, $$ } from '../../../utils/dom.js';
 
-let app;
-const render = () => kitchenForm.render(projectReport(store.state).L);
+let app, store, form;
+const render = () => form.render(projectReport(store.state).L);
 const mod = (i, sel) => $(`[data-module="${i}"] ${sel}`);
 
 beforeEach(() => {
   setupDom();
-  initModal();
-  setProject(presetProject('kitchen.line240'), 'kitchen.line240');
-  app = { update: vi.fn(), fit: vi.fn() };
-  kitchenForm.mount({ setup: $('#formSetup'), main: $('#formMain') }, app);
-  kitchenForm.sync();
+  app = createTestApp();
+  store = app.store;
+  store.setProject(presetProject('kitchen.line240'), 'kitchen.line240');
+  form = createKitchenForm({ setup: ref('formSetup'), main: ref('formMain') }, app);
+  form.sync();
   render();
 });
 
 describe('форма кухні', () => {
   it('корпус, модулі, загальна ширина', () => {
-    expect($('#H').value).toBe('720');
-    expect($('#legs').value).toBe('100');
+    expect(ref('H').value).toBe('720');
+    expect(ref('legs').value).toBe('100');
     expect($$('[data-module]')).toHaveLength(4);
     expect($('[data-calc="totalW"]').textContent).toContain('2400');
   });
@@ -73,7 +71,7 @@ describe('форма кухні', () => {
   });
 
   it('додати, дублювати, перемістити, видалити модуль', () => {
-    click($('#addModule'));
+    click(ref('addModule'));
     expect(store.state.modules).toHaveLength(5);
     expect(store.ui.sel).toBe(4);
     render();
@@ -91,7 +89,7 @@ describe('форма кухні', () => {
     click($('[data-tier="upper"]'));
     render();
     expect($$('[data-module]')).toHaveLength(0);
-    click($('#addModule'));
+    click(ref('addModule'));
     expect(store.state.uppers).toEqual([{ width: 600, type: 'doors', count: 1 }]);
     render();
     const types = $$('option', mod(0, '[data-field="mType"]')).map(o => o.value);
@@ -105,11 +103,11 @@ describe('форма кухні', () => {
 
   it('налаштування верхніх: зберігаються; типові — поля немає', () => {
     const save = (h, d, gap) => {
-      click($('#upperSettings'));
+      click(ref('upperSettings'));
       typeInto($('[data-field="upperH"]'), h);
       typeInto($('[data-field="upperD"]'), d);
       typeInto($('[data-field="upperGap"]'), gap);
-      $('#modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
+      ref('modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
     };
     save('600', '300', '0');
     expect(store.state.upper).toEqual({ H: 600, D: 300, gap: 0 });
@@ -153,7 +151,7 @@ describe('форма кухні', () => {
   });
 
   it('стіни: додати кут, змінити тип, видалити', () => {
-    click($('#addWall'));
+    click(ref('addWall'));
     render();
     expect(store.state.walls).toHaveLength(1);
     expect($('[data-wall="1"]').getAttribute('aria-pressed')).toBe('true');
@@ -164,7 +162,7 @@ describe('форма кухні', () => {
     render();
     typeInto($('[data-field="cA"]'), '1000');
     expect(store.state.walls[0].corner.a).toBe(1000);
-    click($('#addModule'));
+    click(ref('addModule'));
     expect(store.state.walls[0].modules).toHaveLength(2);
     render();
     click($('[data-act="wallDel"]'));
@@ -175,23 +173,23 @@ describe('форма кухні', () => {
   });
 
   it('не більше трьох стін', () => {
-    click($('#addWall'));
+    click(ref('addWall'));
     render();
-    click($('#addWall'));
+    click(ref('addWall'));
     render();
     expect(store.state.walls).toHaveLength(2);
-    expect($('#addWall')).toBeNull();
+    expect(ref('addWall')).toBeNull();
   });
 
   const saveThickness = value => {
-    click($('#worktopSettings'));
+    click(ref('worktopSettings'));
     typeInto($('[data-field="worktopT"]'), value);
-    $('#modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    ref('modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
   };
 
   it('товщини немає в основній формі, у модалці — типова', () => {
     expect($('[data-field="worktopT"]')).toBeNull();
-    click($('#worktopSettings'));
+    click(ref('worktopSettings'));
     expect($('[data-field="worktopT"]').value).toBe('38');
   });
 
@@ -199,7 +197,7 @@ describe('форма кухні', () => {
     saveThickness('28');
     expect(store.state.worktop).toEqual({ front: 30, left: 0, right: 0, t: 28 });
     expect(app.update).toHaveBeenLastCalledWith(false);
-    click($('#worktopSettings'));
+    click(ref('worktopSettings'));
     expect($('[data-field="worktopT"]').value).toBe('28');
   });
 
@@ -228,12 +226,12 @@ describe('форма кухні', () => {
   });
 
   it('модалка стільниці зберігає виступи (порожнє / від’ємне → 0)', () => {
-    click($('#worktopSettings'));
-    expect($('#modal').open).toBe(true);
+    click(ref('worktopSettings'));
+    expect(ref('modal').open).toBe(true);
     typeInto($('[data-side="front"]'), '40');
     typeInto($('[data-side="left"]'), '-5');
     typeInto($('[data-side="right"]'), '');
-    $('#modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    ref('modalForm').dispatchEvent(new Event('submit', { cancelable: true }));
     expect(store.state.worktop).toEqual({ front: 40, left: 0, right: 0 });
     expect(app.update).toHaveBeenLastCalledWith(false);
   });

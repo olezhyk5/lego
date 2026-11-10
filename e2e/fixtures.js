@@ -23,6 +23,9 @@ export const test = base.extend({
 
 export const open = page => page.goto('/index.html');
 
+// Селектор статичного хука розмітки конфігуратора: ref('W') → [data-ref="W"]
+export const ref = name => `[data-ref="${name}"]`;
+
 // Вміст завантаженого файлу після кліку по кнопці
 export async function download(page, selector) {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.click(selector)]);

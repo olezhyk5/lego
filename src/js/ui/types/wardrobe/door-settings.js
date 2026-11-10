@@ -1,10 +1,9 @@
-import { $ } from '../../../utils/dom.js';
-import { openModal } from '../../modal.js';
 import { t } from '../../../i18n/index.js';
 
 // Попап «Налаштування дверей». Поки порожній: полів і змін у проєкті ще немає.
-export function initDoorSettings() {
-  $('#doorSettings').addEventListener('click', () => {
+/** @param {import('../../app.js').App} app */
+export function initDoorSettings({ ref, openModal }) {
+  ref('doorSettings').addEventListener('click', () => {
     openModal({ title: t('sidebar.doorSettings'), body: '' });
   });
 }

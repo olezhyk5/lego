@@ -2,7 +2,7 @@
 
 Окремий фронтенд-застосунок (не WordPress-тема) для конструювання корпусних меблів. Користувач задає габарити, секції та зони, бачить 3D-модель (Three.js) і отримує специфікацію деталей (CSV / JSON / PNG).
 
-Фізично лежить у `wp-content/themes/lego` сайту Local `ideal-health`, але WP його лише хостить: **не додаємо PHP, `style.css`-заголовок теми чи залежності від WP**. Точка входу — статичний `index.html`.
+Фізично лежить у `wp-content/themes/lego` сайту Local `ideal-health`, але WP його лише хостить: **не додаємо PHP, `style.css`-заголовок теми чи залежності від WP**. Точка входу — статичний `index.html`: він підключає бандл `assets/js/lego.js` і запускає конфігуратор через `window.lego.createConfigurator(root, options)` (`assets/js/main.js`) так само, як це зробить сайт клієнта.
 Відкривати: http://ideal-health.local/wp-content/themes/lego/index.html
 Репозиторій: `git@github.com:olezhyk5/lego.git`
 
@@ -53,7 +53,7 @@ Pre-commit хук (husky, `.husky/pre-commit`) запускає `npm run lint`, 
 ## Структура
 
 ```
-index.html               розмітка; статичні тексти через data-i18n*
+index.html               сторінка: <div data-lego> + lego.js + main.js (розмітку конфігуратора малює JS)
 gulpfile.js              clean, styles, scripts, watch, build, default
 eslint.config.js         правила JS + заборона імпортів між шарами
 .stylelintrc.json        правила SCSS (BEM, вкладеність, кольори, порядок властивостей)
@@ -69,17 +69,23 @@ src/
     layout/              каркас сторінки: topbar, app (сітка, сайдбар, main)
     components/          один BEM-блок = один файл
   js/
-    main.js              точка входу: i18n → в'юер → UI; містить update() і loadProject()
-    config/              спільні константи (T, GAP, кришка, ролі матеріалів 3D, ключі localStorage), матеріали
+    lego.js              бандл конфігуратора: window.lego = { createConfigurator }
+    main.js              сторінка index.html: лише викликає window.lego.createConfigurator (без імпортів з src/js)
+    app/configurator.js  createConfigurator(root, options) → { destroy }: збирає екземпляр (стан, в'юер, UI);
+                         містить update(), loadProject(), relocalize()
+    config/              спільні константи (T, GAP, кришка, ролі матеріалів 3D, ключі сховища), матеріали
     i18n/                t(), tm(), translateDom(); locales/<мова>.js
     core/                чиста логіка — без DOM і Three.js
       registry.js        реєстр типів меблів: getType(project.type)
       types.js           JSDoc-типи, у т.ч. контракт типу FurnitureType
       store.js presets.js project-format.js validate.js export.js   — загальні, працюють через реєстр
+      storage.js         адаптери сховища: localStorageAdapter (за замовчуванням), memoryStorage
       common/            спільні блоки для типів: корпус, збирачі специфікації й геометрії, листи
       types/<тип>/       модуль типу: presets, layout, parts, geometry, annotations, validate, index.js
     viewer/              Three.js: сцена, матеріали, побудова моделі з даних типу (типів не знає)
     ui/                  DOM: оболонка (пресети, тулбар, звіт, модалка), шаблони
+      app.js             контекст екземпляра (App) і пошук лише в root (createScope)
+      templates/shell.js розмітка екземпляра в root (опція ui вимикає частини)
       forms.js           реєстр форм типів
       types/<тип>/       форма типу: шаблони, обробники, попапи
     utils/               дрібні універсальні хелпери
@@ -107,12 +113,14 @@ assets/                  результат збірки
 - **Типи — JSDoc, а не TypeScript-файли** (рішення: файли лишаються `.js`, `tsc --noEmit` з `checkJs` лише перевіряє). Спільні типи — `core/types.js` (`Msg`, `Project`, `Panel`, `PartsList`, `Geometry`, `FurnitureType`…), підключаємо через `/** @param {import('./types.js').Project} s */`. Перевіряються `config/`, `utils/`, `core/`, `i18n/` (без тестів); `ui/` і `viewer/` поки ні. Публічні функції `core/` і контракти типів меблів мають JSDoc-типи. Переходимо на `.ts`, якщо з'явиться друга людина в команді або клієнт API, згенерований з OpenAPI.
 - ES-модулі, іменовані експорти (без `export default`; виняток — словники в `i18n/locales/`). esbuild збирає один IIFE-бандл під `browserslist`.
 - **Шари** (ESLint забороняє імпорти, що їх порушують):
-  `main.js` → `ui/`, `viewer/` → `core/`, `i18n/` → `config/`, `utils/`.
-  `core/` і `i18n/` не торкаються DOM і Three.js. `ui/` не імпортує `viewer/` і Three.js, з в'юером працює лише через API, яке передає `main.js`. `viewer/` не імпортує `ui/`.
+  `lego.js` → `app/` → `ui/`, `viewer/` → `core/`, `i18n/` → `config/`, `utils/`. `main.js` (сторінка) нічого не імпортує з `src/js`.
+  `core/` і `i18n/` не торкаються DOM і Three.js. `ui/` не імпортує `viewer/` і Three.js, з в'юером працює лише через API, яке передає `app/`. `viewer/` не імпортує `ui/`. Ніхто, крім `lego.js`, не імпортує `app/`.
   Типи меблів незалежні: `core/types/<a>/` і `ui/types/<a>/` не імпортують інших типів; `core/common/` не імпортує типів і реєстру. Загальні модулі звертаються до типів лише через `core/registry.js` (і `ui/forms.js` для форм).
-- **Стан** зберігається лише в `core/store.js` (`store.state` — проєкт, `store.ui` — стан форми типу: `sel`, `collapsed`; `store.showDims`…). Після зміни стану викликаємо `update(full)`: `true`, якщо змінилась структура (форма перемальовується), `false`, якщо змінились лише значення (щоб зберегти фокус у полі). Новий проєкт (пресет, файл) — лише через `loadProject(project, preset)` з `main.js`.
-- **DOM-хуки**: `id` для статичної розмітки, `data-*` для згенерованої (`data-section`, `data-zone`, `data-field`, `data-act`, `data-preset`, `data-calc`). JS ніколи не шукає елементи за BEM-класами.
-- HTML-шаблони живуть в `ui/templates.js` (коли їх стане багато, у `ui/templates/*.js`), а не в обробниках подій.
+- **Екземпляри.** На сторінці може бути кілька конфігураторів, тож модульного стану й пошуку по `document` немає. Кожен екземпляр має свій стан (`createStore` у `core/store.js`), розмітку в `root` і контекст `app` (`ui/app.js`: `store`, `$`/`$$`/`ref` лише в `root`, `update`, `fit`, `loadProject`, `openModal`, `toast`, `uid`). Модулі `ui/` і форми типів отримують `app` параметром, а не імпортують стан. Спільні для сторінки лише мова (`i18n/`) і реєстри типів/форм. `destroy()` звільняє все, що екземпляр створив (WebGL, кадри, таймери).
+- **Стан** екземпляра — `app.store` (`store.state` — проєкт, `store.ui` — стан форми типу: `sel`, `collapsed`; `store.showDims`…). Після зміни стану викликаємо `app.update(full)`: `true`, якщо змінилась структура (форма перемальовується), `false`, якщо змінились лише значення (щоб зберегти фокус у полі). Новий проєкт (пресет, файл) — лише через `app.loadProject(project, preset)`.
+- **Сховище** — адаптер `{ get(name), set(name, value) }` (`core/storage.js`, назви `project`/`preset`/`locale`, значення — рядки). Прямо `localStorage` читає лише `localStorageAdapter`.
+- **DOM-хуки** — лише `data-*`: `data-ref` для статичних елементів (`app.ref('W')`), решта для згенерованої розмітки (`data-section`, `data-zone`, `data-field`, `data-act`, `data-preset`, `data-calc`). `id` — тільки для ARIA (`aria-controls`, `aria-labelledby`) і з префіксом `app.uid`, щоб копії на сторінці не конфліктували. JS ніколи не шукає елементи за BEM-класами.
+- HTML-шаблони живуть в `ui/templates.js` і `ui/templates/*.js` (розмітка екземпляра — `ui/templates/shell.js`), а не в обробниках подій.
 - Один модуль — одна відповідальність. Файл понад ~200 рядків або з двома задачами розділяємо.
 - Іменування: файли `kebab-case.js`, функції/змінні `camelCase`, константи `UPPER_SNAKE_CASE`.
 - 3D рендеримо лише на вимогу (`requestRender`), без постійного циклу. Перебудова моделі звільняє геометрії (`disposeGroup`).
@@ -126,10 +134,9 @@ assets/                  результат збірки
 
 1. `core/types/<id>/`: `presets.js`, `layout.js` (обов'язково `errs`, `warns`, `bounds`), `parts.js` (специфікація, `summary`, `describe`), `geometry.js` (`look` з `LOOKS`), `annotations.js`, `validate.js`, `index.js` (збирає об'єкт типу) + тести поряд. Спільні деталі корпусу — з `core/common/`.
 2. Рядок у `TYPES` (`core/registry.js`).
-3. `ui/types/<id>/form.js` (+ `templates.js`) за контрактом з `ui/forms.js` і рядок у `FORMS`. Хуки — `id`/`data-*`.
-4. `schema/types/<id>.v2.schema.json` + гілка `if/then` у `schema/project.v2.schema.json` + фікстури `core/fixtures/validation/`.
-5. i18n: `type.<id>`, `preset.<id>.<ключ>`, заголовки опису (`describeTitle`), деталі `part.*`, перевірки `check.*`.
-6. e2e-сценарій і еталони для пресетів.
+3. `ui/types/<id>/form.js` (+ `templates.js`): фабрика `create<Id>Form(slots, app)` за контрактом з `ui/forms.js` і рядок у `FORMS`. Хуки — `data-*`, стан і пошук — лише через `app`.
+
+Тип ззовні (сайт клієнта) реєструється без правок ядра: `createConfigurator(root, { types: [{ type, form }], messages })` → `registerType()` / `registerForm()`. 4. `schema/types/<id>.v2.schema.json` + гілка `if/then` у `schema/project.v2.schema.json` + фікстури `core/fixtures/validation/`. 5. i18n: `type.<id>`, `preset.<id>.<ключ>`, заголовки опису (`describeTitle`), деталі `part.*`, перевірки `check.*`. 6. e2e-сценарій і еталони для пресетів.
 
 `core/registry.test.js` автоматично перевіряє контракт кожного типу (пресети валідні й без помилок, ключі є в словнику, матеріали й ролі 3D відомі).
 
@@ -139,8 +146,8 @@ assets/                  результат збірки
 - У JS: `t('section.name', {n: 2})`. Параметр може бути вкладеним повідомленням `{key, params}`, і воно теж перекладеться.
 - У розмітці: `data-i18n="key"` (текст), `data-i18n-title`, `data-i18n-placeholder`, `data-i18n-aria-label`. Текст у HTML — лише fallback до запуску JS.
 - `core/` **не повертає готових рядків**: помилки, попередження, назви деталей і опис — це `{key, params}`. Перекладає `ui/` (через `tm()`) або експорт. Так ці ж дані можна віддати в API чи базу без прив'язки до мови.
-- Мови: `uk` (еталон) і `en`. Нова мова: файл `locales/<код>.js` з тією ж структурою ключів + рядок у `DICTIONARIES` в `i18n/index.js` + назва мови `locale.<код>` (у всіх словниках однакова — назва мови її ж мовою). Мова обирається так: `localStorage['lego-locale']` → мова браузера → `uk`.
-- Перемикач мов — `#locale` у тулбарі: `setLocale()` + `relocalize()` з `main.js` (статична розмітка, пресети, перемонтування форми, звіт, 3D) без перезавантаження й без втрати проєкту. Новий UI, що малює тексти поза формою типу й звітом, має перемальовуватися в `relocalize()`.
+- Мови: `uk` (еталон) і `en`. Нова мова: файл `locales/<код>.js` з тією ж структурою ключів + рядок у `DICTIONARIES` в `i18n/index.js` + назва мови `locale.<код>` (у всіх словниках однакова — назва мови її ж мовою). Мова обирається так: збережена в сховищі екземпляра (`lego-locale`) → опція `locale` → мова браузера → `uk`. Власні тексти й мови — опція `messages` (`addMessages()`).
+- Перемикач мов — `data-ref="locale"` у тулбарі: `app.changeLocale()` → `setLocale()`, запис у сховище й `relocalize()` кожного живого екземпляра в `app/configurator.js` (розмітка екземпляра, пресети, перемонтування форми, звіт, 3D) без перезавантаження й без втрати проєкту. Мова одна на сторінку. Новий UI, що малює тексти поза формою типу й звітом, має перемальовуватися в `relocalize()`. Заголовок вкладки й `<html lang>` — справа сторінки: `main.js` оновлює їх в `onLocaleChange`.
 - Ключі групуємо за місцем використання (`toolbar.*`, `section.*`, `check.*`, `part.*`…), стиль — `camelCase`.
 
 ## Браузери та мобільні
@@ -164,16 +171,16 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
 
   Ключі, що складаються динамічно (`'preset.' + id`), туди не потрапляють, тож для них потрібен окремий тест (див. пресети, типи меблів і типи зон).
 
-- Модулі, що читають `localStorage` під час імпорту (`core/store.js`), тестуємо через `vi.stubGlobal` + `vi.resetModules()` і динамічний `import()`.
+- Стан і сховище тестуємо через `createStore({ storage })`: `memoryStorage()` або `localStorageAdapter()` з підміненим `localStorage` (`vi.stubGlobal`).
 - Мова тестів зафіксована на `uk` (`i18n/test-setup.js` у `setupFiles`), тож тексти в очікуваннях — українські незалежно від мови системи.
-- **UI-тести (jsdom).** Файл вмикає jsdom коментарем `// @vitest-environment jsdom` у першому рядку (за замовчуванням середовище `node`). `ui/test-dom.js`: `setupDom()` вставляє розмітку з `index.html` і додає `showModal`/`close` для `<dialog>`, `typeInto()` / `click()` імітують дії користувача. Форму перевіряємо через `mount` + `render`, події й зміни `store`/виклики `update` (замоканий `app`). Селектори — `id`/`data-*`, не BEM-класи.
+- **UI-тести (jsdom).** Файл вмикає jsdom коментарем `// @vitest-environment jsdom` у першому рядку (за замовчуванням середовище `node`). `ui/test-dom.js`: `setupDom()` вставляє розмітку екземпляра (`shellMarkup`) і додає `showModal`/`close` для `<dialog>`, `createTestApp()` дає контекст `app` зі своїм `store` і замоканими `update`/`fit`/`loadProject`, `ref(name)` шукає `data-ref`, `typeInto()` / `click()` імітують дії користувача. Форму перевіряємо через фабрику форми + `render`, події й зміни `app.store`/виклики `app.update`. Сам `createConfigurator` — `app/configurator.test.js` (у jsdom без WebGL). Селектори — `data-*`, не BEM-класи.
 - `viewer/` юніт-тестами не покриваємо.
 
 ### E2E (Playwright)
 
 - Тести в `e2e/*.spec.js`, конфіг `playwright.config.js`. Проєкти: `desktop` (Chromium) і `mobile` (WebKit, iPhone 13 + перевірка на 375 px). Браузери ставляться один раз: `npx playwright install chromium webkit`.
 - Імпортуємо `test`/`expect` з `e2e/fixtures.js`: там мова фіксується на `uk`, а будь-яка помилка в консолі валить тест.
-- Селектори — лише `id` і `data-*`. Якщо хука немає, додаємо `data-*` у шаблон, а не чіпляємось за класи чи текст.
+- Селектори — лише `data-*` (`ref('W')` з `e2e/fixtures.js` → `[data-ref="W"]`). Якщо хука немає, додаємо `data-*` у шаблон, а не чіпляємось за класи чи текст. Вбудовування (кілька екземплярів, `destroy`) — `e2e/embed.spec.js` через `window.lego`.
 - Очікування (габарити пресетів тощо) пишемо в тесті, а не імпортуємо з `src/`.
 - `e2e/golden/` — еталонні CSV/JSON кожного пресета. Розбіжність = зміна специфікації чи формату. Якщо вона навмисна, оновлюємо еталони (`npm run test:e2e:golden`) окремим комітом.
 - E2E не входять у pre-commit і `check` (довго): запускаємо `npm run check:full`.
@@ -229,9 +236,9 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
 Товщина плити `T = 16` мм (= `MATERIALS.chipboard.t`), зазор фасадів `GAP = 3` мм (`config/constants.js`).
 
 **Геометрія = специфікація.** Кожна плита специфікації має рівно один бокс у геометрії типу (`kind: 'panel'`, той самий `key` і `mat`, розміри a × b, товщина = `t` плити специфікації, а якщо її немає — `MATERIALS[mat].t`); фурнітура — `kind: 'hardware'`. Це перевіряє `core/registry.test.js` для кожного пресета; на цьому тримається експорт у SketchUp/DXF.
-Ключ localStorage: `lego-project` (старий `wardrobe-cfg-v1` читається з міграцією, якщо нового ще немає, і не видаляється). Цей JSON зберігають у файли, а згодом і в базу. Тому **несумісна зміна формату = нова версія + міграція в `core/project-format.js` (`MIGRATIONS`) + фікстура старого файлу в `core/fixtures/`**. Старі файли мусять відкриватися; фікстури ніколи не редагуємо. Файл без `version` — це v1 (до появи версій). Файл новішої версії, ніж знає застосунок, не відкривається (`file.tooNew`).
+Ключ localStorage (сховище за замовчуванням): `lego-project` (старий `wardrobe-cfg-v1` читається з міграцією, якщо нового ще немає, і не видаляється). Клієнт може передати своє сховище (`storage`) або вимкнути його (`storage: false`). Цей JSON зберігають у файли, а згодом і в базу. Тому **несумісна зміна формату = нова версія + міграція в `core/project-format.js` (`MIGRATIONS`) + фікстура старого файлу в `core/fixtures/`**. Старі файли мусять відкриватися; фікстури ніколи не редагуємо. Файл без `version` — це v1 (до появи версій). Файл новішої версії, ніж знає застосунок, не відкривається (`file.tooNew`).
 Пресети (`core/types/<тип>/presets.js`) зберігаються без `version`/`type`; проєкт з них робить `createProject(type, data)`.
-**Офіційний опис формату — JSON Schema в `schema/`** (`project.v2.schema.json` + `types/<тип>.v2.schema.json`): її отримують бекенд і API. У застосунку той самий формат перевіряє валідатор типу (`validate` у модулі типу, загальні перевірки — `core/validate.js`). Будь-який JSON ззовні (файл, localStorage) проходить `parseProject` (`core/store.js`): міграція → валідація → нормалізація (невідомі поля відкидаються). Помилки — `{key, params, path}` (`validate.*`). Змінюєш формат — оновлюй і схему, і валідатор: `core/schema.test.js` звіряє їх на фікстурах `core/fixtures/validation/` (`valid-*` / `invalid-*`).
+**Офіційний опис формату — JSON Schema в `schema/`** (`project.v2.schema.json` + `types/<тип>.v2.schema.json`): її отримують бекенд і API. У застосунку той самий формат перевіряє валідатор типу (`validate` у модулі типу, загальні перевірки — `core/validate.js`). Будь-який JSON ззовні (файл, сховище) проходить `parseProject` (`core/store.js`): міграція → валідація → нормалізація (невідомі поля відкидаються). Помилки — `{key, params, path}` (`validate.*`). Змінюєш формат — оновлюй і схему, і валідатор: `core/schema.test.js` звіряє їх на фікстурах `core/fixtures/validation/` (`valid-*` / `invalid-*`).
 
 ## Перевірка змін
 
