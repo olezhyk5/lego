@@ -28,6 +28,19 @@ describe('форма шафи', () => {
     expect(sec(0, '').classList.contains('is-selected')).toBe(true);
   });
 
+  it('кнопка налаштування дверей: є для шаф і пенала, немає для комода й тумби', () => {
+    const visible = id => {
+      store.setProject(presetProject(id), id);
+      form.sync();
+      return !ref('doorSettings').hidden;
+    };
+    expect(visible('wardrobe.wardrobe')).toBe(true);
+    expect(visible('wardrobe.wardrobe2')).toBe(true);
+    expect(visible('wardrobe.penal')).toBe(true);
+    expect(visible('wardrobe.komod')).toBe(false);
+    expect(visible('wardrobe.tumba')).toBe(false);
+  });
+
   it('налаштування дверей: три варіанти з іконками, без поля обрано «Без дверей», до «Зберегти» проєкт не змінюється', () => {
     const before = structuredClone(store.state);
     click(ref('doorSettings'));

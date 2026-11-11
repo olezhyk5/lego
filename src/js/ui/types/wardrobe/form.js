@@ -8,6 +8,9 @@ import { initDoorSettings } from './door-settings.js';
 
 // Форма шафи: габарити, кришка, секції й зони. Контракт форми — див. ui/forms.js.
 
+// Пресети без дверей: кнопки «Налаштування дверей» для них немає
+const NO_DOOR_PRESETS = ['wardrobe.komod', 'wardrobe.tumba'];
+
 function onSectionAction(store, act, i, j) {
   const S = store.state.sections;
   const Z = S[i].zones;
@@ -148,6 +151,7 @@ export function createWardrobeForm({ setup, main }, app) {
     sync() {
       DIMS.forEach(({ id }) => (ref(id).value = store.state[id]));
       ref('baseLegs').checked = store.state.base === 'legs';
+      ref('doorSettings').hidden = NO_DOOR_PRESETS.includes(store.preset);
     },
 
     render(L) {

@@ -9,6 +9,11 @@
   padding: 8px 10px;
   text-align: left;
 
+  // display: flex перебиває атрибут hidden
+  &[hidden] {
+    display: none;
+  }
+
   & + & {
     margin-top: 8px;
   }
