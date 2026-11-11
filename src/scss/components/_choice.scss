@@ -53,4 +53,32 @@
     margin: 0;
     accent-color: color(accent);
   }
+
+  &__icon {
+    flex: none;
+    color: color(muted);
+  }
+
+  // плитки з іконкою: іконка над підписом, радіокнопка прихована (вибір видно з рамки плитки)
+  &--icons &__options {
+    flex-wrap: nowrap;
+  }
+
+  &--icons &__option {
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px 6px;
+    text-align: center;
+
+    &:has(:checked) .choice__icon {
+      color: color(accent);
+    }
+  }
+
+  &--icons &__input {
+    position: absolute;
+    opacity: 0;
+  }
 }

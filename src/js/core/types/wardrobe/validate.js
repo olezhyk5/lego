@@ -1,5 +1,5 @@
 import { TOP_MOUNTS, TOP_OVERHANG_SIDES, CARCASS_BASES } from '../../../config/constants.js';
-import { ZONE_TYPES, COUNTABLE_ZONES } from './constants.js';
+import { ZONE_TYPES, COUNTABLE_ZONES, DOOR_TYPES } from './constants.js';
 import { runValidation, isPlainObject } from '../../validate.js';
 
 // Межі навмисно широкі: це перевірка формату, а не конструкції (її робить check.* у layout)
@@ -70,6 +70,7 @@ export function normalizeWardrobe(s, check) {
   if (s.base !== undefined && check.oneOf(s.base, CARCASS_BASES, ['base'], field('base'))) out.base = s.base;
   if (s.top !== undefined && isPlainObject(s.top)) out.top = normalizeTop(s.top, check);
   else if (s.top !== undefined) check.object(s.top, ['top'], field('top'));
+  if (s.doors !== undefined && check.oneOf(s.doors, DOOR_TYPES, ['doors'], field('doors'))) out.doors = s.doors;
   if (check.array(s.sections, ['sections'], field('sections'), 1, MAX_ITEMS))
     out.sections = s.sections.map((c, i) => normalizeSection(c, i, check));
   return out;

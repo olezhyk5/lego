@@ -180,6 +180,14 @@ export default {
     between: 'Між боковинами',
     over: 'Над боковинами',
   },
+  doorType: {
+    none: 'Без дверей',
+    sliding: 'Розсувні двері',
+    hinged: 'Розпашні двері',
+  },
+  doorSettings: {
+    type: 'Тип дверей',
+  },
   topSettings: {
     double: 'Потовщена кришка (2 плити)',
     mount: 'Кріплення кришки',
@@ -364,6 +372,7 @@ export default {
       topDouble: 'Потовщена кришка',
       topOverhang: 'Виступи кришки',
       topOverhangSide: 'Виступ кришки ({side})',
+      doors: 'Тип дверей',
       sections: 'Секції',
       section: 'Секція {n}',
       sectionWidth: 'Секція {n}: ширина',

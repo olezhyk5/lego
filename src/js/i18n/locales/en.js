@@ -180,6 +180,14 @@ export default {
     between: 'Between the sides',
     over: 'On top of the sides',
   },
+  doorType: {
+    none: 'No doors',
+    sliding: 'Sliding doors',
+    hinged: 'Hinged doors',
+  },
+  doorSettings: {
+    type: 'Door type',
+  },
   topSettings: {
     double: 'Thick top (2 panels)',
     mount: 'Top panel mounting',
@@ -364,6 +372,7 @@ export default {
       topDouble: 'Thick top',
       topOverhang: 'Top overhang',
       topOverhangSide: 'Top overhang ({side})',
+      doors: 'Door type',
       sections: 'Sections',
       section: 'Section {n}',
       sectionWidth: 'Section {n}: width',

@@ -1,5 +1,5 @@
 import { TOP_MOUNTS, TOP_OVERHANG_SIDES } from '../../../config/constants.js';
-import { ZONE_TYPES, COUNTABLE_ZONES } from '../../../core/types/wardrobe/constants.js';
+import { ZONE_TYPES, COUNTABLE_ZONES, DOOR_TYPES } from '../../../core/types/wardrobe/constants.js';
 import { t } from '../../../i18n/index.js';
 import { isAuto, round } from '../../../utils/helpers.js';
 import { COPY_ICON, GEAR_ICON, iconBtn, calcMm, dimField } from '../../templates.js';
@@ -117,5 +117,35 @@ function overhangFields(c) {
   return `<fieldset class="choice" data-overhang${c.mount === 'over' ? '' : ' hidden'}>
     <legend class="choice__legend">${t('topSettings.overhang')}</legend>
     <div class="field-grid">${fields}</div>
+  </fieldset>`;
+}
+
+// Схематичні іконки типів дверей: корпус спереду (48 × 48, колір — currentColor)
+const DOOR_ICONS = {
+  // відкритий корпус із полицями
+  none: '<rect x="9" y="5" width="30" height="38" rx="1"/><path d="M9 18h30M9 30h30"/>',
+  // дві стулки, що заходять одна за одну, на напрямній; стрілки — рух у сторони
+  sliding:
+    '<rect x="9" y="5" width="30" height="38" rx="1"/><rect x="12" y="8" width="14" height="32"/><rect x="22" y="10" width="14" height="30" stroke-dasharray="3 2"/><path d="M15 24h6m-6 0 2-2m-2 2 2 2M33 24h-4m4 0-2-2m2 2-2 2"/>',
+  // ліва стулка прочинена на петлях, права закрита з ручкою
+  hinged:
+    '<rect x="9" y="5" width="30" height="38" rx="1"/><path d="M9 5 3 9v30l6 4"/><path d="M24 5v38"/><path d="M28 21v6"/>',
+};
+
+const doorIcon = k =>
+  `<svg class="choice__icon" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${DOOR_ICONS[k]}</svg>`;
+
+// Вміст попапу «Налаштування дверей». doors — тип дверей проєкту (немає поля → none)
+export function doorSettingsForm(doors = 'none') {
+  const opts = DOOR_TYPES.map(
+    k => `<label class="choice__option">
+      <input class="choice__input" type="radio" name="doors" data-field="doors" value="${k}"${k === doors ? ' checked' : ''}>
+      ${doorIcon(k)}
+      <span>${t('doorType.' + k)}</span>
+    </label>`,
+  ).join('');
+  return `<fieldset class="choice choice--icons">
+    <legend class="choice__legend">${t('doorSettings.type')}</legend>
+    <div class="choice__options">${opts}</div>
   </fieldset>`;
 }

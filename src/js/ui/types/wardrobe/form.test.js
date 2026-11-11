@@ -28,14 +28,33 @@ describe('форма шафи', () => {
     expect(sec(0, '').classList.contains('is-selected')).toBe(true);
   });
 
-  it('налаштування дверей: порожній попап, проєкт не змінюється', () => {
+  it('налаштування дверей: три варіанти з іконками, без поля обрано «Без дверей», до «Зберегти» проєкт не змінюється', () => {
     const before = structuredClone(store.state);
     click(ref('doorSettings'));
     expect(ref('modal').open).toBe(true);
     expect(ref('modalTitle').textContent).toBe('Налаштування дверей');
-    expect(ref('modalBody').innerHTML).toBe('');
+    const opts = [...ref('modalBody').querySelectorAll('[data-field="doors"]')];
+    expect(opts.map(o => o.value)).toEqual(['none', 'sliding', 'hinged']);
+    expect(opts.map(o => o.closest('label').textContent.trim())).toEqual([
+      'Без дверей',
+      'Розсувні двері',
+      'Розпашні двері',
+    ]);
+    expect(opts.every(o => o.closest('label').querySelector('svg'))).toBe(true);
+    expect(opts.find(o => o.checked).value).toBe('none');
+    click(opts[2]);
     expect(store.state).toEqual(before);
     expect(app.update).not.toHaveBeenCalled();
+  });
+
+  it('налаштування дверей: «Зберегти» записує тип у проєкт, update(false); повторне відкриття показує його', () => {
+    click(ref('doorSettings'));
+    click(ref('modalBody').querySelector('[data-field="doors"][value="sliding"]'));
+    click(ref('modalSubmit'));
+    expect(store.state.doors).toBe('sliding');
+    expect(app.update).toHaveBeenLastCalledWith(false);
+    click(ref('doorSettings'));
+    expect(ref('modalBody').querySelector('[data-field="doors"]:checked').value).toBe('sliding');
   });
 
   it('введення габариту → store, update(false)', () => {
