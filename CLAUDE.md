@@ -202,7 +202,8 @@ Vitest, середовище `node`. Тести лежать **поряд з м�
                                     // legs — ще й регульовані ніжки під дном, за планкою; у UI — чекбокс
   top?: { mount: 'between'|'over', double: boolean,     // кришка; немає поля → between, одинарна
           overhang?: { back, front, left, right } },      // виступи, мм; лише для over, немає → 0
-  doors?: 'none' | 'sliding' | 'hinged',                 // тип дверей; немає поля → none. Поки лише зберігається (попап «Налаштування дверей»)
+  doors?: 'none' | 'sliding' | 'hinged',                 // тип дверей; немає поля → none (попап «Налаштування дверей»). sliding — перегородки, полиці,
+                                    // штанги й шухляди втоплені на 100 мм від переднього краю (SLIDING_RECESS), корпус на всю глибину; hinged поки лише зберігається
   sections: [{
     width: number | 'auto',
     zones: [{ type: 'empty'|'shelves'|'rod'|'drawers', height: number | 'auto', count? }]

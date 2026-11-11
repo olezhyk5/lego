@@ -2,7 +2,7 @@ import { doorSettingsForm } from './templates.js';
 import { t } from '../../../i18n/index.js';
 
 // Попап «Налаштування дверей»: тип дверей (без / розсувні / розпашні).
-// Вибір — чернетка: у проєкт потрапляє лише після «Зберегти». На розрахунок і модель поки не впливає.
+// Вибір — чернетка: у проєкт потрапляє лише після «Зберегти». Розсувні втоплюють наповнення (core/types/wardrobe).
 /** @param {import('../../app.js').App} app */
 export function initDoorSettings({ store, ref, update, openModal }) {
   ref('doorSettings').addEventListener('click', () => {

@@ -4,6 +4,7 @@ import { carcass } from '../../common/carcass.js';
 import { msg } from '../../common/msg.js';
 import { drawerWarnings, drawerDepth } from '../../common/drawers.js';
 import { LEG, legRows, legsLowWarning } from '../../common/legs.js';
+import { SLIDING_RECESS } from './constants.js';
 
 export function drawerFront(h, cnt) {
   return (h - (cnt + 1) * GAP) / cnt;
@@ -25,6 +26,8 @@ export function computeLayout(s) {
     errs.push(msg('check.widthsMismatch', { sum: round(fW), avail: round(innerW) }));
 
   const C = carcass(s);
+  // глибина наповнення від задньої площини корпусу; корпус завжди на всю глибину D
+  const inD = s.D - (s.doors === 'sliding' ? SLIDING_RECESS : 0);
   const y0 = s.plinth + T,
     yTop = s.H - C.topT,
     Hin = yTop - y0;
@@ -58,7 +61,7 @@ export function computeLayout(s) {
         if (fh < 100) warns.push(msg('check.drawerSmall', { name: zn, h: round(fh) }));
         if (fh > 350) warns.push(msg('check.drawerLarge', { name: zn, h: round(fh) }));
         if (top > 1300) warns.push(msg('check.drawersHigh', { name: zn, top: round(top) }));
-        warns.push(...drawerWarnings({ name: zn, frontW: w - 2 * GAP, depth: drawerDepth(s.D) }));
+        warns.push(...drawerWarnings({ name: zn, frontW: w - 2 * GAP, depth: drawerDepth(inD) }));
       }
       if (z.type === 'shelves') {
         const gap = (h - cnt * T) / (cnt + 1);
@@ -75,7 +78,7 @@ export function computeLayout(s) {
     const low = legsLowWarning(s.plinth);
     if (low) warns.push(low);
   }
-  return { secs, innerW, Hin, y0, yTop, carcass: C, legs, bounds: { W: s.W, H: s.H, D: s.D }, errs, warns };
+  return { secs, innerW, Hin, y0, yTop, inD, carcass: C, legs, bounds: { W: s.W, H: s.H, D: s.D }, errs, warns };
 }
 
 // Ряди ніжок (ліві краї): обов'язкові — впритул до боковин (ті йдуть до підлоги) і по осях перегородок,

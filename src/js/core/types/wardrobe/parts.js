@@ -14,17 +14,17 @@ import { drawerFront } from './layout.js';
 export function partsList(s, L) {
   const P = partsBuilder();
   addCarcassPanels(P, s, L.carcass);
-  P.panel('part.divider', L.Hin, s.D, L.secs.length - 1);
+  P.panel('part.divider', L.Hin, L.inD, L.secs.length - 1);
   L.secs.forEach(c =>
     c.zones.forEach((z, j) => {
-      if (j < c.zones.length - 1) P.panel('part.zoneShelf', c.w, s.D, 1);
-      if (z.type === 'shelves') P.panel('part.shelf', c.w, s.D - 20, z.cnt);
+      if (j < c.zones.length - 1) P.panel('part.zoneShelf', c.w, L.inD, 1);
+      if (z.type === 'shelves') P.panel('part.shelf', c.w, L.inD - 20, z.cnt);
       if (z.type === 'rod') P.item('part.rod', msg('itemSize.rod', { w: round(c.w) }), 1);
       if (z.type === 'drawers') {
         const fw = c.w - 2 * GAP,
           fh = drawerFront(z.h, z.cnt);
         P.panel('part.drawerFront', fw, fh, z.cnt);
-        addDrawerParts(P, drawerBox(c.w, fh, s.D), z.cnt);
+        addDrawerParts(P, drawerBox(c.w, fh, L.inD), z.cnt);
         P.item('part.handle', msg('itemSize.handle'), z.cnt); // по одній на фасад
       }
     }),

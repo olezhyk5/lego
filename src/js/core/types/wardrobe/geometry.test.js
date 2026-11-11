@@ -222,3 +222,42 @@ describe('шухляди — рухомі групи', () => {
     G.boxes.filter(b => !DRAWER_KEYS.includes(b.key)).forEach(b => expect(b.move).toBeUndefined());
   });
 });
+
+// Пресет «Шафа 3 секції» на цоколі з розсувними дверима: наповнення від задньої площини (z = 0)
+// до 600 - 100 = 500, корпус — на всю глибину 600
+describe('modelGeometry — розсувні двері', () => {
+  const s = { ...preset('wardrobe', PLINTH), doors: 'sliding' };
+  const G = geomOf(s);
+
+  it('корпус не змінюється', () => {
+    const base = geomOf(preset('wardrobe', PLINTH));
+    ['part.side', 'part.top', 'part.bottom', 'part.plinth', 'part.back'].forEach(k =>
+      expect(byKey(G, k)).toEqual(byKey(base, k)),
+    );
+  });
+
+  it('перегородки, полиці між зонами й полиці — глибиною 500 від задньої площини', () => {
+    expect(byKey(G, 'part.divider').map(b => [b.z, b.d])).toEqual([
+      [0, 500],
+      [0, 500],
+    ]);
+    expect(byKey(G, 'part.zoneShelf').every(b => b.z === 0 && b.d === 500)).toBe(true);
+    expect(byKey(G, 'part.shelf').every(b => b.z === 0 && b.d === 480)).toBe(true); // 500 - 20
+  });
+
+  it('штанги посередині втопленої глибини: 500 / 2', () => {
+    expect(G.rods.map(r => r.z)).toEqual([250, 250, 250]);
+  });
+
+  it('шухляди: фасад на 100 мм глибше, ручка на ньому, корпус 450 за фасадом', () => {
+    expect(byKey(G, 'part.drawerFront').every(b => b.z === 484)).toBe(true); // 500 - 16
+    expect(byKey(G, 'part.handle').every(b => b.z === 500)).toBe(true);
+    expect(byKey(G, 'part.drawerBottom').map(b => [b.z, b.d])[0]).toEqual([34, 450]); // 484 - 450
+    expect(G.moves.every(m => m.travel === 450)).toBe(true);
+  });
+
+  it('відповідає специфікації', () => {
+    const L = computeLayout(s);
+    expectGeometryMatchesParts(modelGeometry(s, L), partsList(s, L));
+  });
+});

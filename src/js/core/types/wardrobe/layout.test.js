@@ -271,3 +271,29 @@ describe('computeLayout — опори', () => {
 
   it('на цоколі рядів ніжок немає', () => expect(one({}).legs).toEqual([]));
 });
+
+describe('computeLayout — розсувні двері', () => {
+  const D_OF = doors => computeLayout({ ...preset('wardrobe'), doors }).inD;
+
+  it('наповнення втоплене на 100 мм від переднього краю: 600 - 100', () => {
+    expect(D_OF('sliding')).toBe(500);
+  });
+
+  it.each([undefined, 'none', 'hinged'])('doors = %s — на всю глибину корпусу', doors => {
+    expect(D_OF(doors)).toBe(600);
+  });
+
+  it('шухляди — від втопленої глибини: 400 - 100 - 50 = 250 (ряд) — норма; 280 - 100 - 50 = 130 → 100 < 250', () => {
+    const drawers = D =>
+      keys(
+        computeLayout(
+          project([{ width: 'auto', zones: [{ type: 'drawers', count: 3, height: 'auto' }] }], {
+            D,
+            doors: 'sliding',
+          }),
+        ).warns,
+      );
+    expect(drawers(400)).not.toContain('check.drawerShallow');
+    expect(drawers(280)).toContain('check.drawerShallow');
+  });
+});

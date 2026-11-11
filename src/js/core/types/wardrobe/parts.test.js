@@ -228,3 +228,30 @@ describe('partsList — ніжки за шириною', () => {
     expect(specOf(preset('wardrobe', PLINTH)).items.some(i => i.key === 'part.leg')).toBe(false);
   });
 });
+
+describe('partsList — розсувні двері', () => {
+  // Пресет «Шафа 3 секції» на цоколі, D 600: наповнення глибиною 600 - 100 = 500
+  const P = specOf({ ...preset('wardrobe', PLINTH), doors: 'sliding' });
+
+  it('корпус на всю глибину', () => {
+    expect(panel(P, 'part.side', 2400, 600).q).toBe(2);
+    expect(panel(P, 'part.top', 1768, 600).q).toBe(1);
+    expect(panel(P, 'part.bottom', 1768, 600).q).toBe(1);
+  });
+
+  it('перегородки й полиці коротші на 100 мм', () => {
+    expect(panel(P, 'part.divider', 2288, 500).q).toBe(2);
+    expect(panel(P, 'part.zoneShelf', 568, 500).q).toBe(3);
+    expect(panel(P, 'part.zoneShelf', 600, 500).q).toBe(1);
+    expect(panel(P, 'part.shelf', 600, 480).q).toBe(3); // 500 - 20
+  });
+
+  it('шухляди під втоплену глибину: напрямна (500 - 50) / 50 → 450', () => {
+    expect(panel(P, 'part.drawerSide', 450, 156).q).toBe(6); // фасад 196 - 40
+    expect(P.items).toContainEqual({ key: 'part.runner', size: { key: 'itemSize.runner', params: { l: 450 } }, q: 3 });
+  });
+
+  it('розпашні двері поки нічого не змінюють', () => {
+    expect(specOf({ ...preset('wardrobe', PLINTH), doors: 'hinged' })).toEqual(specOf(preset('wardrobe', PLINTH)));
+  });
+});
