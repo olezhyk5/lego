@@ -20,11 +20,17 @@ const APPLIANCE_GLASS = { side: 40, y: 0.15, h: 0.6 }; // скло дверця�
 // Накладні фасади перед корпусом і ручки; шухляди — з корпусом і напрямними
 function addFronts(G, m, innerW, leftX) {
   m.fronts.forEach(f => {
-    G.panel(f.key, 'front', f.x, f.y, m.depth, f.w, f.h, T);
-    const hw = Math.min(HANDLE.w, f.w * 0.6);
-    const hy = f.handleY ?? (f.key === 'part.drawerFront' ? f.y + f.h * 0.62 : f.y + f.h - HANDLE.fromTop);
-    G.hardware('part.handle', 'handle', f.x + f.w / 2 - hw / 2, hy, m.depth + T, hw, HANDLE.h, HANDLE.d);
-    if (f.key === 'part.drawerFront') addDrawerGeometry(G, drawerBox(innerW, f.h, m.depth), leftX, f.y, m.depth);
+    const drawer = f.key === 'part.drawerFront';
+    const add = () => {
+      G.panel(f.key, 'front', f.x, f.y, m.depth, f.w, f.h, T);
+      const hw = Math.min(HANDLE.w, f.w * 0.6);
+      const hy = f.handleY ?? (drawer ? f.y + f.h * 0.62 : f.y + f.h - HANDLE.fromTop);
+      G.hardware('part.handle', 'handle', f.x + f.w / 2 - hw / 2, hy, m.depth + T, hw, HANDLE.h, HANDLE.d);
+      if (drawer) addDrawerGeometry(G, box, leftX, f.y, m.depth);
+    };
+    const box = drawerBox(innerW, f.h, m.depth);
+    if (drawer) G.moving([0, 0, 1], box.depth, add);
+    else add();
   });
 }
 

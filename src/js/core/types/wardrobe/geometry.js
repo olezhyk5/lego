@@ -37,9 +37,12 @@ export function modelGeometry(s, L) {
         const hw = Math.min(c.w * HANDLE_W_RATIO, HANDLE_MAX_W);
         for (let k = 0; k < z.cnt; k++) {
           const y = z.bottom + GAP + (fh + GAP) * k;
-          G.panel('part.drawerFront', 'front', c.x + GAP, y, s.D - frontT, c.w - 2 * GAP, fh, frontT);
-          G.hardware('part.handle', 'handle', c.x + c.w / 2 - hw / 2, y + fh * 0.62, s.D, hw, HANDLE_H, HANDLE_D);
-          addDrawerGeometry(G, drawerBox(c.w, fh, s.D), c.x, y, s.D - frontT);
+          const box = drawerBox(c.w, fh, s.D);
+          G.moving([0, 0, 1], box.depth, () => {
+            G.panel('part.drawerFront', 'front', c.x + GAP, y, s.D - frontT, c.w - 2 * GAP, fh, frontT);
+            G.hardware('part.handle', 'handle', c.x + c.w / 2 - hw / 2, y + fh * 0.62, s.D, hw, HANDLE_H, HANDLE_D);
+            addDrawerGeometry(G, box, c.x, y, s.D - frontT);
+          });
         }
       }
     });

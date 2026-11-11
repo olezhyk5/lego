@@ -52,6 +52,25 @@ describe('розміщення стін', () => {
     expect(rods[1]).toMatchObject({ x: 980, z: 100, len: 200, axis: 'z' });
     expect(rods[2]).toMatchObject({ x: 980, z: 100, len: 200, axis: 'y' });
   });
+
+  it('рухома група повертає напрям висування разом зі стіною', () => {
+    const root = geometryBuilder();
+    placedBuilder(root, { r: 1, ox: 1000, oz: 0 }).moving([0, 0, 1], 500, () => {});
+    placedBuilder(root, { r: 2, ox: 1000, oz: 800 }).moving([0, 0, 1], 500, () => {});
+    // r = 1: z стіни → -x моделі; r = 2: z стіни → -z моделі
+    const dirs = root.result().moves.map(m => m.dir.map(v => v + 0)); // -0 → 0
+    expect(dirs).toEqual([
+      [-1, 0, 0],
+      [0, 0, -1],
+    ]);
+  });
+
+  it('Г-подібна кухня: шухляди другої стіни висуваються вздовж -x', () => {
+    // по 3 шухляди на кожній стіні; D 560 → хід (560 - 50) / 50 = 10.2 → 500 мм
+    const { moves } = modelGeometry(kitchenPreset('cornerL'), computeLayout(kitchenPreset('cornerL')));
+    expect(moves.map(m => m.travel)).toEqual(Array(6).fill(500));
+    expect(moves.map(m => m.dir.map(v => v + 0))).toEqual([...Array(3).fill([0, 0, 1]), ...Array(3).fill([-1, 0, 0])]);
+  });
 });
 
 describe('глухий кут', () => {

@@ -195,3 +195,29 @@ describe('modelGeometry — опори', () => {
     );
   });
 });
+
+describe('шухляди — рухомі групи', () => {
+  // Пресет «Комод»: 4 шухляди, D 450 → хід (450 - 50) / 50 = 8 → 400 мм
+  const G = geomOf(preset('komod'));
+  const DRAWER_KEYS = [
+    'part.drawerFront',
+    'part.handle',
+    'part.drawerBottom',
+    'part.drawerSide',
+    'part.drawerWall',
+    'part.runner',
+  ];
+
+  it('по групі на шухляду: висувається вперед на довжину напрямної', () => {
+    expect(G.moves).toEqual(Array(4).fill({ dir: [0, 0, 1], travel: 400 }));
+  });
+
+  it('у групі — фасад, ручка, дно, 2 боковини, 2 стінки, 2 напрямні; корпус меблів нерухомий', () => {
+    [0, 1, 2, 3].forEach(i => {
+      const keysIn = G.boxes.filter(b => b.move === i).map(b => b.key);
+      expect(keysIn.length).toBe(9); // 1 + 1 + 1 + 2 + 2 + 2
+      expect(new Set(keysIn)).toEqual(new Set(DRAWER_KEYS));
+    });
+    G.boxes.filter(b => !DRAWER_KEYS.includes(b.key)).forEach(b => expect(b.move).toBeUndefined());
+  });
+});

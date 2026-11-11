@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createMaterials, setTransparent, SCENE_COLORS } from './materials.js';
 import { buildModel } from './builder.js';
+import { createDrawerMotion } from './drawers.js';
 
 function disposeGroup(g) {
   g.traverse(o => {
@@ -49,12 +50,17 @@ export function createViewer(container) {
   let dims = null;
   scene.add(model);
 
-  // рендер лише на вимогу: коли камера рухається або модель змінилась
+  // рендер лише на вимогу: коли камера рухається, модель змінилась або висуваються шухляди
   let frame = 0;
-  function renderFrame() {
+  let lastFrame = 0;
+  function renderFrame(now) {
     frame = 0;
+    const dt = Math.min((now - lastFrame) / 1000, 1 / 30); // після простою — як один звичайний кадр
+    lastFrame = now;
     controls.update(); // при інерції сам викличе 'change' → наступний кадр
+    const moving = drawers.step(dt);
     renderer.render(scene, camera);
+    if (moving) requestRender();
   }
   function requestRender() {
     if (frame) return;
@@ -70,6 +76,7 @@ export function createViewer(container) {
     requestRender();
   }
   controls.addEventListener('change', requestRender);
+  const drawers = createDrawerMotion({ dom: renderer.domElement, container, camera, requestRender });
   const observer = new ResizeObserver(resize);
   observer.observe(container);
   resize();
@@ -79,7 +86,9 @@ export function createViewer(container) {
     rebuild(data, { showDims }) {
       disposeGroup(model);
       scene.remove(model);
-      ({ model, dims } = buildModel(data, { showDims, M }));
+      let list;
+      ({ model, dims, drawers: list } = buildModel(data, { showDims, M }));
+      drawers.setModel(model, dims, list);
       scene.add(model);
       requestRender();
     },
@@ -110,6 +119,7 @@ export function createViewer(container) {
       cancelAnimationFrame(frame);
       frame = 0;
       observer.disconnect();
+      drawers.dispose();
       controls.dispose();
       disposeGroup(model);
       scene.remove(model);

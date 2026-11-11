@@ -10,6 +10,11 @@
     display: block;
   }
 
+  // вказівник над шухлядою, яку можна висунути
+  &.is-pointer canvas {
+    cursor: pointer;
+  }
+
   &__fallback {
     position: absolute;
     inset: 0;

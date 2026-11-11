@@ -78,7 +78,8 @@ function slabWithHoles({ x, z, w, h, d, holes = [], notch }) {
 
 // Будує модель з даних типу меблів: {geometry, annotations, bounds} (див. core/types.js).
 // Viewer не знає типів: матеріал — за роллю look, підписи — готові дані.
-// Повертає {model, dims}; dims — підгрупа з розмірами (вмикається окремо).
+// Повертає {model, dims, drawers}; dims — підгрупа з розмірами (вмикається окремо),
+// drawers — підгрупи рухомих груп геометрії (шухляд), userData.move = { dir: Vector3, travel }.
 export function buildModel({ geometry, annotations, bounds }, { showDims, M }) {
   const model = new THREE.Group();
   const dims = new THREE.Group();
@@ -86,18 +87,27 @@ export function buildModel({ geometry, annotations, bounds }, { showDims, M }) {
   model.add(dims);
   model.position.set(-bounds.W / 2, 0, -bounds.D / 2);
 
-  function box({ x, y, z, w, h, d, holes, notch }, mat, edges = true) {
+  const drawers = (geometry.moves || []).map(({ dir, travel }) => {
+    const g = new THREE.Group();
+    g.userData.move = { dir: vec(dir), travel };
+    model.add(g);
+    return g;
+  });
+  const parentOf = o => (o.move === undefined ? model : drawers[o.move]);
+
+  function box({ x, y, z, w, h, d, holes, notch, move }, mat, edges = true) {
     w = Math.max(w, 1);
     h = Math.max(h, 1);
     d = Math.max(d, 1);
     const g = holes || notch ? slabWithHoles({ x, z, w, h, d, holes, notch }) : new THREE.BoxGeometry(w, h, d);
     const m = new THREE.Mesh(g, mat);
     m.position.set(x + w / 2, y + h / 2, z + d / 2);
-    model.add(m);
+    const parent = parentOf({ move });
+    parent.add(m);
     if (edges) {
       const e = new THREE.LineSegments(new THREE.EdgesGeometry(g), M.edge);
       e.position.copy(m.position);
-      model.add(e);
+      parent.add(e);
     }
     return m;
   }
@@ -110,7 +120,7 @@ export function buildModel({ geometry, annotations, bounds }, { showDims, M }) {
     if (axis === 'z') m.rotation.x = Math.PI / 2;
     m.position.set(r.x, r.y, r.z);
     m.position[axis] += r.len / 2;
-    model.add(m);
+    parentOf(r).add(m);
   });
 
   if (annotations.highlight) box(annotations.highlight, M.hl, false);
@@ -120,5 +130,5 @@ export function buildModel({ geometry, annotations, bounds }, { showDims, M }) {
     addLabel(dims, l.lines.map(lineText), vec(l.pos), l.size, LABEL_STYLES[l.style] || {}),
   );
 
-  return { model, dims };
+  return { model, dims, drawers };
 }

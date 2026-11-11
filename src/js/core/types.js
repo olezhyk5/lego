@@ -31,19 +31,26 @@
  * look — роль матеріалу в 3D (див. LOOKS).
  * holes — наскрізні прямокутні вирізи в площині xz, у координатах моделі (лише вигляд: на специфікацію не впливають).
  * notch — прямокутний виріз із кута плити в площині xz, у координатах моделі (у специфікації — розмір заготовки).
+ * move — індекс рухомої групи в Geometry.moves (шухляда), немає поля — бокс нерухомий.
  * @typedef {{ key: string, kind: 'panel' | 'hardware', mat?: string, look: string,
  *   x: number, y: number, z: number, w: number, h: number, d: number,
  *   holes?: { x: number, z: number, w: number, d: number }[],
- *   notch?: { x: number, z: number, w: number, d: number } }} GeometryBox
+ *   notch?: { x: number, z: number, w: number, d: number }, move?: number }} GeometryBox
  */
 
 /**
  * Циліндр уздовж осі axis (немає поля → x) від точки (x, y, z) на len у додатний бік; r — радіус.
  * @typedef {{ key: string, look: string, x: number, y: number, z: number, len: number, r: number,
- *   axis?: 'x' | 'y' | 'z' }} GeometryRod
+ *   axis?: 'x' | 'y' | 'z', move?: number }} GeometryRod
  */
 
-/** @typedef {{ boxes: GeometryBox[], rods: GeometryRod[] }} Geometry */
+/**
+ * Рухома група (шухляда): dir — одиничний вектор висування в координатах моделі, travel — повний хід, мм.
+ * Лише для вигляду в 3D: на специфікацію не впливає.
+ * @typedef {{ dir: Vec3, travel: number }} GeometryMove
+ */
+
+/** @typedef {{ boxes: GeometryBox[], rods: GeometryRod[], moves?: GeometryMove[] }} Geometry */
 
 /** @typedef {{ W: number, H: number, D: number }} Bounds */
 

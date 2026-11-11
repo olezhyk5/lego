@@ -78,5 +78,9 @@ export function placedBuilder(G, p) {
       const q = rect(axis === 'x' ? { x, z, w: len, d: 0 } : { x, z, w: 0, d: len });
       G.rod(key, look, q.x, y, q.z, len, r, q.w > 0 ? 'x' : 'z');
     },
+    /** @param {[number, number, number]} dir @param {number} travel @param {() => void} fn */
+    moving(dir, travel, fn) {
+      G.moving(placeDir(p, dir), travel, fn);
+    },
   };
 }
