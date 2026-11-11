@@ -186,7 +186,8 @@ describe('modelGeometry — опори', () => {
 
   it('ніжки: у кожному ряду задня (z 40) і передня (554 - 40 - 10 = 504)', () => {
     const legs = byKey(G, 'part.leg');
-    expect(legs.every(b => b.kind === 'hardware' && b.y === 0 && b.h === 80)).toBe(true);
+    // бокс ніжки — пластина під дном: 80 - 4
+    expect(legs.every(b => b.kind === 'hardware' && b.y === 76 && b.h === 4)).toBe(true);
     expect(legs.map(b => [b.x, b.z])).toEqual(
       [16, 572, 1188, 1744].flatMap(x => [
         [x, 40],

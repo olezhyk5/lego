@@ -31,13 +31,42 @@ export const legCount = rows => 2 * rows.length;
 export const legsLowWarning = h =>
   h > 0 && h < LEGS_MIN_H ? msg('check.legsLow', { h: round(h), min: LEGS_MIN_H }) : null;
 
+// Вигляд ніжки (лише модель), мм: монтажна пластина під дном, корпус (ширший угорі), регулювальний гвинт, п'ята
+const PLATE_H = 4;
+const FOOT_H = 12;
+const FOOT_R = 17;
+const BODY_TOP_R = 16;
+const BODY_R = 12;
+const STEM_R = 5;
+const BODY_SHARE = 0.6; // частка корпусу у висоті між пластиною й п'ятою; решта — гвинт
+const BODY_TOP_SHARE = 0.3; // частка ширшої верхньої частини корпусу
+
+/**
+ * Одна ніжка в геометрію: пластина — бокс у плані LEG × LEG (x, z — його кут), решта — вертикальні циліндри по осі.
+ * Низькі ніжки стискаються пропорційно.
+ * @param {import('./geometry-builder.js').GeometryBuilder} G
+ * @param {number} h висота ніжки, мм
+ */
+export function addLeg(G, x, z, h) {
+  const plate = Math.min(PLATE_H, h * 0.1);
+  const foot = Math.min(FOOT_H, h * 0.15);
+  const rest = h - plate - foot;
+  const body = rest * BODY_SHARE;
+  const bodyTop = body * BODY_TOP_SHARE;
+  const stem = rest - body;
+  const [cx, cz] = [x + LEG / 2, z + LEG / 2];
+  G.hardware('part.leg', 'handle', x, h - plate, z, LEG, plate, LEG);
+  G.rod('part.leg', 'handle', cx, h - plate - bodyTop, cz, bodyTop, BODY_TOP_R, 'y');
+  G.rod('part.leg', 'handle', cx, foot + stem, cz, body - bodyTop, BODY_R, 'y');
+  G.rod('part.leg', 'rod', cx, foot, cz, stem, STEM_R, 'y');
+  G.rod('part.leg', 'handle', cx, 0, cz, foot, FOOT_R, 'y');
+}
+
 /**
  * Ніжки в геометрію: у кожному ряду задня й передня (за цокольною планкою, що стоїть на plinthZ).
  * @param {import('./geometry-builder.js').GeometryBuilder} G
  * @param {number[]} rows ліві краї ніжок
  */
 export function addLegGeometry(G, rows, h, plinthZ) {
-  rows.forEach(x =>
-    [LEG_INSET, plinthZ - LEG - FRONT_GAP].forEach(z => G.hardware('part.leg', 'handle', x, 0, z, LEG, h, LEG)),
-  );
+  rows.forEach(x => [LEG_INSET, plinthZ - LEG - FRONT_GAP].forEach(z => addLeg(G, x, z, h)));
 }

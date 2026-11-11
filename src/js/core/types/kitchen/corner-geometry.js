@@ -1,6 +1,6 @@
 import { T, GAP } from '../../../config/constants.js';
 import { thickness } from '../../common/geometry-builder.js';
-import { LEG, LEG_INSET } from '../../common/legs.js';
+import { LEG, LEG_INSET, addLeg } from '../../common/legs.js';
 import { RAIL_W, PLINTH_SETBACK } from './constants.js';
 import { SHELF_SETBACK } from './corner.js';
 
@@ -69,5 +69,5 @@ export function addLShapeGeometry(G, s, c) {
     HANDLE.h,
     len,
   );
-  if (s.legs > 0) lShapeLegs(s, c).forEach(([lx, lz]) => G.hardware('part.leg', 'handle', lx, 0, lz, LEG, s.legs, LEG));
+  if (s.legs > 0) lShapeLegs(s, c).forEach(([lx, lz]) => addLeg(G, lx, lz, s.legs));
 }
