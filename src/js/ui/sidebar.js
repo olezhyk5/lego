@@ -2,7 +2,7 @@ import { presetProject, presetType, matchPreset } from '../core/presets.js';
 import { t } from '../i18n/index.js';
 import { presetButtons } from './templates.js';
 
-// Оболонка сайдбару: пресети всіх типів. Форму поточного типу малює ui/forms.js (через екземпляр).
+// Оболонка сайдбару: пресети, доступні екземпляру (опція presets). Форму поточного типу малює ui/forms.js (через екземпляр).
 // Без пресетів у розмітці (опція ui.presets = false) усе тут — порожні дії.
 
 /** @param {import('./app.js').App} app */
@@ -32,7 +32,7 @@ export function createSidebar(app) {
   // Кнопки пресетів (і після зміни мови)
   function renderPresets() {
     if (!box) return;
-    box.innerHTML = presetButtons();
+    box.innerHTML = presetButtons(app.presets);
     markPreset();
     syncToggle();
   }

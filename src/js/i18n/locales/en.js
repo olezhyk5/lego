@@ -346,6 +346,7 @@ export default {
     badFileMore: 'File not opened: {error} (and {more} more errors)',
   },
   file: {
+    typeNotAllowed: 'furniture of type “{type}” can’t be opened here',
     notProject: 'The file does not look like a project',
     badVersion: 'Unknown file format version',
     tooNew: 'The file was created by a newer version of the builder (format {version}). Reload the page.',

@@ -28,6 +28,29 @@ export const isPresetId = id => {
 export const presetType = id => split(id)[0];
 
 /**
+ * Пресети, доступні екземпляру (опція presets): тип ('kitchen') — усі його пресети, '<тип>.<ключ>' — один.
+ * Порядок — як у реєстрі. Без списку — усі пресети. Невідомий тип чи пресет або порожній результат — помилка
+ * (це помилка інтеграції, а не користувача).
+ * @param {string[]} [list]
+ * @returns {string[]}
+ */
+export function resolvePresets(list) {
+  if (list === undefined) return presetIds();
+  if (!Array.isArray(list)) throw new Error('presets: очікується масив типів або пресетів');
+  const unknown = list.filter(v => !typeIds().includes(v) && !isPresetId(v));
+  if (unknown.length) throw new Error(`presets: невідомі типи або пресети: ${unknown.join(', ')}`);
+  const ids = presetIds().filter(id => list.includes(id) || list.includes(presetType(id)));
+  if (!ids.length) throw new Error('presets: порожній список');
+  return ids;
+}
+
+/**
+ * Типи меблів, до яких належать пресети (без повторів, у порядку пресетів)
+ * @param {string[]} ids
+ */
+export const presetTypes = ids => [...new Set(ids.map(presetType))];
+
+/**
  * Новий проєкт з пресета
  * @param {string} id
  * @returns {Project}

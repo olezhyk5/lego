@@ -1,11 +1,13 @@
 export const T = 16; // умовна товщина плити, мм
 export const GAP = 3; // зазор між фасадами шухляд, мм
+// префікс ключів проєкту й пресета в localStorage (опція storageKey змінює його для екземпляра)
+export const STORAGE_PREFIX = 'lego';
 // проєкт у localStorage; старі ключі читаються (з міграцією), якщо нового ще немає
-export const STORAGE_KEY = 'lego-project';
+export const STORAGE_KEY = `${STORAGE_PREFIX}-project`;
 export const LEGACY_STORAGE_KEYS = ['wardrobe-cfg-v1'];
 // останній вибраний пресет (<тип>.<ключ>) — окремо від проєкту, у JSON не потрапляє
-export const PRESET_STORAGE_KEY = 'lego-preset';
-// вибрана мова інтерфейсу
+export const PRESET_STORAGE_KEY = `${STORAGE_PREFIX}-preset`;
+// вибрана мова інтерфейсу; без префікса екземпляра, бо мова одна на сторінку
 export const LOCALE_STORAGE_KEY = 'lego-locale';
 
 // Кришка в проєкті: top: { mount, double, overhang? }. Немає поля (старі файли) → між боковинами, одинарна.

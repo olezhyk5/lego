@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { test, expect, open, ref } from './fixtures.js';
 
 // Вбудовування: index.html запускає lego через window.lego (як сайт клієнта); тут на ту саму сторінку
@@ -63,4 +64,23 @@ test('destroy знімає екземпляр, повторне створенн
   // основний екземпляр після цього працює
   await page.fill(inMain(ref('W')), '1300');
   await expect(page.locator(inMain(ref('W')))).toHaveValue('1300');
+});
+
+test('окремий блок кухонь: свої пресети й ключ сховища, файл шафи не відкривається', async ({ page }) => {
+  await mountSecond(page, { presets: ['kitchen'], preset: 'kitchen.base60', storageKey: 'kitchen-block' });
+  const presets = page.locator(inSecond('[data-preset]'));
+  expect(
+    (await presets.evaluateAll(els => els.map(b => b.dataset.preset))).every(id => id.startsWith('kitchen.')),
+  ).toBe(true);
+  await expect(page.locator(inSecond('[data-preset="kitchen.base60"]'))).toHaveAttribute('aria-pressed', 'true');
+
+  // проєкт блоку — у своєму ключі, основний екземпляр (lego-project) не зачеплено
+  await page.fill(inSecond(ref('H')), '700');
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('kitchen-block-project')).H)).toBe(700);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('lego-project')).type)).toBe('wardrobe');
+
+  // файл шафи — повідомлення, проєкт блоку не змінюється
+  await page.setInputFiles(inSecond(ref('fileIn')), join(import.meta.dirname, 'files/v1-komod.json'));
+  await expect(page.locator(inSecond(ref('toast')))).not.toBeEmpty();
+  await expect(page.locator(inSecond(ref('H')))).toHaveValue('700');
 });

@@ -1,4 +1,5 @@
 import { parseProject } from '../core/store.js';
+import { presetTypes } from '../core/presets.js';
 import { exportRows, toCsv, toTsv, fileBase } from '../core/export.js';
 import { download, readText, copyText } from '../utils/file.js';
 import { t, LOCALES, getLocale } from '../i18n/index.js';
@@ -71,6 +72,12 @@ export function createToolbar(app) {
       const more = res.errors.length - 1;
       return toast(more ? t('toast.badFileMore', { error, more }) : t('toast.badFileDetails', { error }));
     }
+    // екземпляр обмежено іншими типами меблів (опція presets)
+    const { type } = res.project;
+    if (!presetTypes(app.presets).includes(type))
+      return toast(
+        t('toast.badFileDetails', { error: { key: 'file.typeNotAllowed', params: { type: { key: `type.${type}` } } } }),
+      );
     app.loadProject(res.project);
     toast(t('toast.opened'));
   });

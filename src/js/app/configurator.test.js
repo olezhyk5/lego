@@ -189,3 +189,44 @@ describe('типи меблів ззовні', () => {
     expect(() => mount({ types: [{ type: { ...shelf }, form: createWardrobeForm }] })).toThrow();
   });
 });
+
+describe('вбудовування в окремі блоки: presets, preset, project, storageKey', () => {
+  it('presets: лише вказані пресети, один тип — без заголовків груп; стартує з першого', () => {
+    const { root } = mount({ presets: ['wardrobe.komod', 'wardrobe.tumba'] });
+    expect([...root.querySelectorAll('[data-preset]')].map(b => b.dataset.preset)).toEqual([
+      'wardrobe.komod',
+      'wardrobe.tumba',
+    ]);
+    expect(ref(root, 'presets').querySelector('h3')).toBeNull(); // заголовки груп типів
+    expect(ref(root, 'W').value).toBe('1000'); // комод
+  });
+
+  it('presets: тип — усі його пресети; preset задає стартовий', () => {
+    const { root } = mount({ presets: ['kitchen'], preset: 'kitchen.base60' });
+    const ids = [...root.querySelectorAll('[data-preset]')].map(b => b.dataset.preset);
+    expect(ids.every(id => id.startsWith('kitchen.'))).toBe(true);
+    expect(root.querySelector('[aria-pressed="true"]').dataset.preset).toBe('kitchen.base60');
+  });
+
+  it('project — стартовий проєкт', () => {
+    const { root } = mount({ project: { ...presetProject('wardrobe.komod'), W: 1234 } });
+    expect(ref(root, 'W').value).toBe('1234');
+  });
+
+  it('невідомий пресет в опції presets — помилка', () => {
+    const root = document.createElement('div');
+    expect(() => createConfigurator(root, { storage: false, presets: ['sofa'] })).toThrow();
+    expect(root.innerHTML).toBe('');
+  });
+
+  it('storageKey: свої ключі в localStorage, блоки не перезаписують один одного', () => {
+    const a = mount({ storage: undefined, storageKey: 'komod', presets: ['wardrobe.komod'] });
+    const b = mount({ storage: undefined, presets: ['kitchen'] });
+    typeInto(ref(a.root, 'W'), '1100');
+    expect(JSON.parse(localStorage.getItem('komod-project')).W).toBe(1100);
+    expect(JSON.parse(localStorage.getItem('lego-project')).type).toBe('kitchen');
+    expect(ref(b.root, 'H').value).toBe('720');
+    // наступне відкриття блоку бере свій проєкт
+    expect(ref(mount({ storage: undefined, storageKey: 'komod' }).root, 'W').value).toBe('1100');
+  });
+});

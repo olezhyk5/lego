@@ -1,4 +1,4 @@
-import { STORAGE_KEY, LEGACY_STORAGE_KEYS, PRESET_STORAGE_KEY, LOCALE_STORAGE_KEY } from '../config/constants.js';
+import { STORAGE_PREFIX, LEGACY_STORAGE_KEYS, LOCALE_STORAGE_KEY } from '../config/constants.js';
 
 /**
  * Сховище екземпляра конфігуратора: рядкові значення за назвою.
@@ -9,27 +9,33 @@ import { STORAGE_KEY, LEGACY_STORAGE_KEYS, PRESET_STORAGE_KEY, LOCALE_STORAGE_KE
  * @typedef {{ get: (name: StorageName) => string | null, set: (name: StorageName, value: string) => void }} StorageAdapter
  */
 
-const KEYS = { project: STORAGE_KEY, preset: PRESET_STORAGE_KEY, locale: LOCALE_STORAGE_KEY };
+// Префікс ключів: літери, цифри, «-», «_»
+export const isStorageKey = key => typeof key === 'string' && /^[\w-]+$/.test(key);
 
 /**
- * Сховище за замовчуванням — localStorage з ключами lego-project, lego-preset, lego-locale.
- * Проєкт: якщо нового ключа ще немає, читається старий (wardrobe-cfg-v1). Старий ключ не видаляється:
- * відкат на попередню збірку не втратить дані.
+ * Сховище за замовчуванням — localStorage з ключами <prefix>-project, <prefix>-preset і lego-locale
+ * (мова одна на сторінку, тож її ключ від префікса не залежить). Префікс за замовчуванням — lego.
+ * Проєкт: якщо нового ключа ще немає, читається старий (wardrobe-cfg-v1) — лише з префіксом за замовчуванням.
+ * Старий ключ не видаляється: відкат на попередню збірку не втратить дані.
+ * @param {{ prefix?: string }} [options]
  * @returns {StorageAdapter}
  */
-export function localStorageAdapter() {
+export function localStorageAdapter({ prefix = STORAGE_PREFIX } = {}) {
+  if (!isStorageKey(prefix)) throw new Error(`localStorageAdapter: некоректний префікс ключів «${prefix}»`);
+  const keys = { project: `${prefix}-project`, preset: `${prefix}-preset`, locale: LOCALE_STORAGE_KEY };
+  const legacy = prefix === STORAGE_PREFIX ? LEGACY_STORAGE_KEYS : [];
   return {
     get(name) {
-      const value = localStorage.getItem(KEYS[name]);
+      const value = localStorage.getItem(keys[name]);
       if (value != null || name !== 'project') return value;
-      for (const key of LEGACY_STORAGE_KEYS) {
+      for (const key of legacy) {
         const legacy = localStorage.getItem(key);
         if (legacy != null) return legacy;
       }
       return null;
     },
     set(name, value) {
-      localStorage.setItem(KEYS[name], value);
+      localStorage.setItem(keys[name], value);
     },
   };
 }

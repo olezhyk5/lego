@@ -6,6 +6,7 @@
  *   root: HTMLElement,
  *   uid: string,
  *   store: import('../core/store.js').Store,
+ *   presets: string[],
  *   $: (sel: string) => any,
  *   $$: (sel: string) => any[],
  *   ref: (name: string) => any,
@@ -18,6 +19,7 @@
  *   viewer: any,
  * }} App
  *   uid — префікс id для ARIA (aria-controls тощо), унікальний для екземпляра
+ *   presets — пресети, доступні екземпляру (опція presets); їхні типи — типи, з якими він працює
  *   $, $$ — пошук лише всередині root; ref(name) — елемент з data-ref="name" або null
  *   update(full) — після зміни стану: true — змінилась структура (форма перемальовується), false — лише значення
  */

@@ -1,5 +1,4 @@
-import { typeIds } from '../core/registry.js';
-import { presetIds } from '../core/presets.js';
+import { presetIds, presetType, presetTypes } from '../core/presets.js';
 import { t } from '../i18n/index.js';
 import { round } from '../utils/helpers.js';
 
@@ -8,15 +7,18 @@ import { round } from '../utils/helpers.js';
 
 const presetButton = id => `<button class="btn" data-preset="${id}">${t('preset.' + id)}</button>`;
 
-// Пресети всіх типів; якщо типів кілька — групами з назвою типу
-export function presetButtons() {
-  const types = typeIds();
-  if (types.length === 1) return presetIds().map(presetButton).join('');
+// Кнопки пресетів ids (за замовчуванням — усі); якщо типів кілька — групами з назвою типу
+export function presetButtons(ids = presetIds()) {
+  const types = presetTypes(ids);
+  if (types.length === 1) return ids.map(presetButton).join('');
   return types
     .map(
       type => `<div class="presets__group">
         <h3 class="presets__title">${t('type.' + type)}</h3>
-        <div class="presets__list">${presetIds(type).map(presetButton).join('')}</div>
+        <div class="presets__list">${ids
+          .filter(id => presetType(id) === type)
+          .map(presetButton)
+          .join('')}</div>
       </div>`,
     )
     .join('');

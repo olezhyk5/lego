@@ -6,6 +6,8 @@ import {
   isPresetId,
   presetType,
   upgradePresetId,
+  resolvePresets,
+  presetTypes,
   DEFAULT_PRESET,
 } from './presets.js';
 import { presetProject as wardrobePreset } from './test-fixtures.js';
@@ -55,5 +57,29 @@ describe('matchPreset', () => {
     expect(matchPreset({ ...komod, W: komod.W + 1 })).toBe(null);
     expect(matchPreset({ ...komod, top: { mount: 'over', double: false } })).toBe(null);
     expect(matchPreset({ ...komod, type: 'sofa' })).toBe(null);
+  });
+});
+
+describe('resolvePresets — опція presets', () => {
+  it('без списку — усі пресети', () => expect(resolvePresets()).toEqual(presetIds()));
+
+  it('тип — усі його пресети; пресет — він сам; порядок — як у реєстрі, без повторів', () => {
+    expect(resolvePresets(['kitchen'])).toEqual(presetIds('kitchen'));
+    expect(resolvePresets(['wardrobe.tumba', 'wardrobe.komod', 'wardrobe.komod'])).toEqual([
+      'wardrobe.komod',
+      'wardrobe.tumba',
+    ]);
+    expect(resolvePresets(['kitchen.base60', 'wardrobe'])).toEqual([...presetIds('wardrobe'), 'kitchen.base60']);
+  });
+
+  it.each([
+    ['невідомий тип', ['sofa']],
+    ['невідомий пресет', ['wardrobe.nope']],
+    ['порожній список', []],
+    ['не масив', 'kitchen'],
+  ])('%s — помилка', (_, list) => expect(() => resolvePresets(/** @type {any} */ (list))).toThrow());
+
+  it('presetTypes — типи пресетів без повторів', () => {
+    expect(presetTypes(['wardrobe.komod', 'kitchen.base60', 'wardrobe.tumba'])).toEqual(['wardrobe', 'kitchen']);
   });
 });

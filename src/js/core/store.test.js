@@ -1,8 +1,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { STORAGE_KEY, LEGACY_STORAGE_KEYS, PRESET_STORAGE_KEY } from '../config/constants.js';
-import { preset, presetProject } from './test-fixtures.js';
+import { preset, presetProject, kitchenPreset } from './test-fixtures.js';
 import { createStore, parseProject } from './store.js';
 import { localStorageAdapter, memoryStorage } from './storage.js';
+import { presetIds } from './presets.js';
 
 // Підмінений localStorage: сирі рядки за ключами
 function mockStorage(initial = {}) {
@@ -205,5 +206,78 @@ describe('localStorageAdapter', () => {
     const s = localStorageAdapter();
     expect(s.get('project')).toBe('old');
     expect(s.get('preset')).toBe(null);
+  });
+
+  it('свій префікс: <prefix>-project / <prefix>-preset, мова — у спільному lego-locale, старий ключ не читається', () => {
+    const data = mockStorage({ [LEGACY_STORAGE_KEYS[0]]: 'old' });
+    const s = localStorageAdapter({ prefix: 'komod-block' });
+    expect(s.get('project')).toBe(null);
+    s.set('project', '{}');
+    s.set('preset', '"wardrobe.komod"');
+    s.set('locale', 'en');
+    expect(data).toEqual({
+      [LEGACY_STORAGE_KEYS[0]]: 'old',
+      'komod-block-project': '{}',
+      'komod-block-preset': '"wardrobe.komod"',
+      'lego-locale': 'en',
+    });
+  });
+
+  it.each(['', 'a b', 'a.b', null])('некоректний префікс %j — помилка', prefix => {
+    expect(() => localStorageAdapter({ prefix: /** @type {any} */ (prefix) })).toThrow();
+  });
+});
+
+describe('дозволені пресети й стартовий проєкт', () => {
+  const kitchenIds = presetIds('kitchen');
+  const storageWith = project => {
+    const s = memoryStorage();
+    if (project) s.set('project', JSON.stringify(project));
+    return s;
+  };
+
+  it('без збереженого: start.preset, якщо він дозволений', () => {
+    const store = createStore({ presets: kitchenIds, start: { preset: 'kitchen.base60' } });
+    expect(store.state).toEqual(kitchenPreset('base60'));
+    expect(store.preset).toBe('kitchen.base60');
+  });
+
+  it('без збереженого й без start: пресет за замовчуванням не дозволений → перший дозволений', () => {
+    const store = createStore({ presets: kitchenIds });
+    expect(store.preset).toBe(kitchenIds[0]);
+    expect(store.state.type).toBe('kitchen');
+  });
+
+  it('start.preset поза дозволеними ігнорується', () => {
+    const store = createStore({ presets: ['wardrobe.komod', 'wardrobe.tumba'], start: { preset: 'kitchen.base60' } });
+    expect(store.preset).toBe('wardrobe.komod');
+  });
+
+  it('start.project (сирий JSON, зокрема старого формату) важливіший за start.preset', () => {
+    const store = createStore({ start: { project: preset('tumba'), preset: 'wardrobe.komod' } });
+    expect(store.state).toEqual(presetProject('tumba'));
+    expect(store.preset).toBe('wardrobe.tumba'); // за збігом
+  });
+
+  it('start.project недійсний або недозволеного типу → start.preset', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(createStore({ start: { project: { W: 1 }, preset: 'wardrobe.komod' } }).preset).toBe('wardrobe.komod');
+    const s = createStore({
+      presets: kitchenIds,
+      start: { project: presetProject('komod'), preset: 'kitchen.base60' },
+    });
+    expect(s.preset).toBe('kitchen.base60');
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('збережений проєкт важливіший за start', () => {
+    const store = createStore({ storage: storageWith(presetProject('penal')), start: { preset: 'wardrobe.komod' } });
+    expect(store.state).toEqual(presetProject('penal'));
+  });
+
+  it('збережений проєкт недозволеного типу не відкривається', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const store = createStore({ storage: storageWith(presetProject('penal')), presets: kitchenIds });
+    expect(store.state.type).toBe('kitchen');
   });
 });

@@ -1,5 +1,6 @@
 import { createStore } from '../core/store.js';
 import { localStorageAdapter, memoryStorage } from '../core/storage.js';
+import { resolvePresets } from '../core/presets.js';
 import { projectReport } from '../core/export.js';
 import { getType, registerType } from '../core/registry.js';
 import { createViewer } from '../viewer/viewer.js';
@@ -16,6 +17,10 @@ import { t, translateDom, setLocale, getLocale, LOCALES, addMessages } from '../
 /**
  * @typedef {{
  *   storage?: import('../core/storage.js').StorageAdapter | false,
+ *   storageKey?: string,
+ *   presets?: string[],
+ *   preset?: string,
+ *   project?: object,
  *   locale?: string,
  *   messages?: Record<string, Record<string, any>>,
  *   types?: { type: import('../core/types.js').FurnitureType, form: import('../ui/forms.js').CreateForm }[],
@@ -24,6 +29,13 @@ import { t, translateDom, setLocale, getLocale, LOCALES, addMessages } from '../
  * }} ConfiguratorOptions
  *   storage — де зберігати проєкт, пресет і мову: за замовчуванням localStorage (lego-project, lego-preset,
  *             lego-locale); false — нічого не зберігати; або свій адаптер { get(name), set(name, value) }
+ *   storageKey — префікс ключів проєкту й пресета в localStorage замість lego (<storageKey>-project,
+ *             <storageKey>-preset), щоб блоки на сайті пам'ятали кожен свій проєкт; мова лишається в lego-locale.
+ *             Діє лише для сховища за замовчуванням
+ *   presets — які пресети показувати й з якими типами працювати: типи ('kitchen') і/або пресети
+ *             ('wardrobe.komod'); за замовчуванням — усі. Збережений проєкт чи файл іншого типу не відкривається
+ *   preset  — стартовий пресет ('wardrobe.komod'), якщо збереженого проєкту немає
+ *   project — стартовий проєкт (JSON формату проєкту), якщо збереженого немає; важливіший за preset
  *   locale  — мова, якщо збереженої немає (далі — мова браузера, uk)
  *   messages — власні тексти: { <мова>: { <namespace>: { <ключ>: 'текст' } } }, напр. для типів ззовні
  *   types   — типи меблів ззовні: модуль типу (контракт FurnitureType) і його форма (ui/forms.js)
@@ -38,10 +50,10 @@ const live = new Set();
 const mounted = new WeakSet();
 let counter = 0;
 
-function storageOf(option) {
+function storageOf(option, prefix) {
   if (option === false) return memoryStorage();
   if (option) return option;
-  return localStorageAdapter();
+  return localStorageAdapter({ prefix });
 }
 
 // Збережена мова, якщо сховище доступне
@@ -72,7 +84,8 @@ export function createConfigurator(root, options = {}) {
   if (options.messages) addMessages(options.messages);
   registerTypes(options.types);
 
-  const storage = storageOf(options.storage);
+  const presets = resolvePresets(options.presets);
+  const storage = storageOf(options.storage, options.storageKey);
   const want = [savedLocale(storage), options.locale].find(code => code && LOCALES.includes(code));
   const localeChanged = want ? setLocale(want) : false;
 
@@ -81,7 +94,7 @@ export function createConfigurator(root, options = {}) {
   translateDom(root);
   const scope = createScope(root);
   const { ref } = scope;
-  const store = createStore({ storage });
+  const store = createStore({ storage, presets, start: { project: options.project, preset: options.preset } });
 
   const viewer = createViewer(ref('view'));
   if (!viewer) ref('nogl').classList.add('is-visible');
@@ -169,6 +182,7 @@ export function createConfigurator(root, options = {}) {
     root,
     uid,
     store,
+    presets,
     ...scope,
     update,
     fit,

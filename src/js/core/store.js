@@ -1,6 +1,14 @@
 import { upgradeProject } from './project-format.js';
 import { validateProject } from './registry.js';
-import { DEFAULT_PRESET, presetProject, matchPreset, isPresetId, upgradePresetId } from './presets.js';
+import {
+  DEFAULT_PRESET,
+  presetIds,
+  presetProject,
+  presetTypes,
+  matchPreset,
+  isPresetId,
+  upgradePresetId,
+} from './presets.js';
 import { memoryStorage } from './storage.js';
 
 /** @typedef {import('./types.js').Project} Project */
@@ -27,20 +35,31 @@ function read(storage, name) {
   }
 }
 
-// Збережений проєкт або пресет за замовчуванням (зіпсовані дані — у консоль)
-function loadProject(storage) {
-  const raw = read(storage, 'project');
-  if (raw === undefined) return presetProject(DEFAULT_PRESET);
+// Сирий проєкт → перевірений проєкт дозволеного типу або null (причина — у консоль)
+function accept(raw, types, what) {
   const res = parseProject(raw);
-  if (res.ok) return res.project;
-  console.warn('Збережений проєкт не пройшов перевірку', res.errors);
-  return presetProject(DEFAULT_PRESET);
+  if (!res.ok) console.warn(`${what} не пройшов перевірку`, res.errors);
+  else if (!types.includes(res.project.type)) console.warn(`${what}: тип «${res.project.type}» тут недоступний`);
+  else return res.project;
+  return null;
 }
 
-// Збережений ідентифікатор пресета; якщо його немає — пресет, з яким збігається проєкт
-function loadPreset(storage, state) {
-  const id = upgradePresetId(read(storage, 'preset'));
-  return isPresetId(id) ? id : matchPreset(state);
+/**
+ * Початковий проєкт і пресет: збережений проєкт → start.project → start.preset → пресет за замовчуванням
+ * (якщо він серед дозволених) → перший дозволений. Береться лише проєкт дозволеного типу.
+ */
+function loadInitial(storage, presets, start) {
+  const types = presetTypes(presets);
+  const raw = read(storage, 'project');
+  const saved = raw === undefined ? null : accept(raw, types, 'Збережений проєкт');
+  if (saved) {
+    const id = upgradePresetId(read(storage, 'preset'));
+    return { project: saved, preset: isPresetId(id) ? id : matchPreset(saved) };
+  }
+  const given = start.project === undefined ? null : accept(start.project, types, 'Опція project');
+  if (given) return { project: given, preset: matchPreset(given) };
+  const id = [start.preset, DEFAULT_PRESET].find(p => presets.includes(p)) ?? presets[0];
+  return { project: presetProject(id), preset: id };
 }
 
 // Стан форми поточного типу: sel — індекс вибраної групи (секції тощо),
@@ -50,16 +69,19 @@ const freshUi = () => ({ sel: 0, collapsed: new WeakSet() });
 /**
  * Стан одного екземпляра конфігуратора. Модулі екземпляра читають/змінюють його напряму,
  * після змін викликають update() екземпляра.
- * @param {{ storage?: StorageAdapter }} [options] storage — де зберігати проєкт; за замовчуванням — у пам'яті
+ * @param {{ storage?: StorageAdapter, presets?: string[], start?: { project?: unknown, preset?: string } }} [options]
+ *   storage — де зберігати проєкт; за замовчуванням — у пам'яті
+ *   presets — дозволені пресети (resolvePresets); проєкт іншого типу не відкривається
+ *   start — з чого почати, якщо збереженого проєкту немає: project (сирий JSON) або preset (ідентифікатор)
  */
-export function createStore({ storage = memoryStorage() } = {}) {
-  const initial = loadProject(storage);
+export function createStore({ storage = memoryStorage(), presets = presetIds(), start = {} } = {}) {
+  const initial = loadInitial(storage, presets, start);
 
   const store = {
     /** @type {Project} проєкт поточної версії формату (зберігається) */
-    state: initial,
+    state: initial.project,
     /** @type {string | null} останній вибраний пресет (лишається активним і після змін) або null */
-    preset: loadPreset(storage, initial),
+    preset: initial.preset,
     /** @type {{ sel: number, collapsed: WeakSet<object>, [field: string]: any }} у JSON проєкту не потрапляє */
     ui: freshUi(),
     showDims: true, // показувати розміри в 3D
