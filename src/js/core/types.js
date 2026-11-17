@@ -28,6 +28,7 @@
  * Бокс геометрії (мм). (x, y, z) — мінімальний кут; x — від лівої площини, y — від підлоги,
  * z — від задньої площини до фасаду. key — ключ деталі (part.*), той самий, що в специфікації.
  * kind: panel — плита (є в специфікації рівно один раз), hardware — фурнітура.
+ * stack — склеєні однакові плити (потовщена кришка): бокс товщиною stack × t відповідає stack деталям специфікації.
  * look — роль матеріалу в 3D (див. LOOKS).
  * holes — наскрізні прямокутні вирізи в площині xz, у координатах моделі (лише вигляд: на специфікацію не впливають).
  * notch — прямокутний виріз із кута плити в площині xz, у координатах моделі (у специфікації — розмір заготовки).
@@ -35,7 +36,7 @@
  * @typedef {{ key: string, kind: 'panel' | 'hardware', mat?: string, look: string,
  *   x: number, y: number, z: number, w: number, h: number, d: number,
  *   holes?: { x: number, z: number, w: number, d: number }[],
- *   notch?: { x: number, z: number, w: number, d: number }, move?: number }} GeometryBox
+ *   notch?: { x: number, z: number, w: number, d: number }, stack?: number, move?: number }} GeometryBox
  */
 
 /**

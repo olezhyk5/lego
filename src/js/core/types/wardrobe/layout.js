@@ -6,8 +6,14 @@ import { drawerWarnings, drawerDepth } from '../../common/drawers.js';
 import { LEG, legRows, legsLowWarning } from '../../common/legs.js';
 import { SLIDING_RECESS } from './constants.js';
 
-export function drawerFront(h, cnt) {
-  return (h - (cnt + 1) * GAP) / cnt;
+// Висота фасаду шухляди в зоні h: edges — зазори зверху й знизу зони разом, між фасадами — GAP
+export function drawerFront(h, cnt, edges = 2 * GAP) {
+  return (h - edges - (cnt - 1) * GAP) / cnt;
+}
+
+// Чи стоїть плита під зоною j: між двома зонами шухляд її немає — фасади йдуть суцільним рядом
+export function hasShelfBelow(zones, j) {
+  return j < zones.length - 1 && !(zones[j].type === 'drawers' && zones[j + 1].type === 'drawers');
 }
 
 // Розраховує фактичні розміри секцій і зон + помилки/попередження.
@@ -38,7 +44,8 @@ export function computeLayout(s) {
     let fH = 0,
       aH = 0;
     c.zones.forEach(z => (isAuto(z.height) ? aH++ : (fH += +z.height || 0)));
-    const avail = Hin - Math.max(0, c.zones.length - 1) * T;
+    const shelves = c.zones.filter((_, j) => hasShelfBelow(c.zones, j)).length;
+    const avail = Hin - shelves * T;
     const autoH = aH ? (avail - fH) / aH : 0;
     if (aH && autoH < 60) errs.push(msg('check.heightsOverflow', { name, auto: round(autoH) }));
     if (!aH && c.zones.length && Math.abs(fH - avail) > 1)
@@ -51,15 +58,19 @@ export function computeLayout(s) {
       const h = isAuto(z.height) ? autoH : +z.height || 0;
       const top = y,
         bottom = y - h;
-      y = bottom - T;
+      const shelfBelow = hasShelfBelow(c.zones, j);
+      y = bottom - (shelfBelow ? T : 0);
       const zn = msg('zone.name', { n: i + 1, z: j + 1 });
       const cnt = Math.max(1, +z.count || 1);
+      // на стику із сусідньою зоною шухляд — половина зазору з кожного боку, разом GAP
+      const gapTop = j > 0 && !hasShelfBelow(c.zones, j - 1) ? GAP / 2 : GAP;
+      const gapBottom = j < c.zones.length - 1 && !shelfBelow ? GAP / 2 : GAP;
+      const front = z.type === 'drawers' ? drawerFront(h, cnt, gapTop + gapBottom) : 0;
       if (z.type === 'rod' && h < 900) warns.push(msg('check.rodLow', { name: zn, h: round(h) }));
       if (z.type === 'rod' && w > 1000) warns.push(msg('check.rodLong', { name: zn, w: round(w) }));
       if (z.type === 'drawers') {
-        const fh = drawerFront(h, cnt);
-        if (fh < 100) warns.push(msg('check.drawerSmall', { name: zn, h: round(fh) }));
-        if (fh > 350) warns.push(msg('check.drawerLarge', { name: zn, h: round(fh) }));
+        if (front < 100) warns.push(msg('check.drawerSmall', { name: zn, h: round(front) }));
+        if (front > 350) warns.push(msg('check.drawerLarge', { name: zn, h: round(front) }));
         if (top > 1300) warns.push(msg('check.drawersHigh', { name: zn, top: round(top) }));
         warns.push(...drawerWarnings({ name: zn, frontW: w - 2 * GAP, depth: drawerDepth(inD) }));
       }
@@ -67,7 +78,7 @@ export function computeLayout(s) {
         const gap = (h - cnt * T) / (cnt + 1);
         if (gap < 150) warns.push(msg('check.shelvesTight', { name: zn, gap: round(gap) }));
       }
-      return Object.assign({}, z, { h, top, bottom, cnt });
+      return Object.assign({}, z, { h, top, bottom, cnt, shelfBelow, front, gapBottom });
     });
     const out = { i, x, w, zones };
     x += w + T;

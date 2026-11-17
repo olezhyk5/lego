@@ -5,6 +5,7 @@ import { MATERIALS, DEFAULT_MATERIAL } from '../../config/materials.js';
 // Збирач геометрії моделі (мм), формат — Geometry у types.js. look — роль матеріалу в 3D (LOOKS).
 // Плита (panel) відповідає рівно одній деталі специфікації: той самий key і mat, два розміри — a × b,
 // третій — товщина (t плити специфікації, а якщо її немає — MATERIALS[mat].t). Фурнітура (hardware) у плити не входить.
+// stack > 1 — склеєні плити (потовщена кришка): один бокс товщиною stack × t замість stack деталей специфікації.
 export function geometryBuilder() {
   /** @type {import('../types.js').GeometryBox[]} */
   const boxes = [];
@@ -16,7 +17,7 @@ export function geometryBuilder() {
   let move = null; // індекс рухомої групи, яку зараз заповнюємо
   const tag = () => (move === null ? {} : { move });
   return {
-    panel(key, look, x, y, z, w, h, d, mat = DEFAULT_MATERIAL, holes = [], notch = null) {
+    panel(key, look, x, y, z, w, h, d, mat = DEFAULT_MATERIAL, holes = [], notch = null, stack = 1) {
       boxes.push({
         key,
         kind: 'panel',
@@ -30,6 +31,7 @@ export function geometryBuilder() {
         d,
         ...(holes.length ? { holes } : {}),
         ...(notch ? { notch } : {}),
+        ...(stack > 1 ? { stack } : {}),
         ...tag(),
       });
     },

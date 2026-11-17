@@ -297,3 +297,47 @@ describe('computeLayout — розсувні двері', () => {
     expect(drawers(280)).toContain('check.drawerShallow');
   });
 });
+
+// Дві зони шухляд підряд: плити між ними немає, фасади йдуть суцільним рядом із зазором GAP.
+// project(): W 1000, H 2000, цоколь 80 → y0 = 96, верх 2000 - 16 = 1984, Hin = 1888.
+describe('computeLayout — сусідні зони шухляд', () => {
+  const s = project([
+    {
+      width: 'auto',
+      zones: [
+        { type: 'drawers', count: 1, height: 300 },
+        { type: 'drawers', count: 2, height: 400 },
+        { type: 'shelves', count: 2, height: 'auto' },
+      ],
+    },
+  ]);
+  const [z1, z2, z3] = computeLayout(s).secs[0].zones;
+
+  it('плита лише між шухлядами й полицями', () => {
+    expect([z1.shelfBelow, z2.shelfBelow, z3.shelfBelow]).toEqual([false, true, false]);
+    expect(z3.h).toBe(1172); // 1888 - 1*T - 300 - 400
+  });
+
+  it('зони шухляд стикуються без плити', () => {
+    expect(z1.top).toBe(1984);
+    expect(z2.top).toBe(z1.bottom); // 1684
+    expect(z3.top).toBe(z2.bottom - T); // 1284 - 16
+  });
+
+  it('на стику зон — половина зазору з кожного боку', () => {
+    expect(z1.front).toBe(295.5); // 300 - 3 зверху - 1.5 знизу
+    expect(z1.gapBottom).toBe(1.5);
+    expect(z2.front).toBe(196.25); // (400 - 1.5 зверху - 3 знизу - 3 між фасадами) / 2
+    expect(z2.gapBottom).toBe(3);
+  });
+});
+
+describe('drawerFront — зазори по краях зони', () => {
+  it('за замовчуванням GAP зверху й знизу', () => {
+    expect(drawerFront(400, 2)).toBe(195.5); // (400 - 3*3) / 2
+  });
+
+  it('на стику із сусідньою зоною шухляд — половина зазору', () => {
+    expect(drawerFront(400, 2, 4.5)).toBe(196.25); // (400 - 4.5 - 3) / 2
+  });
+});

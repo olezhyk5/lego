@@ -46,15 +46,15 @@ describe('корпус шухляди', () => {
     const G = geometryBuilder();
     addDrawerGeometry(G, box, 600, 99, 584);
     const at = ({ key, x, y, z, w, h, d }) => ({ key, x, y, z, w, h, d });
-    // left = 600 + 13; z = 584 - 550; дно на 99 + 20; стінки на 119 + 3 (ДВП)
+    // left = 600 + 13; z = 584 - 550; дно на 99 + 10; стінки на 109 + 3 (ДВП)
     expect(G.result().boxes.map(at)).toEqual([
-      { key: 'part.drawerBottom', x: 613, y: 119, z: 34, w: 574, h: 3, d: 550 },
-      { key: 'part.drawerSide', x: 613, y: 122, z: 34, w: 16, h: 156, d: 550 },
-      { key: 'part.drawerSide', x: 1171, y: 122, z: 34, w: 16, h: 156, d: 550 }, // 613 + 574 - 16
-      { key: 'part.drawerWall', x: 629, y: 122, z: 34, w: 542, h: 156, d: 16 },
-      { key: 'part.drawerWall', x: 629, y: 122, z: 568, w: 542, h: 156, d: 16 }, // 584 - 16
-      { key: 'part.runner', x: 600, y: 177.5, z: 34, w: 13, h: 45, d: 550 }, // 122 + (156 - 45) / 2
-      { key: 'part.runner', x: 1187, y: 177.5, z: 34, w: 13, h: 45, d: 550 }, // 613 + 574
+      { key: 'part.drawerBottom', x: 613, y: 109, z: 34, w: 574, h: 3, d: 550 },
+      { key: 'part.drawerSide', x: 613, y: 112, z: 34, w: 16, h: 156, d: 550 },
+      { key: 'part.drawerSide', x: 1171, y: 112, z: 34, w: 16, h: 156, d: 550 }, // 613 + 574 - 16
+      { key: 'part.drawerWall', x: 629, y: 112, z: 34, w: 542, h: 156, d: 16 },
+      { key: 'part.drawerWall', x: 629, y: 112, z: 568, w: 542, h: 156, d: 16 }, // 584 - 16
+      { key: 'part.runner', x: 600, y: 167.5, z: 34, w: 13, h: 45, d: 550 }, // 112 + (156 - 45) / 2
+      { key: 'part.runner', x: 1187, y: 167.5, z: 34, w: 13, h: 45, d: 550 }, // 613 + 574
     ]);
   });
 });

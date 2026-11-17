@@ -255,3 +255,29 @@ describe('partsList — розсувні двері', () => {
     expect(specOf({ ...preset('wardrobe', PLINTH), doors: 'hinged' })).toEqual(specOf(preset('wardrobe', PLINTH)));
   });
 });
+
+describe('partsList — сусідні зони шухляд', () => {
+  // project(): W 1000 → секція 1000 - 2*16 = 968, фасад 968 - 2*3 = 962
+  const s = project([
+    {
+      width: 'auto',
+      zones: [
+        { type: 'drawers', count: 1, height: 300 },
+        { type: 'drawers', count: 2, height: 400 },
+        { type: 'shelves', count: 2, height: 'auto' },
+      ],
+    },
+  ]);
+  const P = specOf(s);
+
+  it('полиця між зонами — лише одна, між шухлядами й полицями', () => {
+    expect(P.panels.filter(p => p.key === 'part.zoneShelf')).toEqual([
+      { key: 'part.zoneShelf', mat: 'chipboard', a: 968, b: 600, q: 1 },
+    ]);
+  });
+
+  it('фасади з половиною зазору на стику зон (специфікація округлює до мм)', () => {
+    expect(panel(P, 'part.drawerFront', 962, 296).q).toBe(1); // 300 - 3 - 1.5 = 295.5
+    expect(panel(P, 'part.drawerFront', 962, 196).q).toBe(2); // (400 - 1.5 - 3 - 3) / 2 = 196.25
+  });
+});

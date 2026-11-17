@@ -28,7 +28,7 @@ function overhangOf(top, mount) {
 
 // Кришка та її стик з боковинами.
 // mount: between — боковини на всю висоту, кришка між ними; over — кришка на всю ширину, боковини під нею.
-// double — кришка з двох плит: товщина topT = 2 × T, у специфікації topQ = 2.
+// double — кришка з двох плит: товщина topT = 2 × T, у специфікації topQ = 2, у 3D — одна плита товщиною topT.
 // overhang (лише over) — виступи кришки за корпус: кришка (topW × topD) зсувається на topX / topZ
 // (z = 0 — задня площина корпусу). Виступ ззаду → задня стінка закінчується під кришкою (backH).
 // base (CARCASS_BASES) плит корпусу не змінює: на ніжках вони ті самі, додається лише фурнітура.
@@ -88,11 +88,11 @@ export function addBackPanel(P, s, C) {
  * @param {Carcass} C
  */
 export function addCarcassGeometry(G, s, C) {
-  const { sideH, topW, topX, topD, topZ, topQ, backH } = C;
+  const { sideH, topW, topX, topD, topZ, topT, topQ, backH } = C;
   G.panel('part.side', 'wood', 0, 0, 0, T, sideH, s.D);
   G.panel('part.side', 'wood', s.W - T, 0, 0, T, sideH, s.D);
-  // потовщена кришка — дві плити одна на одній
-  for (let k = 0; k < topQ; k++) G.panel('part.top', 'wood', topX, s.H - (topQ - k) * T, topZ, topW, T, topD);
+  // потовщена кришка — у 3D одна плита товщиною topT (у специфікації topQ плит)
+  G.panel('part.top', 'wood', topX, s.H - topT, topZ, topW, topT, topD, undefined, [], null, topQ);
   G.panel('part.bottom', 'wood', T, s.plinth, 0, s.W - 2 * T, T, s.D);
   if (s.plinth > 0) G.panel('part.plinth', 'wood', T, 0, plinthZ(s), s.W - 2 * T, s.plinth, T);
   const backT = thickness('hardboard');

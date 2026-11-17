@@ -77,8 +77,8 @@ describe('modelGeometry — пресет «Шафа 3 секції» на цок
     const runners = byKey(G, 'part.runner');
     expect(runners).toHaveLength(6);
     expect(runners[0].kind).toBe('hardware');
-    // проріз секції 600..1200, зазор 13; z = 584 - 550
-    expect(at(byKey(G, 'part.drawerBottom')[0])).toEqual({ x: 613, y: 119, z: 34, w: 574, h: 3, d: 550 });
+    // проріз секції 600..1200, зазор 13; z = 584 - 550; дно на 10 вище за низ фасаду: 99 + 10
+    expect(at(byKey(G, 'part.drawerBottom')[0])).toEqual({ x: 613, y: 109, z: 34, w: 574, h: 3, d: 550 });
     expect(runners.slice(0, 2).map(r => r.x)).toEqual([600, 1187]);
   });
 
@@ -128,13 +128,17 @@ describe('modelGeometry — відповідність специфікації'
     expect(modelGeometry(s, L).rods.length).toBe(rods);
   });
 
-  it('потовщена кришка — дві плити по 16 мм одна на одній', () => {
+  it('потовщена кришка — у 3D одна плита 2 × 16 мм, склеєна з двох', () => {
     const G = geomOf({ ...preset('wardrobe', PLINTH), top: { mount: 'between', double: true } });
-    // нижня 2400 - 2*16 = 2368, верхня 2400 - 16 = 2384
-    expect(byKey(G, 'part.top').map(at)).toEqual([
-      { x: 16, y: 2368, z: 0, w: 1768, h: 16, d: 600 },
-      { x: 16, y: 2384, z: 0, w: 1768, h: 16, d: 600 },
-    ]);
+    const tops = byKey(G, 'part.top');
+    // низ 2400 - 2*16 = 2368, товщина 2*16 = 32
+    expect(tops.map(at)).toEqual([{ x: 16, y: 2368, z: 0, w: 1768, h: 32, d: 600 }]);
+    expect(tops[0].stack).toBe(2);
+  });
+
+  it('одинарна кришка — без stack', () => {
+    const G = geomOf(preset('wardrobe', PLINTH));
+    expect(byKey(G, 'part.top')[0].stack).toBeUndefined();
   });
 });
 
@@ -259,5 +263,35 @@ describe('modelGeometry — розсувні двері', () => {
   it('відповідає специфікації', () => {
     const L = computeLayout(s);
     expectGeometryMatchesParts(modelGeometry(s, L), partsList(s, L));
+  });
+});
+
+describe('modelGeometry — сусідні зони шухляд', () => {
+  const s = project([
+    {
+      width: 'auto',
+      zones: [
+        { type: 'drawers', count: 1, height: 300 },
+        { type: 'drawers', count: 2, height: 400 },
+        { type: 'shelves', count: 2, height: 'auto' },
+      ],
+    },
+  ]);
+  const G = geomOf(s);
+
+  it('плита між зонами — лише над полицями', () => {
+    expect(byKey(G, 'part.zoneShelf').map(b => b.y)).toEqual([1284 - T]); // низ 2-ї зони шухляд мінус T
+  });
+
+  it('фасади йдуть суцільним рядом із зазором GAP', () => {
+    const fronts = byKey(G, 'part.drawerFront').sort((a, b) => a.y - b.y);
+    const gaps = fronts.slice(1).map((f, k) => f.y - (fronts[k].y + fronts[k].h));
+    gaps.forEach(g => expect(g).toBeCloseTo(3, 9));
+    expect(fronts[0].y).toBe(1287); // низ зони 1284 + GAP
+    expect(fronts.at(-1).y + fronts.at(-1).h).toBe(1981); // верх 1984 - GAP
+  });
+
+  it('відповідає специфікації', () => {
+    expectGeometryMatchesParts(G, partsList(s, computeLayout(s)));
   });
 });

@@ -5,7 +5,6 @@ import { addCarcassPanels, addBackPanel } from '../../common/carcass.js';
 import { msg } from '../../common/msg.js';
 import { drawerBox, addDrawerParts } from '../../common/drawers.js';
 import { legCount } from '../../common/legs.js';
-import { drawerFront } from './layout.js';
 
 // Специфікація без тексту (перекладає ui/ або core/export.js):
 //   panels — плити {key, mat, a, b, q}, розміри в мм, mat — ключ з MATERIALS;
@@ -16,13 +15,13 @@ export function partsList(s, L) {
   addCarcassPanels(P, s, L.carcass);
   P.panel('part.divider', L.Hin, L.inD, L.secs.length - 1);
   L.secs.forEach(c =>
-    c.zones.forEach((z, j) => {
-      if (j < c.zones.length - 1) P.panel('part.zoneShelf', c.w, L.inD, 1);
+    c.zones.forEach(z => {
+      if (z.shelfBelow) P.panel('part.zoneShelf', c.w, L.inD, 1);
       if (z.type === 'shelves') P.panel('part.shelf', c.w, L.inD - 20, z.cnt);
       if (z.type === 'rod') P.item('part.rod', msg('itemSize.rod', { w: round(c.w) }), 1);
       if (z.type === 'drawers') {
         const fw = c.w - 2 * GAP,
-          fh = drawerFront(z.h, z.cnt);
+          fh = z.front;
         P.panel('part.drawerFront', fw, fh, z.cnt);
         addDrawerParts(P, drawerBox(c.w, fh, L.inD), z.cnt);
         P.item('part.handle', msg('itemSize.handle'), z.cnt); // по одній на фасад
@@ -44,7 +43,7 @@ function zoneMsg(z) {
     case 'rod':
       return msg('describe.rod', { h });
     case 'drawers':
-      return msg('describe.drawers', { cnt: z.cnt, front: round(drawerFront(z.h, z.cnt)), h });
+      return msg('describe.drawers', { cnt: z.cnt, front: round(z.front), h });
   }
   return null;
 }

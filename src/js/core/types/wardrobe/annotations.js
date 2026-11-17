@@ -1,6 +1,5 @@
 import { round } from '../../../utils/helpers.js';
 import { msg } from '../../common/msg.js';
-import { drawerFront } from './layout.js';
 
 // Розмірні лінії, підписи зон і підсвітка вибраної секції для 3D (формат — Annotations у core/types.js).
 export function annotations(s, L, { sel }) {
@@ -27,7 +26,7 @@ export function annotations(s, L, { sel }) {
       else
         lines = [
           msg('viewer.label.drawers', { cnt: z.cnt }),
-          msg('viewer.label.drawersFront', { front: round(drawerFront(z.h, z.cnt)) }),
+          msg('viewer.label.drawersFront', { front: round(z.front) }),
         ];
       return { lines, pos: [c.x + c.w / 2, (z.top + z.bottom) / 2, s.D + 25], size: lh * 0.8, style: 'zone' };
     }),

@@ -22,7 +22,8 @@ export const project = (sections, dims = {}) =>
 export const keys = msgs => msgs.map(m => m.key);
 
 // Плити специфікації поштучно і бокси-плити геометрії в однаковому вигляді:
-// 'key|mat|більший×менший|товщина', для боксу два більші розміри — a × b, найменший — товщина.
+// 'key|mat|більший×менший|товщина', для боксу два більші розміри — a × b, найменший — товщина
+// (склеєний бокс зі stack плит — stack деталей товщиною t / stack).
 const sortedPair = (a, b) => [Math.round(a), Math.round(b)].sort((x, y) => y - x).join('×');
 const specPieces = P =>
   P.panels
@@ -31,9 +32,10 @@ const specPieces = P =>
 const geomPieces = G =>
   G.boxes
     .filter(b => b.kind === 'panel')
-    .map(b => {
+    .flatMap(b => {
+      const q = b.stack ?? 1;
       const [a, c, t] = [b.w, b.h, b.d].sort((x, y) => y - x);
-      return `${b.key}|${b.mat}|${sortedPair(a, c)}|${t}`;
+      return Array(q).fill(`${b.key}|${b.mat}|${sortedPair(a, c)}|${t / q}`);
     })
     .sort();
 
