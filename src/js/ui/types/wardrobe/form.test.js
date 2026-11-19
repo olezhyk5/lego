@@ -147,4 +147,21 @@ describe('форма шафи', () => {
     expect(store.ui.sel).toBe(1);
     expect(sec(1, '').classList.contains('is-selected')).toBe(true);
   });
+
+  it('згортання: перемикач невибраної секції лише вибирає розгорнуту й розгортає згорнуту', () => {
+    const S = store.state.sections;
+    const toggle = i => {
+      click(sec(i, '[data-act="secToggle"]'));
+      render(); // update замоканий — перемальовуємо самі
+    };
+    toggle(1); // невибрана розгорнута: лише вибирається
+    expect(store.ui.sel).toBe(1);
+    expect(store.ui.collapsed.has(S[1])).toBe(false);
+    toggle(1); // вибрана: згортається
+    expect(store.ui.collapsed.has(S[1])).toBe(true);
+    click(sec(0, '')); // вибираємо іншу
+    toggle(1); // невибрана згорнута: розгортається й вибирається
+    expect(store.ui.sel).toBe(1);
+    expect(store.ui.collapsed.has(S[1])).toBe(false);
+  });
 });

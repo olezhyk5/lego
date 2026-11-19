@@ -123,7 +123,8 @@ export function buildModel({ geometry, annotations, bounds }, { showDims, M }) {
     parentOf(r).add(m);
   });
 
-  if (annotations.highlight) box(annotations.highlight, M.hl, false);
+  // підсвітка вибраної секції прозора для вказівника: інакше вона перекриває шухляди всередині
+  if (annotations.highlight) box(annotations.highlight, M.hl, false).raycast = () => {};
 
   annotations.dims.forEach(d => addDim(dims, M.dim, vec(d.from), vec(d.to), d.text, vec(d.tick), d.size));
   annotations.labels.forEach(l =>

@@ -93,15 +93,17 @@ function bind({ store, ref, update, fit }) {
     const { secEl, i, j } = position(e.target);
     if (!secEl) return;
     const b = e.target.closest('[data-act]');
+    const act = b?.dataset.act;
     if (store.ui.sel !== i) {
       store.ui.sel = i;
       box
         .querySelectorAll('[data-section]')
         .forEach(el => el.classList.toggle('is-selected', +el.dataset.section === i));
-      if (!b) update(false);
+      // перемикач невибраної розгорнутої секції лише вибирає її, а згорнуту — розгортає
+      const onlySelect = act === 'secToggle' && !store.ui.collapsed.has(store.state.sections[i]);
+      if (!b || onlySelect) return update(false);
     }
     if (!b) return;
-    const act = b.dataset.act;
     onSectionAction(store, act, i, j);
     update(true);
     // сайдбар перемальовано — повертаємо фокус на перемикач, щоб не губився з клавіатури
