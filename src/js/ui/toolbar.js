@@ -1,7 +1,7 @@
 import { parseProject } from '../core/store.js';
 import { presetTypes } from '../core/presets.js';
-import { exportRows, toCsv, toTsv, fileBase } from '../core/export.js';
-import { download, readText, copyText } from '../utils/file.js';
+import { exportRows, toCsv, fileBase } from '../core/export.js';
+import { download, readText } from '../utils/file.js';
 import { t, LOCALES, getLocale } from '../i18n/index.js';
 
 // Кнопки верхньої панелі: вид, експорт, збереження/відкриття проєкту, мова.
@@ -36,13 +36,6 @@ export function createToolbar(app) {
 
   on('csv', 'click', () => {
     download(toCsv(exportRows(store.state)), `${fileBase(store.state)}.csv`, 'text/csv;charset=utf-8');
-  });
-
-  on('copy', 'click', () => {
-    copyText(toTsv(exportRows(store.state))).then(
-      () => toast(t('toast.copied')),
-      () => toast(t('toast.copyFailed')),
-    );
   });
 
   on('png', 'click', () => {

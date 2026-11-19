@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { exportRows, toCsv, toTsv, fileBase, panelSize, projectReport } from './export.js';
+import { exportRows, toCsv, fileBase, panelSize, projectReport } from './export.js';
 import { presetProject, PLINTH } from './test-fixtures.js';
 
 describe('exportRows', () => {
@@ -48,12 +48,6 @@ describe('exportRows', () => {
 describe('toCsv', () => {
   it('BOM, роздільник «;», CRLF, лапки екрануються', () => {
     expect(toCsv([['a"b', null, 3], []])).toBe('﻿"a""b";"";"3"\r\n');
-  });
-});
-
-describe('toTsv', () => {
-  it('таби та переноси рядків', () => {
-    expect(toTsv([['a', 1], ['b']])).toBe('a\t1\nb');
   });
 });
 

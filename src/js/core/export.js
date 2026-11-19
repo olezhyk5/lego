@@ -59,6 +59,5 @@ export function exportRows(s) {
 
 export const toCsv = rows =>
   '﻿' + rows.map(row => row.map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
-export const toTsv = rows => rows.map(row => row.join('\t')).join('\n');
 
 export const fileBase = s => getType(s.type).fileBase(s);

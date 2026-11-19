@@ -8,7 +8,6 @@ export default {
     transparent: 'Прозорий режим',
     resetView: 'Скинути вид',
     png: 'PNG',
-    copy: 'Копіювати список',
     csv: 'CSV для дизайнера',
     save: 'Зберегти',
     open: 'Відкрити',
@@ -338,8 +337,6 @@ export default {
     close: 'Закрити',
   },
   toast: {
-    copied: 'Список скопійовано',
-    copyFailed: 'Не вдалося скопіювати',
     opened: 'Проєкт відкрито',
     badFile: 'Файл не схожий на проєкт',
     badFileDetails: 'Файл не відкрито: {error}',

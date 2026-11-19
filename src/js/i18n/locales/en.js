@@ -8,7 +8,6 @@ export default {
     transparent: 'X-ray mode',
     resetView: 'Reset view',
     png: 'PNG',
-    copy: 'Copy list',
     csv: 'CSV for designer',
     save: 'Save',
     open: 'Open',
@@ -338,8 +337,6 @@ export default {
     close: 'Close',
   },
   toast: {
-    copied: 'List copied',
-    copyFailed: 'Could not copy',
     opened: 'Project opened',
     badFile: 'The file does not look like a project',
     badFileDetails: 'File not opened: {error}',

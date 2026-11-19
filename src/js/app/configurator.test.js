@@ -155,7 +155,7 @@ describe('мова', () => {
 describe('опція ui', () => {
   it('вимкнені частини не малюються, решта працює', () => {
     const { root } = mount({ ui: { presets: false, export: false, files: false, locale: false } });
-    ['presets', 'png', 'copy', 'csv', 'saveJson', 'loadJson', 'fileIn', 'locale'].forEach(name =>
+    ['presets', 'png', 'csv', 'saveJson', 'loadJson', 'fileIn', 'locale'].forEach(name =>
       expect(ref(root, name), name).toBe(null),
     );
     expect(ref(root, 'resetView')).not.toBe(null);

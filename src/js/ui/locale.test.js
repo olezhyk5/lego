@@ -42,10 +42,10 @@ describe('мова інтерфейсу', () => {
   it('addMessages: перекриває ключ і додає мову; відсутні ключі нової мови — з uk', () => {
     addMessages({ uk: { test: { hello: 'Привіт' } }, de: { toolbar: { csv: 'CSV für Designer' } } });
     expect(t('test.hello')).toBe('Привіт');
-    expect(t('toolbar.copy')).toBe('Копіювати список'); // решта словника на місці
+    expect(t('toolbar.save')).toBe('Зберегти'); // решта словника на місці
     expect(LOCALES).toContain('de');
     setLocale('de');
     expect(t('toolbar.csv')).toBe('CSV für Designer');
-    expect(t('toolbar.copy')).toBe('Копіювати список');
+    expect(t('toolbar.save')).toBe('Зберегти');
   });
 });

@@ -3,7 +3,7 @@ import { t, tm, formatNumber, DEFAULT_LOCALE } from './index.js';
 
 describe('t', () => {
   it('повертає рядок за ключем', () => {
-    expect(t('toolbar.copy')).toBe('Копіювати список');
+    expect(t('toolbar.save')).toBe('Зберегти');
   });
 
   it('підставляє параметри', () => {

@@ -17,24 +17,3 @@ export function readText(file) {
     rd.readAsText(file);
   });
 }
-
-export function copyText(txt) {
-  if (navigator.clipboard && navigator.clipboard.writeText)
-    return navigator.clipboard.writeText(txt).catch(() => copyFallback(txt));
-  return copyFallback(txt);
-}
-
-function copyFallback(txt) {
-  const t = document.createElement('textarea');
-  t.value = txt;
-  document.body.appendChild(t);
-  t.select();
-  try {
-    document.execCommand('copy');
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  } finally {
-    t.remove();
-  }
-}

@@ -14,8 +14,7 @@ const btn = (ref, key, cls = 'btn') => text(key, 'button', ` type="button" class
 const labelled = key =>
   `data-i18n-title="${key}" data-i18n-aria-label="${key}" title="${t(key)}" aria-label="${t(key)}"`;
 
-const exportButtons = () =>
-  btn('png', 'toolbar.png') + btn('copy', 'toolbar.copy') + btn('csv', 'toolbar.csv', 'btn btn--primary');
+const exportButtons = () => btn('png', 'toolbar.png') + btn('csv', 'toolbar.csv', 'btn btn--primary');
 
 const fileButtons = () =>
   btn('saveJson', 'toolbar.save') +
